@@ -1,0 +1,10 @@
+# How many pages do we have?
+tab.names <- c(
+  "home",
+  "dataupload",
+  "missing",
+  "psmodel",
+  "psresults",
+  "cfmethod",
+  "results"
+)

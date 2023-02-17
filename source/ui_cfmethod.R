@@ -1,0 +1,22 @@
+cfmethod_page <- 
+  div(id="cfmethod",
+      
+      # side bar page, sidebar for choosing method, main panel includes further options plus guidance. 
+      sidebarLayout(
+        sidebarPanel(
+          tags$h2(style="text-align: center; ","Choose more things!"),
+          br(),
+          
+          awesomeCheckboxGroup(inputId="counterfactual", label='Select your counterfactual method',
+                             choices=c('1:1 PSM','k:1 PSM', 'CEM', 'IPTW','Non-bipartite optimal matching')),
+          
+          br(),
+          actionBttn("prevBtn_5", "Prev"),
+          actionBttn("nextBtn_5", "Next")
+        ),
+        mainPanel(
+          p("more options & guidance")
+        ) 
+      )
+      
+  )

@@ -1,0 +1,21 @@
+missing_page <- 
+  div(id="missing",
+      
+      sidebarLayout(
+        sidebarPanel(
+          tags$h2(style="text-align: center; ","Choose missingness method"),
+          br(),
+          
+          checkboxGroupInput(inputId="missingmethod", label='How would you like to address missingness in your data?',
+                             choices=c('Method default','Weights','Multiple imputation','Full information maximum likelihood')),
+          
+          br(),
+          actionBttn("prevBtn_2", "Prev"),
+          actionBttn("nextBtn_2", "Next")
+        ),
+        mainPanel(
+          p("options & guidance")
+        ) 
+      )
+      
+  )

@@ -1,0 +1,56 @@
+library(shiny)
+library(shinyjs)
+library(shinyWidgets)
+
+# source individual pages
+source("source/ui_home.R")
+source("source/ui_dataupload.R")
+source("source/ui_missing.R")
+source("source/ui_psmodel.R")
+source("source/ui_psresults.R")
+source("source/ui_cfmethod.R")
+source("source/ui_results.R")
+
+ui <- fluidPage(
+  useShinyjs(),
+  # include any CSS
+  includeCSS("./www/stuff.css"),
+
+  # MAIN HEADER BANNER 
+  # outside of nav pages
+  div(id="header-content",
+      tags$h2(id = "header-text", 
+              #a(target="_blank",href="",HTML("DigiCAT<br><h4>A digital tool to facilitate counterfactual analysis</h4>")),
+              tags$img(style="max-height: 100px; padding-left: 100px; padding-right: 100px", src="digicat6b.png"))
+  ),
+  
+  
+  navbarPage(title="",
+             id="mynavlist",
+             collapsible=TRUE,
+             tabPanel("Home", value="home", icon = icon('home',lib="glyphicon"),
+                      home_page
+             ),
+             tabPanel("Data Upload", value="dataupload", icon = icon('table'),
+                      dataupload_page
+             ),
+             tabPanel("Missingness Options", value="missing", icon = icon('table'),
+                      missing_page
+             ),                    
+             tabPanel("Choose Propensity model", value="psmodel", icon = icon('tree'),
+                      psmodel_page
+             ),
+             tabPanel("Propensity Model Results", value="psresults", icon = icon('tree'),
+                      psres_page
+             ),
+             tabPanel("Choose Counterfactual Method", value="cfmethod", icon = icon('certificate',lib="glyphicon"),
+                      cfmethod_page
+             ),
+             tabPanel("Get Results", value="results", icon = icon('save',lib="glyphicon"),
+                      results_page
+             )
+  ),
+  
+  div(id="footer", tags$img(style="max-width: 150px; margin-left: 5px", src="uoelogo.svg"))
+)
+

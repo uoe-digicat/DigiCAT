@@ -1,0 +1,22 @@
+psmodel_page <- 
+  div(id="psmodel",
+      
+      sidebarLayout(
+        
+        sidebarPanel(
+          tags$h2(style="text-align: center; ","Choose things!"),
+          br(),
+          
+          awesomeCheckboxGroup(inputId="psm", label='Select your propensity model',
+                             choices=c('None','Regression','CART', 'Random forest','Gradient boosted model with post-calibration')),
+          
+          br(),
+          actionBttn("prevBtn_3", "Prev"),
+          actionBttn("nextBtn_3", "Next")
+        ),
+        mainPanel(
+          p("options & guidance")
+        ) 
+      )
+      
+  )

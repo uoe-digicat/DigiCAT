@@ -1,0 +1,20 @@
+
+
+inputData <- reactive({
+  inFile <- input$file1
+  if (is.null(inFile)) return(NULL)
+  data <- read.csv(inFile$datapath, header = TRUE)
+  data
+})
+
+observeEvent(inputData(), updateSelectInput(session, "outcome", choices = names(inputData())))
+observeEvent(inputData(), updateSelectInput(session, "treatment", choices = names(inputData())))
+observeEvent(inputData(), updateAwesomeCheckboxGroup(session, "matchvars", choices = names(inputData())))
+observeEvent(inputData(), updateAwesomeCheckboxGroup(session, "covars", choices = names(inputData())))
+
+output$contents <- DT::renderDataTable({
+  DT::datatable(inputData())       
+})
+
+
+
