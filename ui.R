@@ -11,7 +11,12 @@ source("source/ui_psresults.R")
 source("source/ui_cfmethod.R")
 source("source/ui_results.R")
 
+# favicon (icon in browser tab)
+HTML('<link rel="icon" type="www/favicon.ico" href="www/favicon.ico"/>')
+
 ui <- fluidPage(
+  title = "DigiCAT",
+  tags$head(tags$link(rel="shortcut icon", href="favicon.ico")),
   useShinyjs(),
   # include any CSS
   includeCSS("./www/stuff.css"),
