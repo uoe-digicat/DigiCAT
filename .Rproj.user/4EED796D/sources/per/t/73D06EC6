@@ -1,26 +1,27 @@
 {
-    "id": "E16D5C3C",
-    "path": "C:/Users/jking34/Desktop/DigiCAT/source/server_dataupload.R",
-    "project_path": "source/server_dataupload.R",
+    "id": "73D06EC6",
+    "path": "C:/Users/jking34/Desktop/DigiCAT/server.R",
+    "project_path": "server.R",
     "type": "r_source",
-    "hash": "0",
+    "hash": "3102443052",
     "contents": "",
     "dirty": false,
-    "created": 1676557947150.0,
+    "created": 1676555925918.0,
     "source_on_save": false,
     "relative_order": 12,
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "16,2",
-        "scrollLine": "0"
+        "cursorPosition": "73,41",
+        "scrollLine": "57",
+        "docOutlineVisible": "1"
     },
     "folds": "",
-    "lastKnownWriteTime": 1676557963,
+    "lastKnownWriteTime": 1677146983,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1676557963680,
+    "last_content_update": 1677146983597,
     "read_only": false,
     "read_only_alternatives": []
 }

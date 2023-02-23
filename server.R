@@ -4,7 +4,7 @@ library(DT)
 server <- function(input, output, session) {
   
   ###
-  # NAVIGATION
+  # NAVIGATION ----
   ###
   tab <- reactiveValues(page = 1, min = 1, max = 7)
   
@@ -39,9 +39,6 @@ server <- function(input, output, session) {
     }
   }
   
-  ###
-  # BUTTONS
-  ###
   observeEvent(input$prevBtn_1 |  input$prevBtn_2 |  input$prevBtn_3 | input$prevBtn_4 | input$prevBtn_5, {
     navPage(-1)
     updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
@@ -51,10 +48,37 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
   })
   
-  # Source servser side 
-  source("source/server_home.R",local=T)
-  source("source/server_dataupload.R",local=T)
+  ####
+  # DATA UPLOAD ----
+  ####
   
+  inputData <- reactiveValues(rawdata=NULL)
+  
+  observeEvent(input$file1, {
+    inputData$rawdata <- read.csv(input$file1$datapath)
+  })
+  observeEvent(input$Btn_sampledata, {
+    inputData$rawdata <- read.csv("data/zp_synth.csv")
+  })
+  
+  observe({
+    if(!is.null(inputData$rawdata)){
+      updatePickerInput(session, "outcome", choices = names(isolate(inputData$rawdata)))
+      updatePickerInput(session, "treatment", choices = names(isolate(inputData$rawdata)))
+      updatePickerInput(session, "matchvars", choices = names(isolate(inputData$rawdata)))
+      updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata)))
+    }
+  })
+  
+  output$contents <- DT::renderDataTable({
+    DT::datatable(inputData$rawdata)     
+  })
+  
+  
+  # Source server side 
+  # source("source/server_missing",local=T)
+  # source("source/server_missing",local=T)
+  # source("source/server_missing",local=T)
   
   
 }

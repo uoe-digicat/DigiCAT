@@ -11,6 +11,6 @@ results_page <-
       br(),
       p(""),
       br(),
-      actionBttn(inputId='codedownload', label= 'Show me the code', color = "success"),
+      actionBttn(inputId='codedownload', label= 'Show me the code'),
       HTML("</center>")
   )

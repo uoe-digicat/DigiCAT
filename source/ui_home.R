@@ -9,8 +9,8 @@ home_page <-
       
       p('Step 3: Select your counterfactual method(s) and click Run to see the results'),
       
-      p("For a step-by-step guide, see our", span("tutorial", style="color:blue")),
       br(),
-      actionBttn("start",label="Get Started!"),
+      actionBttn("tutorial",label="Tutorial"),
+      actionBttn("start",label="Get Started!", color="success"),
       HTML("</center>")
   )

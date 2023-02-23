@@ -4,24 +4,34 @@ dataupload_page <-
       sidebarLayout(
         sidebarPanel(
           tags$h2(style="text-align: center; ","Feed me data!"),
-          br(),
           
+          div(style="text-align:right;margin-bottom:5px",
+              actionBttn("Btn_sampledata", "Load Sample Data",size="sm")
+          ),
           fileInput('file1', 'Choose CSV File',
-                    accept=c('text/csv',
-                             'text/comma-separated-values,text/plain',
-                             '.csv')),
+                      accept=c('text/csv',
+                              'text/comma-separated-values,text/plain',
+                              '.csv')
+          ),
           
-          selectInput(inputId= 'outcome', label ='Select your outcome variable',choices=NULL,selected=NULL),
-          
-          selectInput(inputId= 'treatment', label ='Select your treatment variable',choices=NULL,selected=NULL),
-          
-          awesomeCheckboxGroup(inputId= 'matchvars', label ='Select your matching variables',choices=NULL,selected=NULL),
-          
-          awesomeCheckboxGroup(inputId= 'covars', label ='Select any additional covariates',choices=NULL,selected=NULL),
-          
+
+          pickerInput(inputId= 'outcome', label ='Select your outcome variable',
+                      choices=NULL,selected=NULL
+          ),
+          pickerInput(inputId= 'treatment', label ='Select your treatment variable',
+                      choices=NULL,selected=NULL
+          ),
+          pickerInput(inputId= 'matchvars', label ='Select your matching variables',
+                      choices=NULL,selected=NULL,multiple=TRUE
+          ),
+          pickerInput(inputId= 'covars', label ='Select any additional covariates',
+                               choices=NULL,selected=NULL,multiple=TRUE
+          ),
           br(),
-          actionBttn("prevBtn_1", "Prev"),
-          actionBttn("nextBtn_1", "Next")
+          div(style="text-align:right", 
+            actionBttn("prevBtn_1", "Prev", color="success"),
+            actionBttn("nextBtn_1", "Next", color="success")
+          )
         ),
         mainPanel(
           DT::dataTableOutput('contents')

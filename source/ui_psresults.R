@@ -6,11 +6,17 @@ psres_page <-
           tags$h2(style="text-align: center; ","Propensity Model Results & Diagnostics"),
           br(),
           
-          selectInput("psresult_metric", "What would you like to see?", choices = c("AUC", "...", "...")),
+          pickerInput(
+            inputId = "psresult_metric", 
+            label = "What would you like to see?", 
+            choices = c("AUC", "...", "...")
+          ),
           
           br(),
-          actionBttn("prevBtn_4", "Prev"),
-          actionBttn("nextBtn_4", "Next")
+          div(style="text-align:right", 
+            actionBttn("prevBtn_4", "Prev", color="success"),
+            actionBttn("nextBtn_4", "Next", color="success")
+          )
         ),
         mainPanel(
           p("plots and metrics here")
