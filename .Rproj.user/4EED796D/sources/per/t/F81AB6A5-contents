@@ -1,0 +1,1070 @@
+
+##libraries####
+library(foreign); library(designmatch);library(car)
+library(MatchIt); library(mice); library(sandwich)
+library(psych);library(twang);library(MatchThem);library(cobalt)
+library(lavaan); library(nbpMatching);library(tidyverse)
+
+##prepare data####
+zp1_8<-read.spss('D:/Research/Datasets/z-proso/W1-W8/W1-W8/z-prosoData_W1-W8_r1.sav', to.data.frame=T,use.value.labels=F) #z-proso waves 1 to 8
+
+#subset variables
+zp_read_all<-subset(zp1_8, 
+                select=c('ID18A', 'ADR_GenderChild',
+                ##treatment variable###
+                'K4_1451','K5_2501','K6_2501','K7_2501',  #reading at ages 11-17
+                ##mental health outcomes wave 8 age 20###
+                'K8_651','K8_654','K8_655','K8_657', 'K8_681',                        #self-reported depression wave 8
+                'K8_683','K8_686','K8_689','K8_693',
+                'K8_652','K8_653','K8_656','K8_658',                                  #self-reported anxiety wave 8
+                'K8_682','K8_684','K8_687', 'K8_690','K8_692',                     
+                'K8_694',    
+                ##mental health outcomes at wave 7 age 17, anx & dep
+                'K7_651','K7_652','K7_653','K7_654','K7_655','K7_656','K7_657','K7_658',#
+                #mental health outcome at wave 6 age 15, anx & dep:
+                'K6_651','K6_652','K6_653','K6_654','K6_655','K6_656','K6_657','K6_658',#
+                #mental health outcomes at wave 5 age 13, anx & dep:
+                'K5_651','K5_652','K5_653','K5_654','K5_655','K5_656','K5_657','K5_658',#
+                #mental health outcomes at wave 4 age 11, anx & dep:
+                'K4_451','K4_452','K4_453','K4_454','K4_455','K4_456','K4_457','K4_458',
+                ###covariates at age 17###
+                'K6_nSBQ_PROSO','K6_nSBQ_ANXDEP',
+                'K6_nSBQ_OPAGGR','K6_nSBQ_ADHD',
+                'K6_nSBQ_REAGGR','K6_nSBQ_PHYSAGGR',
+                'K6_nSBQ_PROAGGR','K6_nSBQ_INDAGGR',
+                'K6_involv', #parental involvement
+                'K6_ResilAdult','K6_ResilFriends',
+                'K6_BullVict4',
+                'K6_GTrust',
+                'K6_N1311',  #tobacco
+                'K6_N1321', #beer
+                'K6_N1331', #liquor
+                'K6_N1341', #THC
+                'K6_DevVar19',
+                'K6_SCTRL',
+                'K6_SchoolTeach',
+                'K6_SchoolClass',
+                'K6_SchoolDiffic',
+                'K5.6_MigHH2',
+                'K5.6_ISEImax',
+                #covariates at age 15
+                #covariates
+                'K5_nSBQ_PROSO','K5_nSBQ_ANXDEP',
+                'K5_nSBQ_OPAGGR','K5_nSBQ_ADHD',
+                'K5_nSBQ_REAGGR','K5_nSBQ_PHYSAGGR',
+                'K5_nSBQ_PROAGGR','K5_nSBQ_INDAGGR',
+                'K5_involv', #parental involvement
+                'K5_ResilAdult','K5_ResilFriends',
+                'K5_BullVict4',#
+                'K5_GTrust',#
+                'K5_1331', #liquor
+                'K5_1321', #beer/wine
+                'K5_1311', #tobacco
+                'K5_1341',#, #THC
+                'K5_DevVar19', # delinquency variety score
+                'K5_SCTRL',
+                #self-efficacy not available at K5
+                'K5_SchoolTeach',
+                'K5_SchoolClass',
+                'K5_SchoolDiffic',
+                'K5.6_MigHH2',
+                'K5.6_ISEImax',
+                'T4.3_ACHI01', #school achievement variables from earlier wave
+                'T4.3_ACHI02',
+                'T4.3_ACHI03'))     
+
+
+#DESCRIPTIVES####
+#statistics for matching variables###
+
+table(zp_read_all$ADR_GenderChild)
+table(zp_read_all$K5.6_MigHH2)
+descs17<-describe(zp_read_all[c('K5.6_ISEImax','K5_nSBQ_ANXDEP','K5_nSBQ_ADHD',
+                                'K5_GTrust','K5_SCTRL',
+                                'K5_1331', 'K5_1321','K5_1311', 'K5_1341',#liquor, beer/wine, tobacco, cannabis
+                                'K5_nSBQ_REAGGR','K5_nSBQ_PHYSAGGR',
+                                'K5_nSBQ_PROAGGR','K5_nSBQ_INDAGGR',
+                                'K5_nSBQ_PROSO','K5_DevVar19', 'K5_involv',
+                                'K5_ResilAdult','K5_ResilFriends','K5_BullVict4',
+                                'K5_SchoolTeach','K5_SchoolClass','K5_SchoolDiffic',
+                                'T4.3_ACHI01', #school achievement variables from earlier wave
+                                'T4.3_ACHI02',
+                                'T4.3_ACHI03')])
+
+descs20<-describe(zp_read_all[c('K6_nSBQ_ANXDEP','K6_nSBQ_ADHD',
+                                'K6_GTrust','K6_SCTRL',
+                                'K6_N1331', 'K6_N1321','K6_N1311', 'K6_N1341',#liquor, beer/wine, tobacco, cannabis
+                                'K6_nSBQ_REAGGR','K6_nSBQ_PHYSAGGR',
+                                'K6_nSBQ_PROAGGR','K6_nSBQ_INDAGGR',
+                                'K6_nSBQ_PROSO','K6_DevVar19', 'K6_involv',
+                                'K5_ResilAdult','K5_ResilFriends','K6_BullVict4',
+                                'K6_SchoolTeach','K6_SchoolClass','K6_SchoolDiffic',
+                                'T4.3_ACHI01', #school achievement variables from earlier wave
+                                'T4.3_ACHI02',
+                                'T4.3_ACHI03'
+                                )])
+                                
+#write.csv(descs17, file='D:/Research/papers/z-proso/reading engagement/out17matchdesc.csv')             
+#write.csv(descs20, file='D:/Research/papers/z-proso/reading engagement/out20matchdesc.csv')             
+
+
+
+
+#first dichotomise reading, 0= <less than once a week, 1= once a week or more
+zp_read_all$K4_read<-car::recode(zp_read_all$K4_1451, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+zp_read_all$K5_read<-car::recode(zp_read_all$K5_2501, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+zp_read_all$K6_read<-car::recode(zp_read_all$K6_2501, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+zp_read_all$K7_read<-car::recode(zp_read_all$K7_2501, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+
+
+# AGE 17 OUTCOME ANALYSES####
+# subset to those with complete treatment data
+
+incomp_K6<-which(is.na(zp_read_all$K6_read))
+zp_read_out17<-zp_read_all[-incomp_K6, ]
+
+
+set.seed(555)
+predmatrix<-matrix(nrow=dim(zp_read_out17)[2], ncol=dim(zp_read_out17)[2], data=rep(1,dim(zp_read_out17)[2]*dim(zp_read_out17)[2]))
+predmatrix[c(1,3,4,5,6),]<-0 #remove ID variable,gender, pre-coded exposure  from imputation model
+predmatrix[,c(1,3,4,5,6)]<-0
+diag(predmatrix)<-0
+zp_mice_all<-mice(zp_read_out17, m=10, predictorMatrix=predmatrix)
+zp_read_all_imp<-complete(zp_mice_all)
+
+####PSM using MI for K7 outcomes####
+# age 17 PSM outcome analyses not including prior reading:
+Age17_matches<-matchthem(K6_read~ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                         +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                          K5_GTrust+K5_SCTRL  #wellbeing markers
+                      +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                      K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                      K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                      K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+                      +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+                      +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+                      +K5_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03, #achievement at school
+          datasets=zp_mice_all, approach='within', method='nearest',link='logit', tols=.10, ratio=1)
+
+bal.tab(Age17_matches)#assess quality of matching
+
+#anxiety age 17 outcome analysis (no adjustemtn:
+summary(pool(with(Age17_matches, 
+                  lm(I(K7_652+K7_653+K7_656+K7_658)~K6_read))))
+
+#anxiety age 17 outcome analysis adjusting for matching variables
+summary(pool(with(Age17_matches, 
+                  lm(I(K7_652+K7_653+K7_656+K7_658)~K6_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K5_GTrust+K5_SCTRL  #wellbeing markers
+                     +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                       K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                       K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                       K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+                     +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+                     +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+                     +K5_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+
+#depression age 17 outcome analysis (no adjustment for matching variables):
+summary(pool(with(Age17_matches, 
+                  lm(I(K7_651+K7_654+K7_655+K7_657)~K6_read
+                  ))))
+
+#depression age 17 outcome analysis with adjustment:
+summary(pool(with(Age17_matches, 
+                  lm(I(K7_651+K7_654+K7_655+K7_657)~K6_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K5_GTrust+K5_SCTRL  #wellbeing markers
+                     +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                       K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                       K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                       K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+                     +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+                     +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+                     +K5_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+
+
+
+
+##now including prior reading as matching variable
+
+Age17_matches_ext<-matchthem(K6_read~ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                         +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                           K5_GTrust+K5_SCTRL  #wellbeing markers
+                         +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                           K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                           K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                           K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+                         +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+                         +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+                         +K5_SchoolDiffic+ #school commitment and difficulties
+                           T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03+K5_read, #achievement at school
+                         datasets=zp_mice_all, approach='within', method='nearest',link='logit', tols=.10, ratio=1)
+
+bal.tab(Age17_matches_ext)#assess quality of matching
+
+
+
+#anxiety age 17 outcome analysis with adjustment:
+summary(pool(with(Age17_matches_ext, 
+                  lm(I(K7_652+K7_653+K7_656+K7_658)~K6_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K5_GTrust+K5_SCTRL  #wellbeing markers
+                     +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                       K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                       K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                       K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+                     +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+                     +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+                     +K5_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03+K5_read))))
+
+
+#depression age 17 outcome analysis with  adjustment:
+
+summary(pool(with(Age17_matches_ext, 
+                  lm(I(K7_651+K7_654+K7_655+K7_657)~K6_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K5_GTrust+K5_SCTRL  #wellbeing markers
+                     +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                       K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                       K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                       K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+                     +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+                     +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+                     +K5_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03+K5_read
+                  ))))
+
+##NBP for age 17 outcomes####
+# subset to those with complete treatment data
+incomp_K6<-which(is.na(zp_read_all$K6_read))
+zp_read_out17<-zp_read_all[-incomp_K6, ]
+#single imputation:
+set.seed(555)
+predmatrixNBP17<-matrix(nrow=dim(zp_read_out17)[2], ncol=dim(zp_read_out17)[2], data=rep(1,dim(zp_read_out17)[2]*dim(zp_read_out17)[2]))
+predmatrixNBP17[c(1,109, 110,111,112),]<-0 #remove ID variable,gender, dichotomised exposure  from imputation model
+predmatrixNBP17[,c(1,109,110,111,112)]<-0
+diag(predmatrixNBP17)<-0
+zp_mice_allNBP17<-mice(zp_read_out17, m=1, predictorMatrix=predmatrixNBP17)
+zp_mice_17<-complete(zp_mice_allNBP17)
+#estimate propensity scores
+zp_mice_17$K6_2501<-as.factor(zp_mice_17$K6_2501)
+read15<-polr(K6_2501~ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+             +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+               K5_GTrust+K5_SCTRL  #wellbeing markers
+             +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+               K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+               K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+               K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+             +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+             +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+             +K5_SchoolDiffic+ #school commitment and difficulties
+               T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03, na.action = na.omit,
+             data=zp_mice_17, Hess=T)
+
+#extract propensity scores
+read15scores<-as.data.frame(cbind(zp_mice_17, read15$model,read15$lp))
+read15scores$K6_2501<-as.numeric(read15scores$K6_2501)
+#create distance matrix:
+eps<-1*10^-100 #specify epsilon to be very small positive number
+
+
+#nxn matrix of NAs:
+dist.matrix15<-matrix(rep(NA, length(read15$lp)^2), nrow=length(read15$lp), ncol=length(read15$lp))
+
+#fill the matrix with values based on formula in Lu et al. (2011) p.27:
+
+for (i in 1:length(read15scores$K6_2501))
+{for (j in 1:length(read15scores$K6_2501))
+  #if difference between dose is not zero && difference between propensity is less than or equal to 0.15 SMD
+{if ((read15scores$K6_2501[i] - read15scores$K6_2501[j])^2 != 0 && abs(read15scores$'read15$lp'[i] - read15scores$'read15$lp'[j]) <= 0.15*sqrt(var(read15scores$'read15$lp')))
+  # then assign distance based on Lu et al. (2011) equation
+{dist.matrix15[i,j] <- 10^11*( ( (read15scores$'read15$lp'[i] - read15scores$'read15$lp'[j])^2 )+eps)/( ( (read15scores$K6_2501[i] - read15scores$K6_2501[j])^2 ) )}
+  #if difference between doses is not equal to 0 && difference between propensity is >.15SMD
+  else if ((read15scores$K6_2501[i] - read15scores$K6_2501[j])^2 != 0 && abs(read15scores$'read15$lp'[i] - read15scores$'read15$lp'[j]) > 0.15*sqrt(var(read15scores$'read15$lp')))
+    #then assign value of 10^11
+  {dist.matrix15[i,j] <- (10^11)}
+  #if dose is the same
+  else if ((read15scores$K6_2501[i] - read15scores$K6_2501[j])^2 == 0)
+    #assign value of 10^11
+  {dist.matrix15[i,j] <- (10^11)}
+}
+}
+
+#check resulting matrix
+dim(dist.matrix15)# as expected
+max(dist.matrix15) #1e+11  as expected
+max(dist.matrix15[dist.matrix15!=1e+11])# 2931974732
+min(dist.matrix15)# fine
+diag(dist.matrix15)#1e+11 as expected
+#isSymmetric(dist.matrix15)#TRUE as expected
+
+row.names(dist.matrix15)<-read15scores$ID18A
+#reformat distance matrix for nbp
+dist15<-distancematrix(dist.matrix15)
+
+#check reformatted matrix
+dim(dist15)#1444 x1444 
+max(dist15)#1e+11 as expected
+max(dist15[dist15!=1e+11])# 2931974732
+diag(dist15)#0s on diagonal
+
+#perform matching
+set.seed(555)
+nbpmatches15<-nonbimatch(dist15, threshold=999999, precision = 7)
+#inspect matches:
+nbpmatches15$halves
+dim(nbpmatches15$halves) #934
+#eliminate unmatched:
+nbpmatches15_matched<-nbpmatches15$halves[nbpmatches15$halves$Distance!=999999, ]
+dim(nbpmatches15_matched) #510
+#extract the matched pairs:
+#read15pairs<-cbind(nbpmatches15_matched$Group1.ID, nbpmatches15$Group2.ID) #IDs for matched pairs
+
+
+nbpmatches15_matched$pairID<-paste("p", 1:length(nbpmatches15_matched$Group1.ID), sep="") #add in a 'pair ID' variable
+nbpmatches15_matched<-tibble(nbpmatches15_matched) #make tibble so that tidyverse can be leveraged
+nbpmatches15_matched_long<- pivot_longer(nbpmatches15_matched,                   #make into long format
+                                cols = c(Group1.ID, Group2.ID),
+                                names_to = "group", 
+                                values_to = "ID")
+dim(nbpmatches15_matched_long)#1020 rows
+names(zp_mice_17)[1]<-'ID'
+length(unique(zp_mice_17$ID))#1444
+# merge with dataset including treatment and outcomes:
+read15data_paired <- left_join(zp_mice_17,nbpmatches15_matched_long, by = "ID")
+dim(read15data_paired) #1444
+length(unique(read15data_paired$ID))#1444
+#create variable indicating high vs low members of pairs
+read15data_paired2 <- read15data_paired %>%
+  mutate(K6_2501 = as.numeric(K6_2501)) %>%   #K6_2501 is the treatment variable
+  group_by(pairID) %>%  #pairID is the ID number for each pair
+  mutate(first = max(K6_2501) , #creates the dose variable
+         dose = factor(ifelse(K6_2501 == first, "high", "low"))) %>%
+  #select(-c(group, K6_2501)) %>%
+  arrange(., pairID) %>%
+  ungroup()
+
+dim(read15data_paired2)#1444
+#write out data:
+write.csv(read15data_paired2, file='D:/Research/Papers/z-proso/reading engagement/read15pairs2.csv')
+
+###read in the NPB matched data##
+#read15data_paired2<-read.csv(file='D:/Research/Papers/z-proso/reading engagement/read15pairs2.csv')
+##assess covariate balance:
+library(MBESS); library(stddiff)
+
+#smd for binary is:
+smd_binary<-function(p1,p2){
+  
+smd_bin<-(p1-p2)/((p1*(1-p1)+p2*(1-p2))/2)^0.5
+  return(smd_bin)}
+
+#p1 = prevlanece  of highest category in high; p2= proportion of 1s in low
+table(read15data_paired2$ADR_GenderChild, read15data_paired2$dose) #p1= 0.4700214, #p2= 0.5058824
+table(read15data_paired2$K5.6_MigHH2, read15data_paired2$dose) #p1= 0.3556701, #p2= 0.4226804
+
+table(read15data_paired2$K5_1311, read15data_paired2$dose) #p1=0.2525773, p2=0.2680412
+table(read15data_paired2$K5_1321, read15data_paired2$dose) #p1=0.2731959, 0.2938144
+table(read15data_paired2$K5_1331, read15data_paired2$dose) #p1= 0.1649485, p2=0.1907216
+table(read15data_paired2$K5_1341, read15data_paired2$dose) #p1=0.06701031, p2=  0.08762887
+
+
+SMDs17NBP<-rbind(
+smd_binary(p1=0.4700214, p2=0.5058824),#Gender
+smd_binary(p1=0.3556701, p2=0.4226804), #Migration status
+smd(read15data_paired2$K5.6_ISEImax[read15data_paired2$dose=='low'], read15data_paired2$K5.6_ISEImax[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_nSBQ_ANXDEP[read15data_paired2$dose=='low'], read15data_paired2$K5_nSBQ_ANXDEP[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_nSBQ_ADHD[read15data_paired2$dose=='low'], read15data_paired2$K5_nSBQ_ADHD[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_GTrust[read15data_paired2$dose=='low'], read15data_paired2$K5_GTrust[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_SCTRL[read15data_paired2$dose=='low'], read15data_paired2$K5_SCTRL[read15data_paired2$dose=='high']),
+smd_binary(p1=0.2525773, p2=0.2680412), #tobacco 
+smd_binary(p1=0.2731959,p2=0.2938144),# alcohol
+smd_binary(p1= 0.1649485, p2=0.1907216), # alcohol 2
+smd_binary(p1=0.06701031, p2=  0.08762887), # cannabis
+smd(read15data_paired2$K5_nSBQ_REAGGR[read15data_paired2$dose=='low'], read15data_paired2$K5_nSBQ_REAGGR[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_nSBQ_PHYSAGGR[read15data_paired2$dose=='low'], read15data_paired2$K5_nSBQ_PHYSAGGR[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_nSBQ_PROAGGR[read15data_paired2$dose=='low'], read15data_paired2$K5_nSBQ_PROAGGR[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_nSBQ_INDAGGR[read15data_paired2$dose=='low'], read15data_paired2$K5_nSBQ_INDAGGR[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_nSBQ_PROSO[read15data_paired2$dose=='low'], read15data_paired2$K5_nSBQ_PROSO[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_DevVar19[read15data_paired2$dose=='low'], read15data_paired2$K5_DevVar19[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_involv[read15data_paired2$dose=='low'], read15data_paired2$K5_involv[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_ResilAdult[read15data_paired2$dose=='low'], read15data_paired2$K5_ResilAdult[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_ResilFriends[read15data_paired2$dose=='low'], read15data_paired2$K5_ResilFriends[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_BullVict4[read15data_paired2$dose=='low'], read15data_paired2$K5_BullVict4[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_SchoolTeach[read15data_paired2$dose=='low'], read15data_paired2$K5_SchoolTeach[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_SchoolClass[read15data_paired2$dose=='low'], read15data_paired2$K5_SchoolClass[read15data_paired2$dose=='high']),
+smd(read15data_paired2$K5_SchoolDiffic[read15data_paired2$dose=='low'], read15data_paired2$K5_SchoolDiffic[read15data_paired2$dose=='high']),
+smd(read15data_paired2$T4.3_ACHI01[read15data_paired2$dose=='low'], read15data_paired2$T4.3_ACHI01[read15data_paired2$dose=='high']),
+smd(read15data_paired2$T4.3_ACHI02[read15data_paired2$dose=='low'], read15data_paired2$T4.3_ACHI02[read15data_paired2$dose=='high']),
+smd(read15data_paired2$T4.3_ACHI03[read15data_paired2$dose=='low'], read15data_paired2$T4.3_ACHI03[read15data_paired2$dose=='high']))
+
+write.csv(SMDs17NBP, file='D:/Research/Papers/z-proso/reading engagement/Results/NBP17matchSMDs.csv')
+
+###anxiety outcome analysis
+nbp_17_anx<-lm(I(K7_652+K7_653+K7_656+K7_658)~dose, data=read15data_paired2)
+summary(nbp_17_anx)
+
+nbp_17_anx_adj<-lm(I(K7_652+K7_653+K7_656+K7_658)~dose+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+               +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                 K5_GTrust+K5_SCTRL  #wellbeing markers
+               +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                 K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                 K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                 K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+               +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+               +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+               +K5_SchoolDiffic+ #school commitment and difficulties
+                 T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03, data=read15data_paired2)
+  
+  
+summary(nbp_17_anx_adj)
+
+#age 17 depression with nbp:
+
+nbp_17_dep<-lm(I(K7_651+K7_654+K7_655+K7_657)~dose, data=read15data_paired2)
+summary(nbp_17_dep)
+
+nbp_17_dep_adj<-lm(I(K7_651+K7_654+K7_655+K7_657)~dose+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                   +K5_nSBQ_ANXDEP+K5_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                     K5_GTrust+K5_SCTRL  #wellbeing markers
+                   +K5_1311+K5_1321+K5_1331+K5_1341+ #substance use
+                     K5_nSBQ_REAGGR+K5_nSBQ_PHYSAGGR+
+                     K5_nSBQ_PROAGGR+K5_nSBQ_INDAGGR+
+                     K5_nSBQ_PROSO+K5_DevVar19   #prosocial+antisocial traits
+                   +K5_involv+K5_ResilAdult+K5_ResilFriends+K5_BullVict4  #social risk/protective factors
+                   +K5_SchoolTeach+K5_SchoolClass # teacher & class bond
+                   +K5_SchoolDiffic+ #school commitment and difficulties
+                     T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03, data=read15data_paired2)
+
+summary(nbp_17_dep_adj)
+  
+#write.csv(read15data_paired2, file='D:/paired17out.csv')
+
+######AGE 20 OUTCOME ANALYSES####
+
+incomp_K7<-which(is.na(zp_read_all$K7_read))
+zp_read_out20<-zp_read_all[-incomp_K7, ]
+
+set.seed(555)
+predmatrix<-matrix(nrow=dim(zp_read_out20)[2], ncol=dim(zp_read_out20)[2], data=rep(1,dim(zp_read_out20)[2]*dim(zp_read_out20)[2]))
+predmatrix[c(1,3,4,5,6),]<-0 #remove ID variable,gender, pre-coded exposure  from imputation model
+predmatrix[,c(1,3,4,5,6)]<-0
+diag(predmatrix)<-0
+zp_mice_all<-mice(zp_read_out20, m=10, predictorMatrix=predmatrix)
+zp_read_all_imp<-complete(zp_mice_all)
+
+Age20_matches<-matchthem(K7_read~ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                         +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                           K6_GTrust+K6_SCTRL  #wellbeing markers
+                         +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                           K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                           K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                           K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                         +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                         +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                         +K6_SchoolDiffic+ #school commitment and difficulties
+                           T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03, #achievement at school
+                         datasets=zp_mice_all, approach='within', method='nearest',link='logit', tols=.10, ratio=1)
+
+bal.tab(Age20_matches)#assess quality of matching
+
+
+###anxiety age 20 outcome analysis:
+
+#no adjustment
+summary(pool(with(Age20_matches, 
+                  lm(I(K8_652+K8_653+K8_656+K8_658)~K7_read))))
+
+
+summary(pool(with(Age20_matches, 
+                  lm(I(K8_652+K8_653+K8_656+K8_658)~K7_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K6_GTrust+K6_SCTRL  #wellbeing markers
+                     +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                       K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                       K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                       K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                     +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                     +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                     +K6_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+
+
+
+###depression:
+#depression age 20:
+summary(pool(with(Age20_matches, 
+                  lm(I(K8_651+K8_654+K8_655+K8_657+K8_681+K8_683+K8_686+K8_689+K8_693)~K7_read))))
+
+
+
+summary(pool(with(Age20_matches, 
+                  lm(I(K8_651+K8_654+K8_655+K8_657+K8_681+K8_683+K8_686+K8_689+K8_693)~K7_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K6_GTrust+K6_SCTRL  #wellbeing markers
+                     +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                       K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                       K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                       K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                     +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                     +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                     +K6_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+
+
+
+#psychosis age 20
+summary(pool(with(Age20_matches, 
+                  lm(I(K8_682+K8_684+K8_687+K8_690+K8_692+K8_694)~K7_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K6_GTrust+K6_SCTRL  #wellbeing markers
+                     +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                       K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                       K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                       K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                     +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                     +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                     +K6_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+
+
+###now additionally matching on prior reading:
+
+
+Age20_matches_ext<-matchthem(K7_read~ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                         +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                           K6_GTrust+K6_SCTRL  #wellbeing markers
+                         +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                           K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                           K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                           K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                         +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                         +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                         +K6_SchoolDiffic+ #school commitment and difficulties
+                           T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03+K6_read, #achievement at school
+                         datasets=zp_mice_all, approach='within', method='nearest',link='logit', tols=.10, ratio=1)
+
+
+bal.tab(Age20_matches_ext) #assess quality of matches
+
+#anxiety:
+
+summary(pool(with(Age20_matches_ext, 
+                  lm(I(K8_652+K8_653+K8_656+K8_658)~K7_read))))
+
+
+summary(pool(with(Age20_matches_ext, 
+                  lm(I(K8_652+K8_653+K8_656+K8_658)~K7_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K6_GTrust+K6_SCTRL  #wellbeing markers
+                     +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                       K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                       K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                       K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                     +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                     +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                     +K6_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+#depression:
+
+
+summary(pool(with(Age20_matches_ext, 
+                  lm(I(K8_651+K8_654+K8_655+K8_657+K8_681+K8_683+K8_686+K8_689+K8_693)~K7_read))))
+
+
+
+summary(pool(with(Age20_matches_ext, 
+                  lm(I(K8_651+K8_654+K8_655+K8_657+K8_681+K8_683+K8_686+K8_689+K8_693)~K7_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K6_GTrust+K6_SCTRL  #wellbeing markers
+                     +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                       K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                       K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                       K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                     +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                     +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                     +K6_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+
+#psychosis:
+
+summary(pool(with(Age20_matches_ext, 
+                  lm(I(K8_682+K8_684+K8_687+K8_690+K8_692+K8_694)~K7_read))))
+
+
+summary(pool(with(Age20_matches_ext, 
+                  lm(I(K8_682+K8_684+K8_687+K8_690+K8_692+K8_694)~K7_read+ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K6_GTrust+K6_SCTRL  #wellbeing markers
+                     +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                       K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                       K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                       K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                     +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                     +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                     +K6_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03))))
+
+
+
+
+##nbp for age 20 outcome analyses####
+
+incomp_K7<-which(is.na(zp_read_all$K7_read))
+zp_read_out20<-zp_read_all[-incomp_K7, ]
+#single imputation:
+set.seed(555)
+predmatrixNBP20<-matrix(nrow=dim(zp_read_out20)[2], ncol=dim(zp_read_out20)[2], data=rep(1,dim(zp_read_out20)[2]*dim(zp_read_out20)[2]))
+predmatrixNBP20[c(1,109, 110,111,112),]<-0 #remove ID variable,gender, dichotomised exposure  from imputation model
+predmatrixNBP20[,c(1,109,110,111,112)]<-0
+diag(predmatrixNBP20)<-0
+zp_mice_allNBP20<-mice(zp_read_out20, m=1, predictorMatrix=predmatrixNBP17)
+zp_mice_20<-complete(zp_mice_allNBP20)
+#estimate propensity scores
+zp_mice_20$K7_2501<-as.factor(zp_mice_20$K7_2501)
+read17<-polr(K7_2501~ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+             +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+               K6_GTrust+K6_SCTRL  #wellbeing markers
+             +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+               K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+               K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+               K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+             +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+             +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+             +K6_SchoolDiffic+ #school commitment and difficulties
+               T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03, na.action = na.omit,
+             data=zp_mice_20, Hess=T)
+
+#extract propensity scores
+read17scores<-as.data.frame(cbind(zp_mice_20, read17$model,read17$lp))
+read17scores$K7_2501<-as.numeric(read17scores$K7_2501)
+#create distance matrix:
+eps<-1*10^-100 #specify epsilon to be very small positive number
+
+#nxn matrix of NAs:
+dist.matrix17<-matrix(rep(NA, length(read17$lp)^2), nrow=length(read17$lp), ncol=length(read17$lp))
+
+#fill the matrix with values based on formula in Lu et al. (2011) p.27:
+
+for (i in 1:length(read17scores$K7_2501))
+{for (j in 1:length(read17scores$K7_2501))
+  #if difference between dose is not zero && difference between propensity is less than or equal to 0.15 SMD
+{if ((read17scores$K7_2501[i] - read17scores$K7_2501[j])^2 != 0 && abs(read17scores$'read17$lp'[i] - read17scores$'read17$lp'[j]) <= 0.15*sqrt(var(read17scores$'read17$lp')))
+  # then assign distance based on Lu et al. (2011) equation
+{dist.matrix17[i,j] <- 10^11*( ( (read17scores$'read17$lp'[i] - read17scores$'read17$lp'[j])^2 )+eps)/( ( (read17scores$K7_2501[i] - read17scores$K7_2501[j])^2 ) )}
+  #if difference between doses is not equal to 0 && difference between propensity is >.15SMD
+  else if ((read17scores$K7_2501[i] - read17scores$K7_2501[j])^2 != 0 && abs(read17scores$'read17$lp'[i] - read17scores$'read17$lp'[j]) > 0.15*sqrt(var(read17scores$'read17$lp')))
+    #then assign value of 10^11
+  {dist.matrix17[i,j] <- (10^11)}
+  #if dose is the same
+  else if ((read17scores$K7_2501[i] - read17scores$K7_2501[j])^2 == 0)
+    #assign value of 10^11
+  {dist.matrix17[i,j] <- (10^11)}
+}
+}
+
+#check resulting matrix
+dim(dist.matrix17)# as expected
+max(dist.matrix17) #1e+11  as expected
+max(dist.matrix17[dist.matrix17!=1e+11])# 
+min(dist.matrix15)# fine
+diag(dist.matrix15)#1e+11 as expected
+#isSymmetric(dist.matrix15)#TRUE as expected
+
+row.names(dist.matrix17)<-read17scores$ID18A
+#reformat distance matrix for nbp
+dist17<-distancematrix(dist.matrix17)
+
+#check reformatted matrix
+dim(dist17)#1302 x 1302
+max(dist17)#1e+11 as expected
+max(dist17[dist17!=1e+11])# 
+diag(dist17)#0s on diagonal
+
+#perform matching
+set.seed(555)
+nbpmatches17<-nonbimatch(dist17, threshold=999999, precision = 7)
+#inspect matches:
+nbpmatches17$halves
+dim(nbpmatches17$halves) #893
+#eliminate unmatched:
+nbpmatches17_matched<-nbpmatches17$halves[nbpmatches17$halves$Distance!=999999, ]
+dim(nbpmatches17_matched) #409
+#extract the matched pairs:
+#read15pairs<-cbind(nbpmatches15_matched$Group1.ID, nbpmatches15$Group2.ID) #IDs for matched pairs
+
+
+nbpmatches17_matched$pairID<-paste("p", 1:length(nbpmatches17_matched$Group1.ID), sep="") #add in a 'pair ID' variable
+nbpmatches17_matched<-tibble(nbpmatches17_matched) #make tibble so that tidyverse can be leveraged
+nbpmatches17_matched_long<- pivot_longer(nbpmatches17_matched,                   #make into long format
+                                         cols = c(Group1.ID, Group2.ID),
+                                         names_to = "group", 
+                                         values_to = "ID")
+dim(nbpmatches17_matched_long)#818 rows
+names(zp_mice_20)[1]<-'ID'
+length(unique(zp_mice_20$ID))#1301
+# merge with dataset including treatment and outcomes:
+read17data_paired <- left_join(zp_mice_20,nbpmatches17_matched_long, by = "ID")
+dim(read17data_paired) #1301
+length(unique(read17data_paired$ID))#1301
+#create variable indicating high vs low members of pairs
+read17data_paired2 <- read17data_paired %>%
+  mutate(K7_2501 = as.numeric(K7_2501)) %>%   #K6_2501 is the treatment variable
+  group_by(pairID) %>%  #pairID is the ID number for each pair
+  mutate(first = max(K7_2501) , #creates the dose variable
+         dose = factor(ifelse(K7_2501 == first, "high", "low"))) %>%
+  #select(-c(group, K6_2501)) %>%
+  arrange(., pairID) %>%
+  ungroup()
+
+dim(read17data_paired2)#1301
+
+
+
+#check balance:
+
+#p1 = prevlanece  of highest category in high; p2= prevalence of 1s in low
+table(read17data_paired2$ADR_GenderChild, read17data_paired2$dose) #p1= 0.522673, p2= 0.484127
+table(read17data_paired2$K5.6_MigHH2, read17data_paired2$dose) #p1= 0.4558473, p2=0.4977324
+
+table(read17data_paired2$K6_N1311, read17data_paired2$dose) #p1=0.6300716, p2=0.6337868
+table(read17data_paired2$K6_N1321, read17data_paired2$dose) #p1=0.5966587, p2=0.5612245
+table(read17data_paired2$K6_N1331, read17data_paired2$dose) #p1=0.50358, 0.4920635
+table(read17data_paired2$K6_N1341, read17data_paired2$dose) #p1= 0.3484487, 0.3571429
+
+SMDs20NBP<-rbind(
+  smd_binary(p1= 0.522673, p2= 0.484127),#Gender
+  smd_binary(p1= 0.4558473, p2=0.4977324), #Migration status
+  smd(read17data_paired2$K5.6_ISEImax[read17data_paired2$dose=='low'], read17data_paired2$K5.6_ISEImax[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_nSBQ_ANXDEP[read17data_paired2$dose=='low'], read17data_paired2$K5_nSBQ_ANXDEP[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_nSBQ_ADHD[read17data_paired2$dose=='low'], read17data_paired2$K5_nSBQ_ADHD[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_GTrust[read17data_paired2$dose=='low'], read17data_paired2$K5_GTrust[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_SCTRL[read17data_paired2$dose=='low'], read17data_paired2$K5_SCTRL[read17data_paired2$dose=='high']),
+  smd_binary(p1=0.6300716, p2=0.6337868), #tobacco 
+  smd_binary(p1=0.5966587, p2=0.5612245),# alcohol
+  smd_binary(p1=0.50358, 0.4920635), # alcohol 2
+  smd_binary(0.3484487, 0.3571429), # cannabis
+  smd(read17data_paired2$K5_nSBQ_REAGGR[read17data_paired2$dose=='low'], read17data_paired2$K5_nSBQ_REAGGR[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_nSBQ_PHYSAGGR[read17data_paired2$dose=='low'], read17data_paired2$K5_nSBQ_PHYSAGGR[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_nSBQ_PROAGGR[read17data_paired2$dose=='low'], read17data_paired2$K5_nSBQ_PROAGGR[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_nSBQ_INDAGGR[read17data_paired2$dose=='low'], read17data_paired2$K5_nSBQ_INDAGGR[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_nSBQ_PROSO[read17data_paired2$dose=='low'], read17data_paired2$K5_nSBQ_PROSO[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_DevVar19[read17data_paired2$dose=='low'], read17data_paired2$K5_DevVar19[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_involv[read17data_paired2$dose=='low'], read17data_paired2$K5_involv[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_ResilAdult[read17data_paired2$dose=='low'], read17data_paired2$K5_ResilAdult[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_ResilFriends[read17data_paired2$dose=='low'], read17data_paired2$K5_ResilFriends[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_BullVict4[read17data_paired2$dose=='low'], read17data_paired2$K5_BullVict4[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_SchoolTeach[read17data_paired2$dose=='low'], read17data_paired2$K5_SchoolTeach[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_SchoolClass[read17data_paired2$dose=='low'], read17data_paired2$K5_SchoolClass[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$K5_SchoolDiffic[read17data_paired2$dose=='low'], read17data_paired2$K5_SchoolDiffic[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$T4.3_ACHI01[read17data_paired2$dose=='low'], read17data_paired2$T4.3_ACHI01[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$T4.3_ACHI02[read17data_paired2$dose=='low'], read17data_paired2$T4.3_ACHI02[read17data_paired2$dose=='high']),
+  smd(read17data_paired2$T4.3_ACHI03[read17data_paired2$dose=='low'], read17data_paired2$T4.3_ACHI03[read17data_paired2$dose=='high']))
+
+#write.csv(SMDs20NBP, file='D:/Research/Papers/z-proso/reading engagement/Results/NBP20matchSMDs.csv')
+
+
+##NBP outcome analyses###
+
+#anxiety:
+#no adjustment:
+anx_nbp<-lm(I(K8_652+K8_653+K8_656+K8_658)~dose, data=read17data_paired2)
+summary(anx_nbp)
+
+#adjusted:
+anx_nbp_adj<-lm(I(K8_652+K8_653+K8_656+K8_658)~dose+
+                  ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                  K6_GTrust+K6_SCTRL  #wellbeing markers
+                +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                  K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                  K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                  K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                +K6_SchoolDiffic+ #school commitment and difficulties
+                  T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03,
+                
+                data=read17data_paired2)
+summary(anx_nbp_adj)
+
+#depression:
+dep20_nbp<-               lm(I(K8_651+K8_654+K8_655+K8_657+K8_681+K8_683+K8_686+K8_689+K8_693)~dose,
+                             data=read17data_paired2)
+summary(dep20_nbp)
+
+dep20_nbp_adj<-lm(I(K8_651+K8_654+K8_655+K8_657+K8_681+K8_683+K8_686+K8_689+K8_693)~dose
+                  +ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                     +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                       K6_GTrust+K6_SCTRL  #wellbeing markers
+                     +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                       K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                       K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                       K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                     +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                     +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                     +K6_SchoolDiffic+ #school commitment and difficulties
+                       T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03, 
+                  data=read17data_paired2)
+summary(dep20_nbp_adj)
+
+
+#psychosis:
+#no adjustment:
+psychosis20_nbp<-lm(I(K8_682+K8_684+K8_687+K8_690+K8_692+K8_694)~dose, 
+   data=read17data_paired2)
+summary(psychosis20_nbp)
+#adjusted:
+psychosis20_nbp_adj<-lm(I(K8_682+K8_684+K8_687+K8_690+K8_692+K8_694)~dose
+                        +ADR_GenderChild+K5.6_MigHH2+K5.6_ISEImax #sociodemographic matching variables
+                        +K6_nSBQ_ANXDEP+K6_nSBQ_ADHD+     #MH/neurodevelopmental matching variables
+                          K6_GTrust+K6_SCTRL  #wellbeing markers
+                        +K6_N1311+K6_N1321+K6_N1331+K6_N1341+ #substance use
+                          K6_nSBQ_REAGGR+K6_nSBQ_PHYSAGGR+
+                          K6_nSBQ_PROAGGR+K6_nSBQ_INDAGGR+
+                          K6_nSBQ_PROSO+K6_DevVar19   #prosocial+antisocial traits
+                        +K6_involv+K6_ResilAdult+K6_ResilFriends+K6_BullVict4  #social risk/protective factors
+                        +K6_SchoolTeach+K6_SchoolClass # teacher & class bond
+                        +K6_SchoolDiffic+ #school commitment and difficulties
+                          T4.3_ACHI01+T4.3_ACHI02+T4.3_ACHI03
+                        , 
+                    data=read17data_paired2)
+summary(psychosis20_nbp_adj)
+
+
+
+
+
+###RI-CLPMS######
+
+  #depression### 
+
+  RI_CLPM_dep<-'
+    #random intercepts
+    iR=~ 1*K4_1451 + 1*K5_2501 + 1*K6_2501 + 1*K6_2501
+    iD=~ 1*K4_Dep + 1*K5_Dep + 1*K6_Dep +1*K7_Dep
+    
+    #within-person centred variables
+    
+    wR4 =~ 1*K4_1451
+    wR5 =~ 1*K5_2501
+    wR6 =~ 1*K6_2501
+    wR7 =~ 1*K7_2501
+    
+    wD4 =~ 1*K4_Dep
+    wD5 =~ 1*K5_Dep
+    wD6 =~ 1*K6_Dep
+    wD7 =~ 1*K7_Dep
+    
+    
+    
+    #K4_Dep~~0*K4_Dep
+    #K5_Dep~~0*K5_Dep
+    #K6_Dep~~0*K6_Dep
+    #K7_Dep~~0*K7_Dep
+    
+    #CLPM part
+    
+    wD7 ~ wD6 + wR6
+    wR7 ~ wD6 + wR6
+    
+    wD6 ~ wD5 + wR5
+    wR6 ~ wD5 + wR5
+    
+    wD5 ~ wD4 + wR4
+    wR5 ~ wD4 + wR4
+    
+    #(residual) covariances
+    
+    wR7 ~~ wD7
+    wR6 ~~ wD7
+    wR5 ~~ wD5
+    wR4 ~~ wD4
+    
+    #rI covariances
+    
+    iD ~~ iD
+    iR ~~ iR
+    iD ~~ iR
+    
+    #(residual) variances
+    
+    wR7 ~~ wR7
+    wR6 ~~ wR6
+    wR5 ~~ wR5
+    wR4 ~~ wR4
+    wD7 ~~ wD7
+    wD6 ~~ wD6
+    wD5 ~~ wD5
+    wD4 ~~ wD4'
+   
+
+RI_CLPM_dep.fit<-lavaan(RI_CLPM_dep, data=zp_read_all, missing='ML', meanstructure=T, int.ov.free=T)
+summary(RI_CLPM_dep.fit, fit.measures=T, standardized=T)
+
+
+
+##anxiety
+
+RI_CLPM_anx<-'
+    #random intercepts
+    iR=~ 1*K4_1451 + 1*K5_2501 + 1*K6_2501+ 1*K7_2501
+    iA=~ 1*K4_Anx + 1*K5_Anx + 1*K6_Anx +1*K7_Anx
+    
+    #within-person centred variables
+    
+    wR4 =~ 1*K4_1451
+    wR5 =~ 1*K5_2501
+    wR6 =~ 1*K6_2501
+    wR7 =~ 1*K7_2501
+    
+    wA4 =~ 1*K4_Anx
+    wA5 =~ 1*K5_Anx
+    wA6 =~ 1*K6_Anx
+    wA7 =~ 1*K7_Anx
+    
+    
+
+    #CLPM part
+    
+    wA7 ~ wA6 + wR6
+    wR7 ~ wA6 + wR6
+    
+    wA6 ~ wA5 + wR5
+    wR6 ~ wA5 + wR5
+    
+    wA5 ~ wA4 + wR4
+    wR5 ~ wA4 + wR4
+    
+    #(residual) covariances
+    
+    wR7 ~~ wA7
+    wR6 ~~ wA7
+    wR5 ~~ wA5
+    wR4 ~~ wA4
+    
+    #rI covariances
+    
+    iA ~~ iA
+    iR ~~ iR
+    iA ~~ iR
+    
+    #(residual) variances
+    
+    wR7 ~~ wR7
+    wR6 ~~ wR6
+    wR5 ~~ wR5
+    wR4 ~~ wR4
+    wA7 ~~ wA7
+    wA6 ~~ wA6
+    wA5 ~~ wA5
+    wA4 ~~ wA4'
+
+
+RI_CLPM_anx.fit<-lavaan(RI_CLPM_anx, data=zp_read_all, missing='ML', meanstructure=T, int.ov.free=T)
+summary(RI_CLPM_anx.fit, fit.measures=T, standardised=T)
+
+
+####descriptives and t-tests####
+### 
+zp_read_all_d<-zp_read_all
+attach(zp_read_all_d)
+zp_read_all_d$K4_Anx<-K4_452+K4_453+K4_456+K4_458 #crying, fearful, insomnia, worried
+zp_read_all_d$K5_Anx<-K5_652+K5_653+K5_656+K5_658 #crying, fearful, insomnia, worried
+zp_read_all_d$K6_Anx<-K6_652+K6_653+K6_656+K6_658 #crying, fearful, insomnia, worried
+zp_read_all_d$K7_Anx<-K7_652+K7_653+K7_656+K7_658 #crying, fearful, insomnia, worried
+zp_read_all_d$K8_Anx<-K8_652+K8_653+K8_656+K8_658 #crying, fearful, insomnia, worried
+
+t.test(zp_read_all_d$K8_Anx[K7_read==0],zp_read_all_d$K8_Anx[K7_read==1] )
+t.test(zp_read_all_d$K7_Anx[K6_read==0],zp_read_all_d$K7_Anx[K6_read==1] )
+t.test(zp_read_all_d$K6_Anx[K5_read==0],zp_read_all_d$K6_Anx[K5_read==1] )
+t.test(zp_read_all_d$K5_Anx[K4_read==0],zp_read_all_d$K5_Anx[K4_read==1] )
+
+##depression
+
+zp_read_all_d$K4_Dep<-K4_451+K4_454+K4_455+K4_457 #bored, unhappy, alone, sad
+zp_read_all_d$K5_Dep<-K5_651+K5_654+K5_655+K5_657 #bored, unhappy, alone, sad
+zp_read_all_d$K6_Dep<-K6_651+K6_654+K6_655+K6_657 #bored, unhappy, alone, sad
+zp_read_all_d$K7_Dep<-K7_651+K7_654+K7_655+K7_657 #bored, unhappy, alone, sad
+zp_read_all_d$K8_Dep<-K8_651+K8_654+K8_655+K8_657+K8_681+K8_683+K8_686+K8_689+K8_693
+
+t.test(zp_read_all_d$K8_Dep[K7_read==0],zp_read_all_d$K8_Dep[K7_read==1] )
+t.test(zp_read_all_d$K7_Dep[K6_read==0],zp_read_all_d$K7_Dep[K6_read==1] )
+t.test(zp_read_all_d$K6_Dep[K5_read==0],zp_read_all_d$K6_Dep[K5_read==1] )
+t.test(zp_read_all_d$K5_Dep[K4_read==0],zp_read_all_d$K5_Dep[K4_read==1] )
+
+#psychosis
+zp_read_all_d$K8_Psychosis<-K8_682+K8_684+K8_687+K8_690+K8_692+K8_694
+
+t.test(zp_read_all_d$K8_Psychosis[K7_read==0],zp_read_all_d$K8_Psychosis[K7_read==1] )
+
+detach(zp_read_all_d)
+
+describe(zp_read_all_d[c('K4_Anx','K5_Anx','K6_Anx', 'K7_Anx','K8_Anx','K4_Dep','K5_Dep','K6_Dep', 'K7_Dep','K8_Dep',
+                       'K8_Psychosis')])
+
+
+
+
+#omega reliabilities #####
+#anxiety:
+omega(zp_read_all[c('K4_452','K4_453','K4_456','K4_458')], nfactors=1)  #.69
+omega(zp_read_all[c('K5_652','K5_653','K5_656','K5_658')], nfactors=1)  #.72
+omega(zp_read_all[c('K6_652','K6_653','K6_656','K6_658')], nfactors=1)  #.74
+omega(zp_read_all[c('K7_652','K7_653','K7_656','K7_658')], nfactors=1)  #.77
+
+#depression:
+omega(zp_read_all[c('K4_451', 'K4_454', 'K4_455','K4_457')], nfactors=1)#.65
+omega(zp_read_all[c('K5_651', 'K5_654', 'K5_655','K5_657')], nfactors=1)#.74
+omega(zp_read_all[c('K6_651', 'K6_654', 'K6_655','K6_657')], nfactors=1)#.74
+omega(zp_read_all[c('K7_651', 'K7_654', 'K7_655','K7_657')], nfactors=1)#.77
+
+#anxiety, depression, psychosis age 20
+omega(zp_read_K8[c('K8_652','K8_653','K8_656','K8_658')], nfactors=1)  
+omega(zp_read_K8[c('K8_651','K8_654','K8_655','K8_657','K8_681','K8_683','K8_686','K8_689','K8_693')], nfactors=1)  
+omega(zp_read_K8[c('K8_682','K8_684','K8_687','K8_690','K8_692','K8_694')], nfactors=1)  
+
+
+#dichotomise reading, 0= <less than once a week, 1= once a week or more
+zp_read_all$K4_read<-recode(zp_read_all$K4_1451, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+zp_read_all$K5_read<-recode(zp_read_all$K5_2501, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+zp_read_all$K6_read<-recode(zp_read_all$K6_2501, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+zp_read_all$K7_read<-recode(zp_read_all$K7_2501, 'c(1,2)=0; c(3,4,5)=1; else=NA')
+
+
+
+#########SCRAP CODE##########
+
+
+read15data<-subset(zp_read_all, select=c('ID18A','K5_nSBQ_PROSO','K5_nSBQ_ANXDEP','K5_nSBQ_OPAGGR','K5_nSBQ_ADHD',
+                                         'K5_nSBQ_REAGGR','K5_nSBQ_PHYSAGGR',
+                                         'K5_nSBQ_PROAGGR','K5_nSBQ_AGGR','K5_involv',
+                                         'K5_ResilAdult','K5_ResilFriends','K5_BullVict4','K5_GTrust','K5_1331',
+                                         'K5_1321','K5_1311','K5_1341','K5_DevVar19','K5_SCTRL','K5_SchoolTeach',
+                                         'K5_SchoolClass','K5_SchoolDiffic',
+                                         'K5_SchoolFutur','K5_SchoolCommit4','K5_1881','K5.6_MigHH2','K5.6_ISEImax',
+                                         'T4.3_ACHI01','T4.3_ACHI02',
+                                         'T4.3_ACHI03'))
+read15data_cc<-na.omit(read15data)#complete case
+dist15<-gendistance(read15data_cc, idcol='ID18A')##creates a distance matrix based on Mahalanobis distance
+dist15$dist #extracts distance matrix
+dist15rf<-distancematrix(dist15$dist) 
+nbm15<-nonbimatch(dist15rf)
+
+
+
+for(i in 1:length(read15scores$lp))
+{for (j in 1:length(read15$lp))
+{if((read15$lp[i]-read15$lp[j])^2 !=0 && abs(read15$lp[i]-read15$lp[j])<= 0.15*sqrt(var(read15$lp)))
+{dist.matrix15[i,j] <- 10^6*( ( (read15$lp[i] - read15$lp[j])^2 )+eps)/( ( (read15$lp[i] - read15$lp[j])^2 ) )}
+  else if ((read15$lp[i]-read15$lp[j])^2 !=0 && abs(read15$lp[i]-read15$lp[j])> 0.15*sqrt(var(read15$lp)))
+  {dist.matrix15[i,j]<-10^6}
+  else if ((read15$lp[i] - read15$lp[j])^2 == 0)
+  {dist.matrix15[i,j] <- (10^6)}
+}
+}

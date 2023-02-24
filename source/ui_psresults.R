@@ -9,7 +9,7 @@ psres_page <-
           pickerInput(
             inputId = "psresult_metric", 
             label = "What would you like to see?", 
-            choices = c("AUC", "...", "...")
+            choices = c("Covariate Balance Plot","Covariate Balance Table","AUC", "...", "...")
           ),
           
           br(),
@@ -19,7 +19,9 @@ psres_page <-
           )
         ),
         mainPanel(
-          p("plots and metrics here")
+          h3("explanations, how to interpret, etc"),
+          p("..."),br(),p("..."),
+          plotOutput("balplot",width="500px")
         ) 
       )
       

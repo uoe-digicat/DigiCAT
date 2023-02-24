@@ -1,6 +1,7 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
+library(bsplus)
 
 # source individual pages
 source("source/ui_home.R")

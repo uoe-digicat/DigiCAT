@@ -20,7 +20,8 @@ cfmethod_page <-
           )
         ),
         mainPanel(
-          p("more options & guidance")
+          h3("explanations, more options & guidance"),
+          p("..."),br(),p("..."),br(),p("...")
         ) 
       )
       

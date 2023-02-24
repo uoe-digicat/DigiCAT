@@ -1,0 +1,28 @@
+psres_page <- 
+  div(id="psresults",
+      sidebarLayout(
+        sidebarPanel(
+          
+          tags$h2(style="text-align: center; ","Propensity Model Results & Diagnostics"),
+          br(),
+          
+          pickerInput(
+            inputId = "psresult_metric", 
+            label = "What would you like to see?", 
+            choices = c("Covariate Balance Plot","Covariate Balance Table","AUC", "...", "...")
+          ),
+          
+          br(),
+          div(style="text-align:right", 
+            actionBttn("prevBtn_4", "Prev", color="success"),
+            actionBttn("nextBtn_4", "Next", color="success")
+          )
+        ),
+        mainPanel(
+          h3("explanations, how to interpret, etc"),
+          p("..."),br(),p("..."),
+          plotOutput("balplot",width="500px")
+        ) 
+      )
+      
+  )

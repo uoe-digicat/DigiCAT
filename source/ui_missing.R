@@ -19,7 +19,7 @@ missing_page <-
           )
         ),
         mainPanel(
-          p("options & guidance")
+          htmlOutput("missing_explanation")
         ) 
       )
       

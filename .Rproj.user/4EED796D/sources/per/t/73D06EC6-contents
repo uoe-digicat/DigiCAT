@@ -1,7 +1,14 @@
 library(shiny)
 library(DT)
+library(tidyverse)
+library(designmatch);library(MatchIt); library(mice); library(MatchThem);library(cobalt)
+
+load("data/zp_example.RData")
 
 server <- function(input, output, session) {
+  
+  
+  
   
   ###
   # NAVIGATION ----
@@ -58,7 +65,7 @@ server <- function(input, output, session) {
     inputData$rawdata <- read.csv(input$file1$datapath)
   })
   observeEvent(input$Btn_sampledata, {
-    inputData$rawdata <- read.csv("data/zp_synth.csv")
+    inputData$rawdata <- read.csv("data/zp_eg.csv")
   })
   
   observe({
@@ -68,15 +75,39 @@ server <- function(input, output, session) {
       updatePickerInput(session, "matchvars", choices = names(isolate(inputData$rawdata)))
       updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata)))
     }
+    if(input$Btn_sampledata){
+      
+      updatePickerInput(session, "outcome", selected="Anxiety_age17")
+      updatePickerInput(session, "treatment", selected="Reading_age15")
+      updatePickerInput(session, "matchvars", selected=names(read.csv("data/zp_eg.csv"))[-c(2:3)])
+      updatePickerInput(session, "covars", choices = names(read.csv("data/zp_eg.csv"))[-c(2:3)])
+      updateCheckboxGroupInput(session, "missingmethod", selected="Multiple imputation")
+      updateCheckboxGroupInput(session, "psm", selected="Regression")
+      
+    }
   })
+  
+  
+  output$balplot <- renderPlot({
+    cobalt::bal.plot(Age17_matches)
+  })
+  output$finresult <- renderText({
+    broom::tidy(pool(with(Age17_matches, lm(Anxiety_age17~Reading_age15))))[,1:5] %>%
+      mutate(across(c(estimate:p.value), ~round(.,3))) %>%
+      knitr::kable(.,format="html")
+  })
+  
+  
+  
   
   output$contents <- DT::renderDataTable({
-    DT::datatable(inputData$rawdata)     
+    DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))     
   })
   
+
   
   # Source server side 
-  # source("source/server_missing",local=T)
+  source("source/server_missing.R",local=T)
   # source("source/server_missing",local=T)
   # source("source/server_missing",local=T)
   
