@@ -3,7 +3,7 @@
     "path": "C:/Users/jking34/Desktop/DigiCAT/server.R",
     "project_path": "server.R",
     "type": "r_source",
-    "hash": "843357205",
+    "hash": "2357675087",
     "contents": "",
     "dirty": false,
     "created": 1676555925918.0,
@@ -12,17 +12,17 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "3,0",
-        "scrollLine": "0",
+        "cursorPosition": "41,95",
+        "scrollLine": "35",
         "docOutlineVisible": "1",
         "docOutlineSize": "143"
     },
     "folds": "",
-    "lastKnownWriteTime": 1677163981,
+    "lastKnownWriteTime": 1677230457,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1677163981275,
+    "last_content_update": 1677230457454,
     "read_only": false,
     "read_only_alternatives": []
 }

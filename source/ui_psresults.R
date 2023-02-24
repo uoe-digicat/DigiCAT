@@ -20,8 +20,7 @@ psres_page <-
         ),
         mainPanel(
           h3("explanations, how to interpret, etc"),
-          p("..."),br(),p("..."),
-          plotOutput("balplot",width="500px")
+          p("..."),br(),p("...")
         ) 
       )
       

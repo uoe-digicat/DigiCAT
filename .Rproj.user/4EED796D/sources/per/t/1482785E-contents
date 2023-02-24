@@ -19,7 +19,8 @@ missing_page <-
           )
         ),
         mainPanel(
-          htmlOutput("missing_explanation")
+          h3("explanations, more options & guidance"),
+          p("..."),br(),p("..."),br(),p("...")
         ) 
       )
       

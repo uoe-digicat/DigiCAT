@@ -1,9 +1,9 @@
 library(shiny)
 library(DT)
 library(tidyverse)
-library(designmatch);library(MatchIt); library(mice); library(MatchThem);library(cobalt)
 
 load("data/zp_example.RData")
+
 
 server <- function(input, output, session) {
   
@@ -39,7 +39,7 @@ server <- function(input, output, session) {
   })
   
   navPage <- function(direction) {
-    if("None" %in% input$psm & (tab$page == 4 & direction>0)|(tab$page == 6 & direction<0)){ 
+    if("None" %in% input$psm & ((tab$page == 4 & direction>0)|(tab$page == 6 & direction<0))){ 
       tab$page <- tab$page + 2*direction 
     } else {
       tab$page <- tab$page + direction
@@ -49,10 +49,12 @@ server <- function(input, output, session) {
   observeEvent(input$prevBtn_1 |  input$prevBtn_2 |  input$prevBtn_3 | input$prevBtn_4 | input$prevBtn_5, {
     navPage(-1)
     updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
+    cat(tab$page)
   })
   observeEvent(input$start | input$nextBtn_1 |  input$nextBtn_2 |  input$nextBtn_3 | input$nextBtn_4 | input$nextBtn_5, {
     navPage(1)
     updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
+    cat(tab$page)
   })
   
   ####
@@ -81,21 +83,12 @@ server <- function(input, output, session) {
       updatePickerInput(session, "treatment", selected="Reading_age15")
       updatePickerInput(session, "matchvars", selected=names(read.csv("data/zp_eg.csv"))[-c(2:3)])
       updatePickerInput(session, "covars", choices = names(read.csv("data/zp_eg.csv"))[-c(2:3)])
-      updateCheckboxGroupInput(session, "missingmethod", selected="Multiple imputation")
-      updateCheckboxGroupInput(session, "psm", selected="Regression")
       
     }
   })
   
   
-  output$balplot <- renderPlot({
-    cobalt::bal.plot(Age17_matches)
-  })
-  output$finresult <- renderText({
-    broom::tidy(pool(with(Age17_matches, lm(Anxiety_age17~Reading_age15))))[,1:5] %>%
-      mutate(across(c(estimate:p.value), ~round(.,3))) %>%
-      knitr::kable(.,format="html")
-  })
+  
   
   
   
@@ -107,9 +100,8 @@ server <- function(input, output, session) {
 
   
   # Source server side 
-  source("source/server_missing.R",local=T)
-  # source("source/server_missing",local=T)
-  # source("source/server_missing",local=T)
+  # source("source/server_missing.R",local=T)
+  
   
   
 }
