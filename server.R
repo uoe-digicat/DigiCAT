@@ -134,25 +134,44 @@ server <- function(input, output, session) {
     ## Save data source
     inputData$source <- "own"
     
+    ## Reset inputs that changes data 
+    reset("recode_NA", asis = TRUE)
+    suppressWarnings(rm(categorical_variables, warn))
+    
+    ## Load in own data
     inputData$rawdata <- read.csv(input$file1$datapath)
-  })
-  observeEvent(input$Btn_sampledata, {
-    inputData$rawdata <- read.csv("data/zp_eg.csv")
-  })
-  
-  observe({
-    if(!is.null(inputData$rawdata)){
-      updatePickerInput(session, "outcome", choices = names(isolate(inputData$rawdata)))
-      updatePickerInput(session, "treatment", choices = names(isolate(inputData$rawdata)))
-      updatePickerInput(session, "matchvars", choices = names(isolate(inputData$rawdata)))
-      updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata)))
+    
+    ## Check data upon upload
+    initial_data_check_ls <- initial_data_check(inputData$rawdata)
+    
+    ## If data is too small or contains non numeric values, give error message and delete
+    if(initial_data_check_ls$too_small){
+      feedbackDanger(inputId = "file1",
+                     show=initial_data_check_ls$too_small,
+                     text = "Data too small! (<10 rows)")
     }
-    if(input$Btn_sampledata){
+    
+    if(initial_data_check_ls$some_nonnumeric){
+      feedbackDanger(inputId = "file1",
+                     show=initial_data_check_ls$some_nonnumeric,
+                     text = "Non numeric values detected!")
+    }
+    
+    if(any(c(initial_data_check_ls$too_small, initial_data_check_ls$some_nonnumeric))){
+      ## Remove uploaded data and list with initial data checks
+      inputData$rawdata <- NULL
+      initial_data_check_ls <- list(some_nonnumeric = FALSE,
+                                    impossible_value = FALSE,
+                                    too_small = FALSE)
+    }
+    
+    
+    ## If data contains contains "-999" give warning and option to recode as NA
+    if(initial_data_check_ls$impossible_value == TRUE){
       
-      updatePickerInput(session, "outcome", selected="Anxiety_age17")
-      updatePickerInput(session, "treatment", selected="Reading_age15")
-      updatePickerInput(session, "matchvars", selected=names(read.csv("data/zp_eg.csv"))[-c(2:3)])
-      updatePickerInput(session, "covars", choices = names(read.csv("data/zp_eg.csv"))[-c(2:3)])
+      showModal(modalDialog(
+        title = 'Warning: "-999" value detected in data',
+        'Would you like to recode "-999" as "NA" or continue without alteration?',
         size = "l",
         footer=tagList(
           actionButton('recode_NA', 'Recode as "NA"'),
