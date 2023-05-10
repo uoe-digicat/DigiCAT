@@ -5,7 +5,7 @@ library(arsenal)
 
 get_descriptives <- function(df, treatment, outcome, matchvars, categorical_vars){
   
-  ## Renametreatment(x) and outcome(y) vars for plotting
+  ## Rename treatment(x) and outcome(y) vars for plotting
   df_xy <- data.frame(x=df[[input$treatment]],y=df[[input$outcome]])
   
   ## If treatment variable is categorical, create boxplots
@@ -53,7 +53,7 @@ get_descriptives <- function(df, treatment, outcome, matchvars, categorical_vars
 }
 
 
-input <- list(treatment = "hp",
+input <- list(treatment = "cyl",
               outcome = "disp",
               matchvars = c("drat", "wt", "qsec", "vs", "am", "gear", "carb"),
               categorical_vars = c("cyl", "am", "gear", "carb"))
