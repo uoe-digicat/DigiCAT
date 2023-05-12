@@ -5,12 +5,13 @@ library(shinyalert)
 library(shinyvalidate)
 library(shinyFeedback)
 
-
 load("data/zp_example.RData")
 
 ## Source functions to perform data checks and categorical variable identification
 source("source/func/initial_data_check.R")
 source("source/func/get_categorical_variables.R")
+source("source/func/get_descriptives.R")
+source("source/func/reset_upload_page.R")
 source("source/func/check_selected_variables.R")
 
 
@@ -55,43 +56,15 @@ server <- function(input, output, session) {
   observeEvent(input$nextBtn_1, {
     
     ## Remove error message if any present from previous upload
-    feedbackDanger("file1", show = FALSE)
-    feedbackDanger("outcome", show = FALSE)
-    feedbackDanger("treatment", show = FALSE)
-    feedbackDanger("matchvars", show = FALSE)
+    reset_upload_page(hide_descriptives = FALSE)
+
+    ## Check inputed variables. If there is an issue give informative error message, otherwise, continue
+    ## First check if data has been uploaded
+    if (!isTruthy(inputData$rawdata)) { ## If there is no data give informative error
+      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data and pick variables")
+    }else{check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)}
     
-    ## Create variables to track issues with input
-    required_input_missing <- FALSE
-    required_input_missmatched <- FALSE
     
-    ## Check if all required input has been specified, if not give error
-    if (is.null(input$outcome) | is.null(input$treatment) | is.null(input$matchvars)){
-      
-      required_input_missing <- TRUE
-      if (is.null(input$outcome)){feedbackDanger("outcome", show = TRUE, "Please select outcome before proceeding")}
-      if (is.null(input$treatment)){feedbackDanger("treatment", show = TRUE, "Please select treatment before proceeding")}
-      if (is.null(input$matchvars)){feedbackDanger("matchvars", show = TRUE, "Please select matching variables before proceeding")}
-    }
-    
-    ## If all required input selected, check if there are input conflicts
-    if (!required_input_missing){
-      if (input$outcome == input$treatment | input$outcome %in% input$matchvars | input$treatment %in% input$matchvars){
-        
-        required_input_missmatched <- TRUE
-        if (input$outcome == input$treatment){feedbackDanger("treatment", show = TRUE, "Outcome and treatment cannot be the same")}
-        if (input$outcome %in% input$matchvars){feedbackDanger("matchvars", show = TRUE, "Outcome and matching variables cannot be the same")}
-        if (input$treatment %in% input$matchvars){feedbackDanger("matchvars", show = TRUE, "Treatment and matching variables cannot be the same")}
-      }
-    }
-    
-    ## If there are no input issues, proceed
-    if(!required_input_missmatched & !required_input_missing){
-      
-      navPage(1)
-      updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
-      cat(tab$page)
-      
-    }
   })
   
   observeEvent(input$prevBtn_1 |  input$prevBtn_2 |  input$prevBtn_3 | input$prevBtn_4 | input$prevBtn_5, {
@@ -107,29 +80,32 @@ server <- function(input, output, session) {
   })
   
   ## If input variable(s) is changed, remove any warnings that may be present for variable selection
-  observeEvent(c(input$outcome, input$treatment, input$matchvars), {
-    feedbackDanger("outcome", show = FALSE)
-    feedbackDanger("treatment", show = FALSE)
-    feedbackDanger("matchvars", show = FALSE)
+  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
+    reset_upload_page(reset_errors = TRUE)
   })
   
   ####
   # DATA UPLOAD ----
   ####
   
+  ## Hide descriptives tab
+  hideTab(inputId = "Tab_data", target = "descriptives")
+  
   ## Save data as a reactive variable
   inputData <- reactiveValues()
   inputData$rawdata <- NULL
+  inputData$descriptives <- NULL
   inputData$source <- NULL
   
   ## Update app when file uploaded
   observeEvent(input$file1, {
     
-    ## Remove error message if any present from previous upload
-    feedbackDanger("file1", show = FALSE)
-    feedbackDanger("outcome", show = FALSE)
-    feedbackDanger("treatment", show = FALSE)
-    feedbackDanger("matchvars", show = FALSE)
+    ## Reset any input errors
+    reset_upload_page(reset_errors = TRUE)
+    
+    ## Go back to raw data view and delete data descriptive
+    updateTabsetPanel(session, "Tab_data",selected = "raw_data")
+    inputData$descriptives <- NULL
     
     ## Save data source
     inputData$source <- "own"
@@ -199,7 +175,16 @@ server <- function(input, output, session) {
   ## When categorical variable selection changed, update what can be selected as the outcome variable
   observeEvent(input$categorical_vars, {
     
-    if(inputData$source == "sample"){}else{
+    ## Reset any input errors and hide descriptives (these depend on categorical var selection)
+    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
+    
+    ## Go back to raw data view and delete data descriptive
+    updateTabsetPanel(session, "Tab_data",selected = "raw_data")
+    inputData$descriptives <- NULL
+    
+    if(inputData$source == "sample"){
+      
+    }else{
       ## Get names of continuous variables
       continuous_variables <- names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% input$categorical_vars]
       ## Only allow selection from continuous variables
@@ -209,42 +194,50 @@ server <- function(input, output, session) {
       updatePickerInput(session, "matchvars", selected=character(0))
       updatePickerInput(session, "covars", selected=character(0))
     }
-  })
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
   
   
   ## Update app when sample data selected
   observeEvent(input$Btn_sampledata, {
     
+    ## Reset any input errors and hide descriptives tab
+    reset_upload_page(reset_errors = TRUE)
+
     ## Save data source
     inputData$source <- "sample"
-    
-    ## Remove error message if any present from previous upload
-    feedbackDanger("file1", show = FALSE)
-    feedbackDanger("outcome", show = FALSE)
-    feedbackDanger("treatment", show = FALSE)
-    feedbackDanger("matchvars", show = FALSE)
     
     ## If "sample data" is selected, upload sample data
     inputData$rawdata <- read.csv("data/zp_eg.csv")
     
     ## Update variable selection
-    updatePickerInput(session, "categorical_vars", choices = c("Gender", "Reading_age15", "SubstanceUse1_age13", 
-                                                               "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), 
-                      selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", 
-                                 "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"))
-    updatePickerInput(session, "outcome", choices = "Anxiety_age17", selected="Anxiety_age17")
-    updatePickerInput(session, "treatment", choices = "Reading_age15", selected="Reading_age15")
-    updatePickerInput(session, "matchvars", choices = names(isolate(inputData$rawdata))[-c(2:3)], selected=names(isolate(inputData$rawdata))[-c(2:3)])
-    updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata))[-c(2:3)])
+    updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(inputData$rawdata)))
+    updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13")])
+    updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(inputData$rawdata)))
+    updatePickerInput(session, "matchvars", selected=names(isolate(inputData$rawdata))[-c(2:3)], choices = names(isolate(inputData$rawdata)))
+    updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata)))
   })
   
+  ## Generate data descriptive and switch to descriptive tab
+  observeEvent(input$Btn_descriptives, {
+    
+    ## Check if data has been uploaded
+    if (isTruthy(inputData$rawdata)) { ## `If so, generate descriptives and move to descriptives tab
+      ## Get descriptive
+      inputData$descriptives <- get_description(inputData$rawdata, input$categorical_vars)
+      ## Show and switch to descriptive tab
+      showTab(inputId = "Tab_data", target = "descriptives", select = FALSE, session = getDefaultReactiveDomain())
+      updateTabsetPanel(session, "Tab_data", selected = "descriptives")
+      }else{  ## Otherwise, give error
+        feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data first")}
+  }) 
+  
+  ## Render outputs
   output$contents <- DT::renderDataTable({
     DT::datatable(inputData$rawdata, options = list(scrollX = TRUE), style = "bootstrap", selection = "none")
   })
-  
-  
-  # Source server side 
-  # source("source/server_missing.R",local=T)
-  
-  
+  output$data_description <- renderUI(inputData$descriptives)
 }
+
+
+
+
