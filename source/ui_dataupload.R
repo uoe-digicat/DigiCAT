@@ -1,3 +1,5 @@
+library(shinyFeedback)
+
 dataupload_page <- 
   div(useShinyFeedback(), # include shinyFeedback
       sidebarLayout(
@@ -53,15 +55,20 @@ dataupload_page <-
                 bs_embed_popover(title = "covariates are characteristics (excluding the treatment) of the participants, that may also affect the outcome", placement = "right")
             ),
           br(),
+         
+         div(style="float:left", 
+             actionBttn("Btn_descriptives", "Get Descriptives", color="danger", style = "simple", size="sm")),
+         
           div(style="text-align:right", 
-            actionBttn("prevBtn_1", "Prev", color="danger", style = "simple"),
-            actionBttn("nextBtn_1", "Next", color="danger", style = "simple")
+            actionBttn("prevBtn_1", "Prev", color="danger", style = "simple", size="sm"),
+            actionBttn("nextBtn_1", "Next", color="danger", style = "simple", size="sm")
           )
         ),
         mainPanel(
-          DT::dataTableOutput('contents', width=750)
+          tabsetPanel(id = "Tab_data",
+          tabPanel(title = "Data", value = "raw_data", br(), DT::dataTableOutput('contents', width=750)),
+          tabPanel(title = "Variable Description", value = "descriptives", htmlOutput('data_description')))
         ) 
       )
-      
   )
 
