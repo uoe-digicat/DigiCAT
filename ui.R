@@ -1,13 +1,21 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
+library(shinydashboard)
 library(bsplus)
+library(DT)
+library(tidyverse)
+library(MatchIt)
+library(cobalt)
+library(optmatch)
+library(marginaleffects)
+library(performance)
+library(see)
+library(patchwork)
 
 # source individual pages
 source("source/ui_home.R")
 source("source/ui_dataupload.R")
-source("source/ui_missing.R")
-source("source/ui_psmodel.R")
 source("source/ui_psresults.R")
 source("source/ui_cfmethod.R")
 source("source/ui_results.R")
@@ -41,17 +49,11 @@ ui <- fluidPage(
              tabPanel("Data Upload", value="dataupload", icon = icon('table'),
                       dataupload_page
              ),
-             tabPanel("Missingness Options", value="missing", icon = icon('table'),
-                      missing_page
-             ),                    
-             tabPanel("Choose Propensity model", value="psmodel", icon = icon('tree'),
-                      psmodel_page
+             tabPanel("Choose Things", value="method", icon = icon('certificate',lib="glyphicon"),
+                      method_page
              ),
              tabPanel("Propensity Model Results", value="psresults", icon = icon('tree'),
                       psres_page
-             ),
-             tabPanel("Choose Counterfactual Method", value="cfmethod", icon = icon('certificate',lib="glyphicon"),
-                      cfmethod_page
              ),
              tabPanel("Get Results", value="results", icon = icon('save',lib="glyphicon"),
                       results_page

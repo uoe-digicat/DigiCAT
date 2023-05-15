@@ -11,6 +11,6 @@ home_page <-
       
       br(),
       actionBttn("tutorial",label="Tutorial"),
-      actionBttn("start",label="Get Started!", color="success"),
+      actionBttn("start_btn",label="Get Started!", color="success"),
       HTML("</center>")
   )
