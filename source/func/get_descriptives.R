@@ -1,5 +1,3 @@
-library(ggplot2)
-library(gt)
 
 ## Function to create table of descriptive statistics of data
 #' @param df Dataframe containing variables for analysis
@@ -7,6 +5,8 @@ library(gt)
 
 get_description <- function(df, categorical_vars){
   
+  require(gt)
+  require(ggplot2)
   
   ## Split df into continuous and catgorcial variables
   df_cat <- as.data.frame(df[,names(df) %in% categorical_vars])

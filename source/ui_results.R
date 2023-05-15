@@ -1,16 +1,21 @@
 results_page <- 
   div(id="results",
-      HTML("<center>"),
-      
-      # we could try and render some generic summary text based on the inputs chosen. 
-      # can sometimes be a bit messy, but definitely possible
-      p("Add summary text here"),
-      br(),
-      actionBttn(inputId='printres', label= 'Print results', color = "success"),
-      actionBttn(inputId='emailres', label= 'Email results', color = "success"),
-      br(),
-      p(""),
-      br(),
-      actionBttn(inputId='codedownload', label= 'Show me the code'),
-      HTML("</center>")
+      sidebarLayout(
+        sidebarPanel(
+          tags$h2(style="text-align: center; ","Outcome Model"),
+          br(),
+          HTML("<center>"),
+          actionBttn(inputId='resshow_btn', label= 'Go!', color = "success"),
+          br(),br(),
+          actionBttn(inputId='resprint_btn', label= 'Print results', color = "default"),
+          actionBttn(inputId='resemail_btn', label= 'Email results', color = "default")
+        ),
+        mainPanel(
+          tabsetPanel(
+            tabPanel("residual checks", plotOutput("outcome_resid")),
+            tabPanel("plot", plotOutput("outcome_plot")),
+            tabPanel("table", tableOutput("outcome_table"))
+          )
+        )
+      )
   )

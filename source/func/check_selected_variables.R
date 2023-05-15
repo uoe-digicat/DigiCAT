@@ -7,7 +7,8 @@
 
 
 check_selected_variables <- function(outcome, treatment, matchvars, covars){
-    
+  
+  
   ## Create variables to track issues with input
   required_input_missing <- FALSE
   required_input_missmatched <- FALSE
@@ -39,18 +40,12 @@ check_selected_variables <- function(outcome, treatment, matchvars, covars){
         feedbackDanger("outcome", show = TRUE, "Outcome and covariates cannot be the same")
         feedbackDanger("covars", show = TRUE, "Outcome and covariates cannot be the same")}
       if (treatment %in% covars){
-        feedbackDanger("treatment", show = TRUE, "Treatment and covariatescannot be the same")
+        feedbackDanger("treatment", show = TRUE, "Treatment and covariates cannot be the same")
         feedbackDanger("covars", show = TRUE, "Treatment and covariates cannot be the same")}
     }
   }
   
-  ## If there are no input issues, proceed
-  if(!required_input_missmatched & !required_input_missing){
-    
-    navPage(1)
-    updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
-    cat(tab$page)
-    
-  }
+  ## Return information on missing and mismatched variables to decide whether or not to continue onto next page 
+  return(list("required_input_missmatched" = required_input_missmatched, "required_input_missing" = required_input_missing))
 }
 

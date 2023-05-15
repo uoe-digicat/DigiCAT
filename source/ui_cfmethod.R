@@ -1,28 +1,40 @@
-cfmethod_page <- 
-  div(id="cfmethod",
+method_page <- 
+  div(id="method",
+      tags$h2(style="text-align: center; ","CHOICES"),
       
-      # side bar page, sidebar for choosing method, main panel includes further options plus guidance. 
-      sidebarLayout(
-        sidebarPanel(
-          tags$h2(style="text-align: center; ","Counterfactual Method"),
-          br(),
-          
-          awesomeCheckboxGroup(
-            inputId="counterfactual", 
-            label='Select your counterfactual method',
-            choices=c('1:1 PSM','k:1 PSM', 'CEM', 'IPTW','Non-bipartite optimal matching')
+      fluidRow(
+          column(title="Missingness", width=4,
+                 awesomeRadio(
+                   inputId="missingmethod", 
+                   label='How would you like to address missingness in your data?',
+                   choices=c('Method default','Weights','Multiple imputation','Full information maximum likelihood')
+                 )
           ),
-          
-          br(),
-          div(style="text-align:right", 
-            actionBttn("prevBtn_5", "Prev", color="success"),
-            actionBttn("nextBtn_5", "Next", color="success")
+          column(title="Method", width=4,
+              awesomeRadio(
+                inputId="counterfactual", 
+                label='Select your counterfactual method',
+                choices=c('1:1 PSM','K:1 PSM', 'CEM', 'IPTW','Non-bipartite optimal matching')
+              ),
+              switchInput(
+                inputId = "drobust",
+                label = "Doubly Robust?", 
+                value = TRUE
+              )
+          ),
+          column(title="Propensity Score Model", width=4,
+                 awesomeRadio(
+                   inputId="psm", 
+                   label='Select your propensity model',
+                   choices=c('None','Regression','CART', 'Random forest','Gradient boosted model')
+                 )
           )
         ),
-        mainPanel(
-          h3("explanations, more options & guidance"),
-          p("..."),br(),p("..."),br(),p("...")
-        ) 
+      fluidRow(
+        column(12, align="center",
+               actionBttn("prevCM_btn", "Prev", color="success"),
+               actionBttn("nextCM_btn", "BUILD!", color="success")
+        )
       )
       
   )

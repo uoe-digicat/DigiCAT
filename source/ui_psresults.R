@@ -14,13 +14,16 @@ psres_page <-
           
           br(),
           div(style="text-align:right", 
-            actionBttn("prevBtn_4", "Prev", color="success"),
-            actionBttn("nextBtn_4", "Next", color="success")
+            actionBttn("prevPSR_btn", "Prev", color="success"),
+            actionBttn("nextPSR_btn", "Next", color="success")
           )
         ),
         mainPanel(
-          h3("explanations, how to interpret, etc"),
-          p("..."),br(),p("...")
+          tabsetPanel(
+            tabPanel("baltab",verbatimTextOutput("PSmodel_baltab")),
+            tabPanel("balplot",plotOutput("PSmodel_balplot")),
+            tabPanel("loveplot",plotOutput("PSmodel_loveplot"))
+          )
         ) 
       )
       
