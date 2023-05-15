@@ -2,9 +2,7 @@
 tab.names <- c(
   "home",
   "dataupload",
-  "missing",
-  "psmodel",
+  "method",
   "psresults",
-  "cfmethod",
   "results"
 )

@@ -1,10 +1,3 @@
-library(shiny)
-library(DT)
-library(tidyverse)
-library(shinyalert)
-library(shinyvalidate)
-library(shinyFeedback)
-
 load("data/zp_example.RData")
 
 ## Source functions to perform data checks and categorical variable identification
@@ -14,69 +7,86 @@ source("source/func/get_descriptives.R")
 source("source/func/reset_upload_page.R")
 source("source/func/check_selected_variables.R")
 
-
 server <- function(input, output, session) {
   
   ###
   # NAVIGATION ----
   ###
-  tab <- reactiveValues(page = 1, min = 1, max = 7)
+  tab <- reactiveValues(page = 1, min = 1, max = 5)
   
   observe({
-    toggleState(id = "prevBtn_1", condition = tab$page > tab$min)
-    toggleState(id = "prevBtn_2", condition = tab$page > tab$min)
-    toggleState(id = "prevBtn_3", condition = tab$page > tab$min)
-    toggleState(id = "prevBtn_4", condition = tab$page > tab$min)
-    toggleState(id = "prevBtn_5", condition = tab$page > tab$min)
-    toggleState(id = "nextBtn_1", condition = tab$page < tab$max)
-    toggleState(id = "nextBtn_2", condition = tab$page < tab$max)
-    toggleState(id = "nextBtn_3", condition = tab$page < tab$max)
-    toggleState(id = "nextBtn_4", condition = tab$page < tab$max)
-    toggleState(id = "nextBtn_5", condition = tab$page < tab$max)
+    toggleState(id = "prevDU_btn", condition = tab$page > tab$min)
+    toggleState(id = "prevCM_btn", condition = tab$page > tab$min)
+    toggleState(id = "prevPSR_btn", condition = tab$page > tab$min)
+    toggleState(id = "nextDU_btn", condition = tab$page < tab$max)
+    toggleState(id = "nextCM_btn", condition = tab$page < tab$max)
+    toggleState(id = "nextPSR_btn", condition = tab$page < tab$max)
   })
   
   observe({
     if (input$mynavlist == "home") tab$page = 1
     if (input$mynavlist == "dataupload") tab$page = 2
-    if (input$mynavlist == "missing") tab$page = 3
-    if (input$mynavlist == "psmodel") tab$page = 4
-    if (input$mynavlist == "psresults") tab$page = 5
-    if (input$mynavlist == "cfmethod") tab$page = 6
-    if (input$mynavlist == "results") tab$page = 7
+    if (input$mynavlist == "method") tab$page = 3
+    if (input$mynavlist == "psresults") tab$page = 4
+    if (input$mynavlist == "results") tab$page = 5
   })
   
   navPage <- function(direction) {
-    if("None" %in% input$psm & ((tab$page == 4 & direction>0)|(tab$page == 6 & direction<0))){ 
-      tab$page <- tab$page + 2*direction 
-    } else {
-      tab$page <- tab$page + direction
-    }
+    tab$page <- tab$page + direction
   }
   
-  observeEvent(input$nextBtn_1, {
-    
-    ## Remove error message if any present from previous upload
-    reset_upload_page(hide_descriptives = FALSE)
-
-    ## Check inputed variables. If there is an issue give informative error message, otherwise, continue
-    ## First check if data has been uploaded
-    if (!isTruthy(inputData$rawdata)) { ## If there is no data give informative error
-      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data and pick variables")
-    }else{check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)}
-    
-    
-  })
-  
-  observeEvent(input$prevBtn_1 |  input$prevBtn_2 |  input$prevBtn_3 | input$prevBtn_4 | input$prevBtn_5, {
+  observeEvent(input$prevDU_btn | input$prevCM_btn | input$prevPSR_btn, {
     navPage(-1)
     updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
     cat(tab$page)
   })
-  
-  observeEvent(input$start | input$nextBtn_2 |  input$nextBtn_3 | input$nextBtn_4 | input$nextBtn_5, {
+  observeEvent(input$start_btn | input$nextCM_btn | input$nextPSR_btn, {
     navPage(1)
     updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
     cat(tab$page)
+  })
+  
+  
+  observeEvent(input$nextDU_btn, {
+    # Remove error message if any present from previous upload
+    reset_upload_page(hide_descriptives = FALSE)
+
+    ## Check inputed variables. If there is an issue give informative error message, otherwise, continue to next page
+    ## First check if data has been uploaded
+    if (!isTruthy(inputData$rawdata)) { ## If there is no data, give informative error
+      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data and pick variables")
+
+    }else{variable_check_info <- check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)
+    ## If there is no missing data and no variable mismatched, proceed to next tab
+      if(all(!c(variable_check_info$required_input_missmatched, variable_check_info$required_input_missing))){
+        navPage(1)
+        updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
+        cat(tab$page)
+      }
+    }
+  })
+  
+  
+  ## If input variable(s) is changed, remove any warnings that may be present for variable selection
+  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
+    reset_upload_page(reset_errors = TRUE)
+  })
+  
+  
+  ####
+  # DATA UPLOAD ----
+  ####
+  
+  ## Hide descriptives tab initially
+  hideTab(inputId = "Tab_data", target = "descriptives")
+  
+  inputData <- reactiveValues(rawdata=NULL)
+  
+  observeEvent(input$file1, {
+    inputData$rawdata <- read.csv(input$file1$datapath)
+  })
+  observeEvent(input$Btn_sampledata, {
+    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
   })
   
   ## If input variable(s) is changed, remove any warnings that may be present for variable selection
@@ -84,18 +94,11 @@ server <- function(input, output, session) {
     reset_upload_page(reset_errors = TRUE)
   })
   
-  ####
-  # DATA UPLOAD ----
-  ####
-  
   ## Hide descriptives tab
   hideTab(inputId = "Tab_data", target = "descriptives")
   
   ## Save data as a reactive variable
-  inputData <- reactiveValues()
-  inputData$rawdata <- NULL
-  inputData$descriptives <- NULL
-  inputData$source <- NULL
+  inputData <- reactiveValues(rawdata = NULL, descriptives = NULL, source = NULL)
   
   ## Update app when file uploaded
   observeEvent(input$file1, {
@@ -202,12 +205,12 @@ server <- function(input, output, session) {
     
     ## Reset any input errors and hide descriptives tab
     reset_upload_page(reset_errors = TRUE)
-
+    
     ## Save data source
     inputData$source <- "sample"
     
     ## If "sample data" is selected, upload sample data
-    inputData$rawdata <- read.csv("data/zp_eg.csv")
+    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
     
     ## Update variable selection
     updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(inputData$rawdata)))
@@ -227,16 +230,57 @@ server <- function(input, output, session) {
       ## Show and switch to descriptive tab
       showTab(inputId = "Tab_data", target = "descriptives", select = FALSE, session = getDefaultReactiveDomain())
       updateTabsetPanel(session, "Tab_data", selected = "descriptives")
-      }else{  ## Otherwise, give error
-        feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data first")}
+    }else{  ## Otherwise, give error
+      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data first")}
   }) 
   
-  ## Render outputs
+  
   output$contents <- DT::renderDataTable({
-    DT::datatable(inputData$rawdata, options = list(scrollX = TRUE), style = "bootstrap", selection = "none")
+    DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))     
   })
   output$data_description <- renderUI(inputData$descriptives)
+  
+
+  
+  # Source server side 
+  source("source/outcome_model.R",local=T)
+  source("source/ps_model.R",local=T)
+  react_PSmodel <- reactiveValues(psmodel=NULL)
+  react_outcomemodel <- reactiveValues(outcomemodel=NULL)
+  observeEvent(input$nextCM_btn, {
+    react_PSmodel$psmodel <- ps_model(.data = inputData$rawdata, 
+                                      treatment = input$treatment,
+                                      matchvars = input$matchvars,
+                                      model = input$psm,
+                                      method = input$counterfactual)
+    print(react_PSmodel$psmodel)
+    
+    output$PSmodel_baltab <- renderPrint({cobalt::bal.tab(react_PSmodel$psmodel)})
+    output$PSmodel_balplot <- renderPlot({cobalt::bal.plot(react_PSmodel$psmodel)})
+    output$PSmodel_loveplot <- renderPlot({cobalt::love.plot(react_PSmodel$psmodel)})
+    
+  })
+  
+  observeEvent(input$resshow_btn, {
+    react_outcomemodel$outcomemodel <- outcome_model(.data=inputData$rawdata,
+                                                     outcome = input$outcome,
+                                                     treatment = input$treatment,
+                                                     covars = input$covars,
+                                                     matchvars = input$matchvars,
+                                                     PSmodel = react_PSmodel$psmodel, 
+                                                     method = input$counterfactual,
+                                                     doubly = input$drobust)
+    output$outcome_plot <- renderPlot({react_outcomemodel$outcomemodel$plot})
+    output$outcome_table <- renderTable({react_outcomemodel$outcomemodel$est})
+    output$outcome_resid <- renderPlot({performance::check_model(react_outcomemodel$outcomemodel$mod)})
+  
+    })
 }
+
+
+
+
+
 
 
 
