@@ -12,6 +12,8 @@ library(marginaleffects)
 library(performance)
 library(see)
 library(patchwork)
+library(shinydashboard)
+
 
 # source individual pages
 source("source/ui_home.R")
@@ -32,34 +34,54 @@ ui <- fluidPage(
   includeCSS("./www/stuff.css"),
 
   # MAIN HEADER BANNER 
-  # outside of nav pages
-  div(id="header-content",
-      tags$h2(id = "header-text", 
-              #a(target="_blank",href="",HTML("DigiCAT<br><h4>A digital tool to facilitate counterfactual analysis</h4>")),
-              tags$img(style="max-height: 100px; padding-left: 100px; padding-right: 100px", src="digicat6b.png"))
-  ),
+  #tags$img(src = "digicat6b.png", style="max-height: 100px; margin-left: auto; display: block; margin-right: auto;"),
   
   
-  navbarPage(title="",
-             id="mynavlist",
-             collapsible=TRUE,
-             tabPanel("Home", value="home", icon = icon('home',lib="glyphicon"),
-                      home_page
-             ),
-             tabPanel("Data Upload", value="dataupload", icon = icon('table'),
-                      dataupload_page
-             ),
-             tabPanel("Choose Things", value="method", icon = icon('certificate',lib="glyphicon"),
-                      method_page
-             ),
-             tabPanel("Propensity Model Results", value="psresults", icon = icon('tree'),
-                      psres_page
-             ),
-             tabPanel("Get Results", value="results", icon = icon('save',lib="glyphicon"),
-                      results_page
-             )
-  ),
-  
-  div(id="footer", tags$img(style="max-width: 150px; margin-left: 5px", src="uoelogo.svg"))
+  # load page layout
+  dashboardPage(
+    
+    skin = "blue",
+    
+    dashboardHeader(title="DigiCAT", titleWidth = 300),
+    
+    dashboardSidebar(width = 300,
+                     sidebarMenu(
+                       id = "main_tabs",
+                       HTML(paste0(
+                         "<br>",
+                         "<img style = 'display: block; margin-left: auto; margin-right: auto;' src='logos/DigiCAT/digicat6.png' width = '250'>",
+                         "<br>",
+                         "<br>"
+                       )),
+                       menuItem("Analysis", tabName = "analysis", icon = icon("home")),
+                       menuItem("Tutorial", tabName = "tutorial", icon = icon("arrow-pointer")),
+                       menuItem("Terms & Conditions", tabName = "TC", icon = icon("square-check")),
+                       menuItem("About", tabName = "about", icon = icon("circle-info")),
+                       HTML(paste0(
+                         "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>",
+                         "<p style = 'text-align: center;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
+                         "<br><br><br>",
+                         "<img src='logos/WT.png' height = '40'>",
+                         "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
+                         "<img src='logos/UoE.png' height = '40'>")
+                         )
+                     )
+                     
+    ),
+    
+    dashboardBody(tabItems(
+      tabItem(tabName = "analysis", tabsetPanel(
+        id = "Tab_analysis",
+        tabPanel(title = "Home", value = "home", home_page), 
+        tabPanel(title = "Upload", value = "upload", dataupload_page),
+        tabPanel("methods", value = "methods", method_page),
+        tabPanel("psres", value = "psres", psres_page),
+        tabPanel("results", value = "results", results_page)
+      )),
+      tabItem(tabName = "tutorial", ""),
+      tabItem(tabName = "TC", ""),
+      tabItem(tabName = "about", ""))
+      )# end dashboardBody
+  )
 )
 
