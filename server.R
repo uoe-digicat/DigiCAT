@@ -8,45 +8,65 @@ source("source/func/reset_upload_page.R")
 source("source/func/check_selected_variables.R")
 
 server <- function(input, output, session) {
+
+  ####
+  # Start Page ----
+  ####
   
-  ###
-  # NAVIGATION ----
-  ###
-  tab <- reactiveValues(page = 1, min = 1, max = 5)
-  
-  observe({
-    toggleState(id = "prevDU_btn", condition = tab$page > tab$min)
-    toggleState(id = "prevCM_btn", condition = tab$page > tab$min)
-    toggleState(id = "prevPSR_btn", condition = tab$page > tab$min)
-    toggleState(id = "nextDU_btn", condition = tab$page < tab$max)
-    toggleState(id = "nextCM_btn", condition = tab$page < tab$max)
-    toggleState(id = "nextPSR_btn", condition = tab$page < tab$max)
+  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
+  observeEvent(input$start_btn,{
+    
+    ## If user has already agreed to T&Cs, proceed to upload page
+    if (isTruthy(input$start_agree)){
+      updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
+    } else{ ## If they have not yet agreed, ask (again)
+
+      ## Pop up agreement
+      showModal(modalDialog(
+        HTML("<center>"),
+        h4("Before you get started:"),
+        br(),
+        tags$div("Have you read and agree to the terms of the", actionLink("TCs_link", "DigiCAT Customer Agreement"), "?"),
+        footer=tagList(
+          div(style = "text-align:center",
+          actionButton('start_dont_agree', "No, I don't agree", style="color: white; background: #4f78dc"),
+          actionButton('start_agree', 'Yes, I agree', style="color: white; background: green"))),
+        HTML("<center>")))
+    }
   })
   
-  observe({
-    if (input$mynavlist == "home") tab$page = 1
-    if (input$mynavlist == "dataupload") tab$page = 2
-    if (input$mynavlist == "method") tab$page = 3
-    if (input$mynavlist == "psresults") tab$page = 4
-    if (input$mynavlist == "results") tab$page = 5
+  ## T&Cs agreement: If terms and conditions link clicked, close modal and switch to T&Cs tab
+  observeEvent(input$TCs_link, {
+    updateTabsetPanel(session, inputId = "main_tabs", selected = 'TC')
+    removeModal() ## remove modal
   })
   
-  navPage <- function(direction) {
-    tab$page <- tab$page + direction
-  }
-  
-  observeEvent(input$prevDU_btn | input$prevCM_btn | input$prevPSR_btn, {
-    navPage(-1)
-    updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
-    cat(tab$page)
+  ## T&Cs agreement: If 'No, I don't agree', remove modal and remain in start page
+  observeEvent(input$start_dont_agree, {
+    removeModal() ## remove modal
   })
-  observeEvent(input$start_btn | input$nextCM_btn | input$nextPSR_btn, {
-    navPage(1)
-    updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
-    cat(tab$page)
+      
+  ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
+  observeEvent(input$start_agree, {
+    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
+    removeModal() ## remove modal
   })
   
+  ## If tutorial link clicked, close modal and switch to T&Cs tab
+  observeEvent(input$tutorial_link, {
+    updateTabsetPanel(session, inputId = "main_tabs", selected = 'tutorial')
+    removeModal() ## remove modal
+  })
   
+  ####
+  # Data upload ----
+  ####
+  
+  ## Hide descriptives tab initially
+  hideTab(inputId = "Tab_data", target = "descriptives")
+  
+  
+  ## When "Next" Selected on data upload page, check input and proceed if okay
   observeEvent(input$nextDU_btn, {
     # Remove error message if any present from previous upload
     reset_upload_page(hide_descriptives = FALSE)
@@ -59,34 +79,20 @@ server <- function(input, output, session) {
     }else{variable_check_info <- check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)
     ## If there is no missing data and no variable mismatched, proceed to next tab
       if(all(!c(variable_check_info$required_input_missmatched, variable_check_info$required_input_missing))){
-        navPage(1)
-        updateTabsetPanel(session, "mynavlist", tab.names[tab$page])
-        cat(tab$page)
+        updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
       }
     }
   })
   
+  ## If "Prev" selected on data upload page, go back to start page
+  observeEvent(input$prevDU_btn,{
+    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "home")
+  }
+  )
   
   ## If input variable(s) is changed, remove any warnings that may be present for variable selection
   observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
     reset_upload_page(reset_errors = TRUE)
-  })
-  
-  
-  ####
-  # DATA UPLOAD ----
-  ####
-  
-  ## Hide descriptives tab initially
-  hideTab(inputId = "Tab_data", target = "descriptives")
-  
-  inputData <- reactiveValues(rawdata=NULL)
-  
-  observeEvent(input$file1, {
-    inputData$rawdata <- read.csv(input$file1$datapath)
-  })
-  observeEvent(input$Btn_sampledata, {
-    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
   })
   
   ## If input variable(s) is changed, remove any warnings that may be present for variable selection
@@ -102,6 +108,9 @@ server <- function(input, output, session) {
   
   ## Update app when file uploaded
   observeEvent(input$file1, {
+    
+    ## Load in data
+    inputData$rawdata <- read.csv(input$file1$datapath)
     
     ## Reset any input errors
     reset_upload_page(reset_errors = TRUE)
@@ -155,12 +164,6 @@ server <- function(input, output, session) {
         footer=tagList(
           actionButton('recode_NA', 'Recode as "NA"'),
           modalButton('Continue'))))
-      
-      ## If "recode as NA" selected remove all "-999" values from data
-      observeEvent(input$recode_NA, {
-        inputData$rawdata[inputData$rawdata == -999] <- NA
-        removeModal() ## remove modal
-      })
     }
     
     ## Get variable classes
@@ -173,6 +176,12 @@ server <- function(input, output, session) {
     updatePickerInput(session, "treatment", choices=names(isolate(inputData$rawdata)), selected = NULL)
     updatePickerInput(session, "matchvars", choices=names(isolate(inputData$rawdata)), selected = NULL, clearOptions = TRUE)
     updatePickerInput(session, "covars", choices=names(isolate(inputData$rawdata)), selected = NULL, clearOptions = TRUE)
+  })
+  
+  ## If "recode as NA" selected remove all "-999" values from data
+  observeEvent(input$recode_NA, {
+    inputData$rawdata[inputData$rawdata == -999] <- NA
+    removeModal() ## remove modal
   })
   
   ## When categorical variable selection changed, update what can be selected as the outcome variable
@@ -199,9 +208,11 @@ server <- function(input, output, session) {
     }
   }, ignoreNULL = FALSE, ignoreInit = TRUE)
   
-  
   ## Update app when sample data selected
   observeEvent(input$Btn_sampledata, {
+    
+    ## Load in sample data
+    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
     
     ## Reset any input errors and hide descriptives tab
     reset_upload_page(reset_errors = TRUE)
@@ -240,7 +251,40 @@ server <- function(input, output, session) {
   })
   output$data_description <- renderUI(inputData$descriptives)
   
-
+  
+  ####
+  # Model configuration ----
+  ####
+  
+  ## When "BUILD!" selected on model configuration, switch to PS results tab
+  observeEvent(input$nextCM_btn,{
+    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "psres")
+  }
+  )
+  
+  ## When "Prev" selected on model configuration, go back to data upload page
+  observeEvent(input$prevCM_btn,{
+    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
+  }
+  )
+  
+  
+  ####
+  # PS results ----
+  ####
+  
+  
+  ## When "Prev" selected on PS results page, go back to model configuration page
+  observeEvent(input$prevPSR_btn,{
+    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
+  }
+  )
+  
+  ## When "Next" selected on PS results page, go back to get results page
+  observeEvent(input$nextPSR_btn,{
+    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "results")
+  }
+  )
   
   # Source server side 
   source("source/outcome_model.R",local=T)
@@ -261,6 +305,15 @@ server <- function(input, output, session) {
     
   })
   
+  # Get results ----
+  ####
+  
+  ## When "Prev" selected on get results page, go back to PS results page
+  observeEvent(input$resPrev_btn,{
+    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "psres")
+  }
+  )
+  
   observeEvent(input$resshow_btn, {
     react_outcomemodel$outcomemodel <- outcome_model(.data=inputData$rawdata,
                                                      outcome = input$outcome,
@@ -276,10 +329,6 @@ server <- function(input, output, session) {
   
     })
 }
-
-
-
-
 
 
 

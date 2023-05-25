@@ -1,14 +1,19 @@
 results_page <- 
   div(id="results",
+      HTML('<center><img src="progress_bar/get_results.png" width="800"></center>'),
+      br(),br(),br(),
       sidebarLayout(
-        sidebarPanel(
+        sidebarPanel(id="sidebarPanel",
           tags$h2(style="text-align: center; ","Outcome Model"),
           br(),
           HTML("<center>"),
-          actionBttn(inputId='resshow_btn', label= 'Go!', color = "success"),
+          div(class = "buttonagency",
+          actionBttn(inputId='resshow_btn', label= 'Go!', color="default", style = "simple", size="sm"),
           br(),br(),
-          actionBttn(inputId='resprint_btn', label= 'Print results', color = "default"),
-          actionBttn(inputId='resemail_btn', label= 'Email results', color = "default")
+          actionBttn(inputId='resprint_btn', label= 'Print results', color="default", style = "simple", size="sm"),
+          actionBttn(inputId='resemail_btn', label= 'Email results', color="default", style = "simple", size="sm"),
+          br(),br(),
+          actionBttn(inputId='resPrev_btn', label= 'Prev', color="default", style = "simple", size="sm")),
         ),
         mainPanel(
           tabsetPanel(

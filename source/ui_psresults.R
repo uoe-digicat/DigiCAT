@@ -1,7 +1,9 @@
 psres_page <- 
   div(id="psresults",
+      HTML('<center><img src="progress_bar/model_results.png" width="800"></center>'),
+      br(),br(),br(),
       sidebarLayout(
-        sidebarPanel(
+        sidebarPanel(id="sidebarPanel",
           
           tags$h2(style="text-align: center; ","Propensity Model Results & Diagnostics"),
           br(),
@@ -13,9 +15,10 @@ psres_page <-
           ),
           
           br(),
-          div(style="text-align:right", 
-            actionBttn("prevPSR_btn", "Prev", color="success"),
-            actionBttn("nextPSR_btn", "Next", color="success")
+          div(class = "buttonagency",
+            style="text-align:right", 
+            actionBttn("prevPSR_btn", "Prev", color="default", style = "simple", size="sm"),
+            actionBttn("nextPSR_btn", "Next", color="default", style = "simple", size="sm")
           )
         ),
         mainPanel(

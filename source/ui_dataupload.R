@@ -1,7 +1,11 @@
 library(shinyFeedback)
+library(shinycssloaders)
 
 dataupload_page <- 
-  div(useShinyFeedback(), # include shinyFeedback
+  div(id = "dataupload",
+    useShinyFeedback(), # include shinyFeedback
+      HTML('<center><img src="progress_bar/data_upload.png" width="800"></center>'),
+      br(), br(), br(),
       sidebarLayout(
         sidebarPanel(id="sidebarPanel",
                      tags$h2(style="text-align: centre; margin-bottom:20px","Upload data:"),
@@ -10,8 +14,9 @@ dataupload_page <-
                      tags$h4(style="text-align: left;", "Choose CSV File or Use Sample Data"),
                      
                      ## Add button to load sample data
-                     div(style="max-width:40%; float:right;", ## position to right
-                         actionBttn("Btn_sampledata", "Load Sample Data",size="sm", color="danger", style = "simple")),
+                     div(class = "buttonagency",
+                       style="max-width:40%; float:right;", ## position to right
+                         actionBttn("Btn_sampledata", "Load Sample Data",size="sm", color="default", style = "simple")),
                      
                      ## Add file input for user to upload own data
                      div(style=";max-width:55%; float:left;", ## position to left
@@ -56,18 +61,20 @@ dataupload_page <-
                        ),
                      br(),
                      
-                     div(style="float:left", 
-                         actionBttn("Btn_descriptives", "Get Descriptives", color="danger", style = "simple", size="sm")),
+                     div(class = "buttonagency",
+                       style="float:left", 
+                         actionBttn("Btn_descriptives", "Get Descriptives", color="default", style = "simple", size="sm")),
                      
-                     div(style="text-align:right", 
-                         actionBttn("prevDU_btn", "Prev", color="danger", style = "simple", size="sm"),
-                         actionBttn("nextDU_btn", "Next", color="danger", style = "simple", size="sm")
+                     div(class = "buttonagency",
+                       style="text-align:right", 
+                         actionBttn("prevDU_btn", "Prev", color="default", style = "simple", size="sm"),
+                         actionBttn("nextDU_btn", "Next", color="default", style = "simple", size="sm")
                      )
         ),
-        mainPanel(
+        mainPanel(wellPanel(style = "background-color: #ffffff;",
           tabsetPanel(id = "Tab_data",
-                      tabPanel(title = "Data", value = "raw_data", br(), DT::dataTableOutput('contents', width=750)),
-                      tabPanel(title = "Variable Description", value = "descriptives", htmlOutput('data_description')))
+                      tabPanel(title = "Data", value = "raw_data", br(), withSpinner(DT::dataTableOutput('contents'))),
+                      tabPanel(title = "Variable Description", value = "descriptives", withSpinner(htmlOutput('data_description'), color = getOption("spinner.color", default = "#170344")))))
         ) 
       )
   )
