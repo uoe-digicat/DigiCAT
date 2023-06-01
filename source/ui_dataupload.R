@@ -62,11 +62,14 @@ dataupload_page <-
                      br(),
                      
                      div(class = "buttonagency",
-                       style="float:left", 
-                         actionBttn("Btn_descriptives", "Get Descriptives", color="default", style = "simple", size="sm")),
+                         align="center",
+                         actionBttn("Btn_descriptives", "Get Descriptives", color="default", style = "simple", size="sm"),
+                         actionBttn("Btn_clear", "Clear Data", color="default", style = "simple", size="sm")),
+                     
+                     br(),
                      
                      div(class = "buttonagency",
-                       style="text-align:right", 
+                         align="center",
                          actionBttn("prevDU_btn", "Prev", color="default", style = "simple", size="sm"),
                          actionBttn("nextDU_btn", "Next", color="default", style = "simple", size="sm")
                      )

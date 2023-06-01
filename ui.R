@@ -30,36 +30,27 @@ ui <- fluidPage(
   title = "DigiCAT",
   tags$head(tags$link(rel="shortcut icon", href="favicon.ico")),
   useShinyjs(),
-  # include any CSS
-  includeCSS("./www/stuff.css"),
-
-  # MAIN HEADER BANNER 
-  #tags$img(src = "digicat6b.png", style="max-height: 100px; margin-left: auto; display: block; margin-right: auto;"),
+  includeCSS("./www/themes/light.css"),
+  uiOutput("style"),
   
-  
-  # load page layout
+  # Dashboard page layout
   dashboardPage(
-    
     skin = "blue",
-    
-    dashboardHeader(title="DigiCAT", titleWidth = 300),
-    
-    dashboardSidebar(width = 300,
+    dashboardHeader(title="DigiCAT"),
+    dashboardSidebar(width = 250,
                      sidebarMenu(
                        id = "main_tabs",
-                       HTML(paste0(
-                         "<br>",
-                         "<img style = 'display: block; margin-left: auto; margin-right: auto;' src='logos/DigiCAT/digicat6.png' width = '250'>",
-                         "<br>",
-                         "<br>"
-                       )),
+                       br(), br(),
+                       img(src = "logos/DigiCAT/logo.png", width = 250),
+                       br(), br(),
                        menuItem("Analysis", tabName = "analysis", icon = icon("home")),
                        menuItem("Tutorial", tabName = "tutorial", icon = icon("arrow-pointer")),
                        menuItem("Terms & Conditions", tabName = "TC", icon = icon("square-check")),
                        menuItem("About", tabName = "about", icon = icon("circle-info")),
+                       checkboxInput("style", "Dark Mode"),
                        HTML(paste0(
-                         "<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>",
-                         "<p style = 'text-align: center;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
+                         "<br><br><br><br><br><br><br><br><br><br><br><br>",
+                         "<p style = 'text-align: left; padding-left: 20px;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
                          "<br><br><br>",
                          "<img src='logos/WT.png' height = '40'>",
                          "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
@@ -69,7 +60,8 @@ ui <- fluidPage(
                      
     ),
     
-    dashboardBody(tabItems(
+    dashboardBody(
+      tabItems(
       tabItem(tabName = "analysis", tabsetPanel(
         id = "Tab_analysis",
         tabPanel(title = "Home", value = "home", home_page), 

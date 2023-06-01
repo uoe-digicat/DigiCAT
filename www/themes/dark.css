@@ -1,0 +1,149 @@
+/* sidebar main header */
+.skin-blue .main-header .logo {
+  background-color: #170344; 
+  color: #ffffff;
+  }
+
+/* sidebar main header when hovering */
+.skin-blue .main-header .logo:hover {
+  background-color: #170344; 
+  color: #ffffff;
+}
+
+/* active selected tab in the sidebarmenu */
+.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+background-color: transparent;
+color: #ffffff;
+}
+
+/* other links in the sidebarmenu */
+.skin-blue .main-sidebar .sidebar .sidebar-menu a{
+background-color: transparent;
+color: #ffffff;
+}
+
+/* other links in the sidebarmenu when hovered */
+.skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+  background-color: transparent;
+  color: #f02094;
+}
+
+/* toggle button color  */
+.skin-blue .main-header .navbar .sidebar-toggle{
+background-color: #170344;
+color: #ffffff;
+}
+
+/* toggle button when hovered  */
+.skin-blue .main-header .navbar .sidebar-toggle:hover{
+background-color: transparent;
+color: #f02094;
+}
+
+/* border of active/hovered tab  */
+.skin-blue .sidebar-menu > li.active > a,
+.skin-blue .sidebar-menu > li:hover > a {
+  border-left-color: #f02094;
+}
+
+/* sidebar background  */
+.sidebar{
+  background: transparent;
+  position: fixed;
+}
+
+/* main sidebar */
+.skin-blue .main-sidebar {
+  background-color: #170344;;
+}
+
+/* dashboard body */
+.content-wrapper {
+  background-color: #170344;
+  background-image: url("graphics/holyrood_graphic_dark.png"), linear-gradient( #170344,#4f78dc, #fcf0ed);
+  background-size: 100%;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-position: bottom;
+  color: #ffffff;
+}
+
+
+/* Match colour of navigation bar to background and add bottom border*/
+.navbar-static-top {
+  position: relative;
+  margin-bottom: 0px;
+  background-color: #170344 !important;
+  border-bottom-width: 30px ;
+  border-bottom-color: #76b9f5;
+  color: #ffffff;
+}
+
+      
+/* Home page font */  
+#home {
+  color: #ffffff;
+  text-align: left;
+}
+
+/* data uplaod page font */  
+#dataupload {
+  color: #76b9f5;
+  text-align: left;
+}
+
+/* configure methods page font */  
+#method {
+  color: #ffffff;
+  text-align: left;
+}
+
+/* configure methods page font */  
+#psresults {
+  color: #ffffff;
+  text-align: left;
+}
+
+#results {
+  color: #ffffff;
+  text-align: left;
+}
+
+
+/* sidebar panel */  
+.well { 
+  background: #ffffff;
+  color: #170344;
+  border: 0px;
+}
+
+
+/* Uploaded/sample dataframe colours */
+.dataTable {
+    color: #170344;
+    background: #ffffff;
+}
+
+/* Text blocks */
+.text_blocks {
+  color: #ffffff;
+  text-align: justify;
+  background: #170344; 
+  padding: 15px; 
+  border-radius: 5px;
+}
+
+/* hide analysis tabs */
+#Tab_analysis { display: none; }
+
+/* change colour of buttons */
+.buttonagency .bttn-default{
+  background-color: #c5e2fc;
+  color: #170344;
+}
+
+/* Theme checkbox */
+.checkbox {
+  color: #ffffff;
+}
+

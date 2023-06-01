@@ -71,7 +71,7 @@ get_description <- function(df, categorical_vars){
       temp <- na.omit(df_con[col])
       names(temp) <- "x"
       p <-  ggplot(temp, aes(x)) +
-        geom_histogram(fill = "#170344", bins=30) +
+        geom_histogram(fill = "#0073C2FF", bins=30) +
         theme_classic() + xlab("") +
         theme(axis.text.x = element_text(size = 40), axis.title.y = element_text(size = 40), axis.text.y = element_text(size = 40))
       tmp <- list(p)

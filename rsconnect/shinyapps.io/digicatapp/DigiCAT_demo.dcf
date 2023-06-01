@@ -1,0 +1,13 @@
+name: DigiCAT_demo
+title: DigiCAT_demo
+username:
+account: digicatapp
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 9208168
+bundleId: 7277426
+url: https://digicatapp.shinyapps.io/DigiCAT_demo/
+when: 1685371256.60902
+lastSyncTime: 1685371256.60904
+asMultiple: FALSE
+asStatic: FALSE

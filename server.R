@@ -8,10 +8,26 @@ source("source/func/reset_upload_page.R")
 source("source/func/check_selected_variables.R")
 
 server <- function(input, output, session) {
-
+ 
+  
+  ####
+  # App theme ----
+  ####
+output$style <- renderUI({
+  if (!is.null(input$style)){
+    if (input$style) {
+      includeCSS("./www/themes/dark.css")
+    } else {
+      includeCSS("./www/themes/light.css")
+    }}
+  })
+  
+  
+  
   ####
   # Start Page ----
   ####
+
   
   ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
   observeEvent(input$start_btn,{
@@ -95,16 +111,12 @@ server <- function(input, output, session) {
     reset_upload_page(reset_errors = TRUE)
   })
   
-  ## If input variable(s) is changed, remove any warnings that may be present for variable selection
-  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
-    reset_upload_page(reset_errors = TRUE)
-  })
-  
   ## Hide descriptives tab
   hideTab(inputId = "Tab_data", target = "descriptives")
   
   ## Save data as a reactive variable
   inputData <- reactiveValues(rawdata = NULL, descriptives = NULL, source = NULL)
+  
   
   ## Update app when file uploaded
   observeEvent(input$file1, {
@@ -112,8 +124,8 @@ server <- function(input, output, session) {
     ## Load in data
     inputData$rawdata <- read.csv(input$file1$datapath)
     
-    ## Reset any input errors
-    reset_upload_page(reset_errors = TRUE)
+    ## Reset any input errors and remove descriptives
+    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
     
     ## Go back to raw data view and delete data descriptive
     updateTabsetPanel(session, "Tab_data",selected = "raw_data")
@@ -122,7 +134,7 @@ server <- function(input, output, session) {
     ## Save data source
     inputData$source <- "own"
     
-    ## Reset inputs that changes data 
+    ## Reset inputs that change data 
     reset("recode_NA", asis = TRUE)
     suppressWarnings(rm(categorical_variables, warn))
     
@@ -215,7 +227,7 @@ server <- function(input, output, session) {
     inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
     
     ## Reset any input errors and hide descriptives tab
-    reset_upload_page(reset_errors = TRUE)
+    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
     
     ## Save data source
     inputData$source <- "sample"
@@ -245,6 +257,19 @@ server <- function(input, output, session) {
       feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data first")}
   }) 
   
+  ## Clear data when "Clear Data" button is pressed
+  ## Remove uploaded data, descriptive and list with initial data checks
+  observeEvent(input$Btn_clear,{
+    inputData$rawdata <- NULL ## Remove data
+    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE) ## Remove errors and descriptives
+    
+    ## Clear input pickers
+    updatePickerInput(session, "categorical_vars", choices = character(0), selected=character(0)) 
+    updatePickerInput(session, "outcome", choices = character(0), selected=character(0)) 
+    updatePickerInput(session, "treatment", choices = character(0), selected=character(0))
+    updatePickerInput(session, "matchvars", choices = character(0), selected=character(0))
+    updatePickerInput(session, "covars", choices = character(0), selected=character(0))
+  })
   
   output$contents <- DT::renderDataTable({
     DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))     
