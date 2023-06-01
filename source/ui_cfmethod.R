@@ -2,7 +2,8 @@ method_page <-
   div(id="method",
       HTML('<center><img src="progress_bar/model_config.png" width="800"></center>'),
       br(), br(), br(),
-      tags$h2(style="text-align: center; ","CHOICES"),
+      div(class = "text_blocks",
+          tags$h2(style="text-align: center; ","CHOICES"),
       br(), br(), br(),
       fluidRow(
           column(title="Missingness", width=4,
@@ -34,9 +35,10 @@ method_page <-
         ),
       fluidRow(
         column(12, align="center",
-               actionBttn("prevCM_btn", "Prev", color="default", style = "simple", size="sm"),
-               actionBttn("nextCM_btn", "BUILD!", color="default", style = "simple", size="sm")
+               div(class = "buttonagency",
+                 actionBttn("prevCM_btn", "Prev", color="default", style = "simple", size="sm"),
+               actionBttn("nextCM_btn", "BUILD!", color="default", style = "simple", size="sm"))
         )
-      )
+      ))
       
   )
