@@ -6,6 +6,7 @@ home_page <-
       br(),br(),br(),
       h2("How to use this tool"),
       br(),
+      plot(1:100),
       h5('Step 1: Attach dataset and specify your outcome, ‘treatment’ and other variables'),
       br(),
       h5('Step 2: Select your propensity model(s)'),

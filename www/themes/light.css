@@ -134,14 +134,21 @@ color: #f02094;
 }
 
 
-
 /* hide analysis tabs */
 #Tab_analysis { display: none; }
 
 /* change colour of buttons */
-.buttonagency .bttn-default{
+.progress_button {
+  background-color: #ebfdc2;
+  color: #170344;
+  border-color: #ebfdc2;
+
+}
+
+.default_button {
   background-color: #c5e2fc;
   color: #170344;
+  border-color: #c5e2fc;
 }
 
 /* Theme checkbox */
@@ -149,3 +156,9 @@ color: #f02094;
   color: #170344;
 }
 
+      
+      
+      
+      
+      
+      

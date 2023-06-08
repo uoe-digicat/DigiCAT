@@ -35,9 +35,8 @@ method_page <-
         ),
       fluidRow(
         column(12, align="center",
-               div(class = "buttonagency",
-                 actionBttn("prevCM_btn", "Prev", color="default", style = "simple", size="sm"),
-               actionBttn("nextCM_btn", "BUILD!", color="default", style = "simple", size="sm"))
+               actionButton("prevCM_btn", "Prev", class = "default_button"),
+               actionButton("nextCM_btn", "BUILD!", class = "default_button")
         )
       ))
       

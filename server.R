@@ -3,9 +3,10 @@ load("data/zp_example.RData")
 ## Source functions to perform data checks and categorical variable identification
 source("source/func/initial_data_check.R")
 source("source/func/get_categorical_variables.R")
-source("source/func/get_descriptives.R")
 source("source/func/reset_upload_page.R")
 source("source/func/check_selected_variables.R")
+source("source/func/get_validation.R")
+
 
 server <- function(input, output, session) {
  
@@ -77,80 +78,103 @@ output$style <- renderUI({
   ####
   # Data upload ----
   ####
+  #* Data upload: setup ----
   
-  ## Hide descriptives tab initially
-  hideTab(inputId = "Tab_data", target = "descriptives")
+  ## Hide data and validation tabs initially
+  hideTab(inputId = "Tab_data", target = "raw_data")
+  hideTab(inputId = "Tab_data", target = "data_validation")
   
   
-  ## When "Next" Selected on data upload page, check input and proceed if okay
-  observeEvent(input$nextDU_btn, {
-    # Remove error message if any present from previous upload
-    reset_upload_page(hide_descriptives = FALSE)
+  ## Save data and source as a reactive variable
+  inputData <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
 
-    ## Check inputed variables. If there is an issue give informative error message, otherwise, continue to next page
-    ## First check if data has been uploaded
-    if (!isTruthy(inputData$rawdata)) { ## If there is no data, give informative error
-      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data and pick variables")
-
-    }else{variable_check_info <- check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)
-    ## If there is no missing data and no variable mismatched, proceed to next tab
-      if(all(!c(variable_check_info$required_input_missmatched, variable_check_info$required_input_missing))){
-        updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
-      }
-    }
-  })
   
+  #* Data upload: Navigation ----
   ## If "Prev" selected on data upload page, go back to start page
   observeEvent(input$prevDU_btn,{
     updateTabsetPanel(session, inputId = "Tab_analysis", selected = "home")
   }
   )
   
-  ## If input variable(s) is changed, remove any warnings that may be present for variable selection
+  
+  observeEvent(input$validate_btn,{
+    
+    ## Check if data has been validated
+    if (is.null(inputData$validation)){
+      ## Do nothing
+    } else{ ## Continue to model config page
+      updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
+    }
+  }
+  )
+  
+  
+  #* Data upload: Variable Selection ----
+  
+  ## If input variable(s) change(s), remove any warnings that may be present for variable selection
   observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
-    reset_upload_page(reset_errors = TRUE)
+    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE)
+    inputData$validation <- NULL ## Remove validation info
+    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+    output$no_data_warning <- NULL ## Remove "no data" warning
   })
   
-  ## Hide descriptives tab
-  hideTab(inputId = "Tab_data", target = "descriptives")
+  ## When categorical variable selection changed, update what can be selected as the outcome variable
+  observeEvent(input$categorical_vars, {
+    
+    ## Reset any input errors
+    reset_upload_page(reset_errors = TRUE)
+    output$no_data_warning <- NULL ## Remove "no data" warning
+    
+    if(inputData$data_source == "sample"){
+      
+    }else{
+      ## Get names of continuous variables
+      continuous_variables <- names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% input$categorical_vars]
+      ## Only allow selection from continuous variables
+      updatePickerInput(session, "outcome", selected=NULL, choices = continuous_variables)
+    }
+  }, ignoreNULL = FALSE, ignoreInit = TRUE)
   
-  ## Save data as a reactive variable
-  inputData <- reactiveValues(rawdata = NULL, descriptives = NULL, source = NULL)
-  
+  #* Data upload: Data Upload ----
   
   ## Update app when file uploaded
   observeEvent(input$file1, {
     
+    ## Show and switch to data tab
+    showTab(inputId = "Tab_data", target = "raw_data", select = FALSE, session = getDefaultReactiveDomain())
+    updateTabsetPanel(session, "Tab_data", selected = "raw_data")
+    
     ## Load in data
     inputData$rawdata <- read.csv(input$file1$datapath)
     
-    ## Reset any input errors and remove descriptives
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
-    
-    ## Go back to raw data view and delete data descriptive
-    updateTabsetPanel(session, "Tab_data",selected = "raw_data")
-    inputData$descriptives <- NULL
+    ## Reset any input errors and hide validation tab
+    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE)
+    inputData$validation <- NULL ## Remove validation info
+    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+    output$no_data_warning <- NULL ## Remove "no data" warning
     
     ## Save data source
-    inputData$source <- "own"
-    
-    ## Reset inputs that change data 
-    reset("recode_NA", asis = TRUE)
-    suppressWarnings(rm(categorical_variables, warn))
-    
-    ## Load in own data
-    inputData$rawdata <- read.csv(input$file1$datapath)
+    inputData$data_source <- "own"
     
     ## Check data upon upload
     initial_data_check_ls <- initial_data_check(inputData$rawdata)
     
-    ## If data is too small or contains non numeric values, give error message and delete
-    if(initial_data_check_ls$too_small){
+    ## If data is too small give error message and delete
+    if(initial_data_check_ls$small_rows){
       feedbackDanger(inputId = "file1",
-                     show=initial_data_check_ls$too_small,
-                     text = "Data too small! (<10 rows)")
+                     show=initial_data_check_ls$small_rows,
+                     text = "Data has too few rows! (<10 rows)")
+      inputData$rawdata <- NULL
+    }
+    if(initial_data_check_ls$small_cols){
+      feedbackDanger(inputId = "file1",
+                     show=initial_data_check_ls$small_cols,
+                     text = "Data has too few columns! (<2 columns)")
+      inputData$rawdata <- NULL
     }
     
+    ## If data is contains nonnumeric values, give option to delete data or delete just columns
     if(initial_data_check_ls$some_nonnumeric){
       feedbackDanger(inputId = "file1",
                      show=initial_data_check_ls$some_nonnumeric,
@@ -161,21 +185,7 @@ output$style <- renderUI({
       ## Remove uploaded data and list with initial data checks
       inputData$rawdata <- NULL
       initial_data_check_ls <- list(some_nonnumeric = FALSE,
-                                    impossible_value = FALSE,
                                     too_small = FALSE)
-    }
-    
-    
-    ## If data contains contains "-999" give warning and option to recode as NA
-    if(initial_data_check_ls$impossible_value == TRUE){
-      
-      showModal(modalDialog(
-        title = 'Warning: "-999" value detected in data',
-        'Would you like to recode "-999" as "NA" or continue without alteration?',
-        size = "l",
-        footer=tagList(
-          actionButton('recode_NA', 'Recode as "NA"'),
-          modalButton('Continue'))))
     }
     
     ## Get variable classes
@@ -190,50 +200,24 @@ output$style <- renderUI({
     updatePickerInput(session, "covars", choices=names(isolate(inputData$rawdata)), selected = NULL, clearOptions = TRUE)
   })
   
-  ## If "recode as NA" selected remove all "-999" values from data
-  observeEvent(input$recode_NA, {
-    inputData$rawdata[inputData$rawdata == -999] <- NA
-    removeModal() ## remove modal
-  })
-  
-  ## When categorical variable selection changed, update what can be selected as the outcome variable
-  observeEvent(input$categorical_vars, {
-    
-    ## Reset any input errors and hide descriptives (these depend on categorical var selection)
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
-    
-    ## Go back to raw data view and delete data descriptive
-    updateTabsetPanel(session, "Tab_data",selected = "raw_data")
-    inputData$descriptives <- NULL
-    
-    if(inputData$source == "sample"){
-      
-    }else{
-      ## Get names of continuous variables
-      continuous_variables <- names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% input$categorical_vars]
-      ## Only allow selection from continuous variables
-      updatePickerInput(session, "outcome", selected=NULL, choices = continuous_variables) 
-      ## Clear all following pickers
-      updatePickerInput(session, "treatment", selected=character(0))
-      updatePickerInput(session, "matchvars", selected=character(0))
-      updatePickerInput(session, "covars", selected=character(0))
-    }
-  }, ignoreNULL = FALSE, ignoreInit = TRUE)
-  
   ## Update app when sample data selected
   observeEvent(input$Btn_sampledata, {
     
     ## Load in sample data
     inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
     
-    ## Reset any input errors and hide descriptives tab
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
+    ## Reset any input errors and hide validate tab
+    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE)
+    inputData$validation <- NULL ## Remove validation info
+    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+    output$no_data_warning <- NULL ## Remove "no data" warning
     
     ## Save data source
-    inputData$source <- "sample"
+    inputData$data_source <- "sample"
     
-    ## If "sample data" is selected, upload sample data
-    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
+    ## Show and switch to data tab
+    showTab(inputId = "Tab_data", target = "raw_data", select = FALSE, session = getDefaultReactiveDomain())
+    updateTabsetPanel(session, "Tab_data", selected = "raw_data")
     
     ## Update variable selection
     updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(inputData$rawdata)))
@@ -243,38 +227,60 @@ output$style <- renderUI({
     updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata)))
   })
   
-  ## Generate data descriptive and switch to descriptive tab
-  observeEvent(input$Btn_descriptives, {
-    
-    ## Check if data has been uploaded
-    if (isTruthy(inputData$rawdata)) { ## `If so, generate descriptives and move to descriptives tab
-      ## Get descriptive
-      inputData$descriptives <- get_description(inputData$rawdata, input$categorical_vars)
-      ## Show and switch to descriptive tab
-      showTab(inputId = "Tab_data", target = "descriptives", select = FALSE, session = getDefaultReactiveDomain())
-      updateTabsetPanel(session, "Tab_data", selected = "descriptives")
-    }else{  ## Otherwise, give error
-      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data first")}
-  }) 
-  
   ## Clear data when "Clear Data" button is pressed
-  ## Remove uploaded data, descriptive and list with initial data checks
-  observeEvent(input$Btn_clear,{
+  observeEvent(input$clear_btn,{
     inputData$rawdata <- NULL ## Remove data
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE) ## Remove errors and descriptives
+    reset_upload_page(reset_errors = TRUE, hide_data = TRUE, hide_validation = TRUE) ## Remove errors and hide data and validate tabs
+    inputData$validation <- NULL ## Remove validation info
+    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+    output$no_data_warning <- NULL ## Remove "no data" warning
     
     ## Clear input pickers
-    updatePickerInput(session, "categorical_vars", choices = character(0), selected=character(0)) 
-    updatePickerInput(session, "outcome", choices = character(0), selected=character(0)) 
+    updatePickerInput(session, "categorical_vars", choices = character(0), selected=character(0))
+    updatePickerInput(session, "outcome", choices = character(0), selected=character(0))
     updatePickerInput(session, "treatment", choices = character(0), selected=character(0))
     updatePickerInput(session, "matchvars", choices = character(0), selected=character(0))
     updatePickerInput(session, "covars", choices = character(0), selected=character(0))
   })
   
-  output$contents <- DT::renderDataTable({
-    DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))     
+  #* Data upload: Data Validation ----
+  
+  ## When "Validate" Selected on data upload page, check required input first, validate if present, flag if not
+  observeEvent(input$validate_btn, {
+    
+    if (is.null(inputData$validation)){ ## Only validate if validation has not get been carried out
+      
+      # Remove error message if any present from previous upload
+      reset_upload_page(reset_errors = TRUE)
+      output$no_data_warning <- NULL ## Remove "no data" warning
+      
+      ## Check inputed variables. If there is an issue give informative error message, otherwise, continue to next page
+      ## First check if data has been uploaded
+      if (!isTruthy(inputData$rawdata)) { ## If there is no data, give informative error
+        
+        output$no_data_warning <- renderUI(h5("Please upload some data first!", style = "color:red"))
+        
+      }else{variable_check_info <- check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)
+      ## If there is no missing data and no variable mismatched, proceed to next tab
+      if(all(!c(variable_check_info$required_input_missmatched, variable_check_info$required_input_missing))){
+        ## Move to validate tab
+        ## Show and switch to validate tab
+        showTab(inputId = "Tab_data", target = "data_validation", select = FALSE, session = getDefaultReactiveDomain())
+        updateTabsetPanel(session, "Tab_data", selected = "data_validation")
+        
+        ## Validate data
+        inputData$validation  <- get_validation(.data = inputData$rawdata, outcome = input$outcome, matchvars = input$matchvars, covars = input$covars)
+        
+        ## Change "Validate" button to "Next" button
+        updateActionButton(session, "validate_btn", label = "Next", icon = NULL)
+        }
+      }}
   })
-  output$data_description <- renderUI(inputData$descriptives)
+
+  #* Data upload: Show data and validation ----
+  ## Show uploaded data
+  output$contents <- DT::renderDataTable({DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))})
+  output$data_validation <- renderUI(inputData$validation)
   
   
   ####
