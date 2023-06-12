@@ -79,6 +79,8 @@ color: #f02094;
   color: #ffffff;
 }
 
+
+
       
 /* Home page font */  
 #home {
@@ -88,7 +90,7 @@ color: #f02094;
 
 /* data uplaod page font */  
 #dataupload {
-  color: #76b9f5;
+  color: #170344;
   text-align: left;
 }
 
@@ -115,6 +117,12 @@ color: #f02094;
   background: #ffffff;
   color: #170344;
   border: 0px;
+}
+
+/* well panel */
+#well_panel {
+  background-color: #ffffff;
+  color: #170344;
 }
 
 
@@ -145,6 +153,7 @@ color: #f02094;
 
 }
 
+/* change colour of buttons */
 .default_button {
   background-color: #c5e2fc;
   color: #170344;
@@ -156,9 +165,5 @@ color: #f02094;
   color: #170344;
 }
 
-      
-      
-      
-      
-      
+
       

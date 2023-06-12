@@ -36,12 +36,12 @@ ui <- fluidPage(
   # Dashboard page layout
   dashboardPage(
     skin = "blue",
-    dashboardHeader(title="DigiCAT"),
-    dashboardSidebar(width = 250,
+    dashboardHeader(title="DigiCAT", titleWidth = 300),
+    dashboardSidebar(width = 300,
                      sidebarMenu(
                        id = "main_tabs",
                        br(), br(),
-                       img(src = "logos/DigiCAT/logo.png", width = 250),
+                       img(src = "logos/DigiCAT/logo.png", width = 300),
                        br(), br(),
                        menuItem("Analysis", tabName = "analysis", icon = icon("home")),
                        menuItem("Tutorial", tabName = "tutorial", icon = icon("arrow-pointer")),

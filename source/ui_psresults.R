@@ -17,8 +17,8 @@ psres_page <-
           br(),
           div(class = "buttonagency",
             style="text-align:right", 
-            actionBttn("prevPSR_btn", "Prev", color="default", style = "simple", size="sm"),
-            actionBttn("nextPSR_btn", "Next", color="default", style = "simple", size="sm")
+            actionButton("prevPSR_btn", "Prev", class = "default_button"),
+            actionButton("nextPSR_btn", "Next", class = "default_button")
           )
         ),
         mainPanel(

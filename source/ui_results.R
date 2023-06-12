@@ -7,13 +7,12 @@ results_page <-
           tags$h2(style="text-align: center; ","Outcome Model"),
           br(),
           HTML("<center>"),
-          div(class = "buttonagency",
-          actionBttn(inputId='resshow_btn', label= 'Go!', color="default", style = "simple", size="sm"),
+          actionButton("resshow_btn", "Go!", class = "default_button"),
           br(),br(),
-          actionBttn(inputId='resprint_btn', label= 'Print results', color="default", style = "simple", size="sm"),
-          actionBttn(inputId='resemail_btn', label= 'Email results', color="default", style = "simple", size="sm"),
+          actionButton("resprint_btn", "Print results", class = "default_button"),
+          actionButton("resemail_btn", "Email results", class = "default_button"),
           br(),br(),
-          actionBttn(inputId='resPrev_btn', label= 'Prev', color="default", style = "simple", size="sm")),
+          actionButton("resPrev_btn", "Prev", class = "default_button"),
         ),
         mainPanel(
           tabsetPanel(
