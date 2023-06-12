@@ -72,7 +72,7 @@ dataupload_page <-
                          actionButton("validate_btn", "Validate Data", class = "progress_button")
                      )
         ),
-        mainPanel(wellPanel(style = "background-color: #ffffff",
+        mainPanel(wellPanel(id = "well_panel",
           tabsetPanel(id = "Tab_data",
                       tabPanel(title = "Requirements", value = "data_requirements",
                                br(),
