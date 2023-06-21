@@ -10,54 +10,18 @@ t = rbinom(N,1,plogis(lp)) # treatment
 y = base::cbind(Xmat,t) %*% c(rnorm(5,0,1), 2) + rnorm(N,0,1)
 df <- as.data.frame(base::cbind(Xmat,t,y))
 names(df)<-c(letters[1:5],"t","y")
+df$c[sample(1:100)]<-NA
 
 source("source/func/get_score.R")
 source("source/func/balancing.R")
-
-
-propmodel = get_score(psmodel = "glm", 
-                      .data = df, 
-                      t_var = "t", m_vars= c("a","b","c","d","e"), 
-                      missing="complete")
-
-
-
-performance_plot <- function(psmodel_obj, .data, treatment, treattype = "binary"){
-  
-  obs = .data[,treatment]
-  pred = psmodel_obj$score
-  
-  switch(treattype,
-         
-         binary = {
-           # order for by pred for thresholds
-           obs2 = obs[order(pred)]
-           # P and N
-           pos = sum(obs2); neg = sum(!obs2)
-           # TPR
-           tpr = (sum(obs2) - cumsum(obs2)) / pos
-           # TNR
-           tnr = cumsum(!obs2) / neg
-           plot(x = 1-tnr, y = tpr, type = "l", 
-                xlab = "False Positive Rate",
-                ylab = "True Positive Rate", 
-                main = paste0("AUC = ", round(sum(tnr*diff(c(0,1-tpr))),2))
-           )
-         },
-         
-         ordinal = {
-           cat("nope. not yet.")
-         }
-         
-  )
-}
+source("source/func/performance_plot.R")
 
 propmodel = get_score(psmodel = "glm", 
                       .data = df, 
                       t_var = "t", m_vars= c("a","b","c","d","e"), 
-                      missing="complete")
+                      missing="mi")
 
-performance_plot(psmodel_obj = propmodel, .data = df, treatment = "t")
+performance_plot(psmodel_obj = propmodel, t_var = "t")
 
 
 balancedata = balancing(cf_method = "matching",
