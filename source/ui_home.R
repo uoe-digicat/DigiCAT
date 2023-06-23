@@ -2,7 +2,7 @@ home_page <-
   div(id="home",
       # text summary
       HTML("<center>"),
-      HTML('<center><img src="progress_bar/get_started.png" width="800"></center>'),
+      HTML('<center><img src="progress_bar/new/get_started.png" width="1000"></center>'),
       br(),br(),br(),
       h2("How to use this tool"),
       br(),
@@ -13,7 +13,7 @@ home_page <-
       br(),
       h5('Step 3: Select your counterfactual method(s) and click Run to see the results'),
       br(),
-      div(class = "buttonagency", actionBttn("start_btn",label="Get Started!", size="sm", color="default", style = "simple")),
+      div(actionButton("start_btn",label="Get Started!", class = "default_button")),
       br(),br(),br(),
       (""),
       br(),br(),
@@ -22,7 +22,7 @@ home_page <-
         column(12,
                div(style = "display: flex;", 
                    div(class = "text_blocks",
-                     style = "width: 48%;",
+                     style = "width: 49%;",
                        h3("Counterfactual Analysis"),
                        h5("The aim of counterfactual analysis is to estimate the causal effects of interventions or 
             treatments, by comparing what actually happened (observed outcomes) with what would have happened 
@@ -32,15 +32,15 @@ home_page <-
             based on a set of observed covariates). These propensity scores can then be used in an analysis 
             to balance the characteristics of treatment vs non-treated groups, reducing bias and enabling a 
             more accurate estimation of the causal effect of receiving the treatment. For more info, see our ", 
-                          actionLink("tutorial_link", "tutorial"), ".")),
+                          actionLink("tutorial_link_home_1", "tutorial"), ".")),
                    div(class = "text_blocks",
-                     style = "width: 48%; margin-left: 4%",
+                     style = "width: 49%; margin-left: 2%",
                        h3("Our App"),
                        h5("With the DigiCAT app, you can upload your own data and leverage propensity score methods to
             conduct counterfactual analyses, gaining insights into the causal effects of specific 
             interventions or treatments. The primary objective of the DigiCAT app is to provide researchers, 
             regardless of their statistical background, with a user-friendly platform that removes barriers 
-            and enables them to utilize these methods effectively. Please visit our ", actionLink("tutorial_link", "tutorial"),
+            and enables them to utilize these methods effectively. Please visit our ", actionLink("tutorial_link_home_2", "tutorial"),
                           " for more info on using DigiCAT."))
                )
         ),

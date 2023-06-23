@@ -139,8 +139,14 @@ color: #f02094;
 }
 
 /* hide analysis tabs */
-#Tab_analysis { display: none; }
+#methods-tabs { 
+  display: none; 
+}
 
+/* hide outline of navbar for balancing output */
+#methods-balancing_output_plots { 
+  border-color: transparent; 
+}
 /* change colour of buttons */
 .default_button {
   background-color: #c5e2fc;
