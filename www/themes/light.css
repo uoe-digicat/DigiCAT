@@ -143,13 +143,20 @@ color: #f02094;
 
 
 /* hide analysis tabs */
-#Tab_analysis { display: none; }
+#methods-tabs { 
+  display: none; 
+}
+
+/* hide outline of navbar for balancing output */
+#methods-balancing_output_plots { 
+  border-color: transparent; 
+}
 
 /* change colour of buttons */
 .progress_button {
   background-color: #ebfdc2;
   color: #170344;
-  border-color: #ebfdc2;
+  border-color: #7aad06;
 
 }
 
@@ -157,7 +164,7 @@ color: #f02094;
 .default_button {
   background-color: #c5e2fc;
   color: #170344;
-  border-color: #c5e2fc;
+  border-color: #76b9f5;
 }
 
 /* Theme checkbox */

@@ -4,7 +4,7 @@
 performance_plot <- function(psmodel_obj, t_var, treattype = "binary"){
   
   if(class(psmodel_obj$data)=="mids"){
-    obs = lapply(mice::complete(psmodel_obj$data, "all"), function(d) d[,'t'])
+    obs = lapply(mice::complete(psmodel_obj$data, "all"), function(d) d[,t_var])
     pred = psmodel_obj$score
     
     switch(treattype,

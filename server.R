@@ -7,9 +7,16 @@ source("source/func/reset_upload_page.R")
 source("source/func/check_selected_variables.R")
 source("source/func/get_validation.R")
 
+source("source/modules/mod_counterfactual_approach.R")
+source("source/modules/mod_balancing_model.R")
+source("source/modules/mod_balancing.R")
+source("source/modules/mod_outcome_model.R")
+source("source/modules/mod_get_results.R")
+source("source/modules/mod_tutorial.R")
 
 server <- function(input, output, session) {
- 
+  
+  
   
   ####
   # App theme ----
@@ -23,19 +30,28 @@ output$style <- renderUI({
     }}
   })
   
-  
-  
+  ####
+  # TCs page ----
+  ####
+
+  ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
+  observeEvent(input$Btn_agree_TCs, {
+    updateTabsetPanel(session, inputId = "main_tabs", selected = 'analysis')
+    updateTabsetPanel(session, inputId = "methods-tabs", selected = "upload")
+    removeModal() ## remove modal
+  })
+
+
   ####
   # Start Page ----
   ####
-
   
   ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
   observeEvent(input$start_btn,{
     
     ## If user has already agreed to T&Cs, proceed to upload page
-    if (isTruthy(input$start_agree)){
-      updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
+    if (isTruthy(input$Btn_agree) | isTruthy(input$Btn_agree_TCs)){
+      updateTabsetPanel(session, inputId = "methods-tabs", selected = "upload")
     } else{ ## If they have not yet agreed, ask (again)
 
       ## Pop up agreement
@@ -46,8 +62,8 @@ output$style <- renderUI({
         tags$div("Have you read and agree to the terms of the", actionLink("TCs_link", "DigiCAT Customer Agreement"), "?"),
         footer=tagList(
           div(style = "text-align:center",
-          actionButton('start_dont_agree', "No, I don't agree", style="color: white; background: #4f78dc"),
-          actionButton('start_agree', 'Yes, I agree', style="color: white; background: green"))),
+          actionButton('Btn_dont_agree', "No, I don't agree", style="color: white; background: #4f78dc"),
+          actionButton('Btn_agree', 'Yes, I agree', style="color: white; background: green"))),
         HTML("<center>")))
     }
   })
@@ -59,43 +75,42 @@ output$style <- renderUI({
   })
   
   ## T&Cs agreement: If 'No, I don't agree', remove modal and remain in start page
-  observeEvent(input$start_dont_agree, {
+  observeEvent(input$Btn_dont_agree, {
     removeModal() ## remove modal
   })
       
   ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
-  observeEvent(input$start_agree, {
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
+  observeEvent(input$Btn_agree, {
+    updateTabsetPanel(session, inputId = "methods-tabs", selected = "upload")
     removeModal() ## remove modal
   })
   
-  ## If tutorial link clicked, close modal and switch to T&Cs tab
-  observeEvent(input$tutorial_link, {
+  ## If tutorial link clicked, swtich to tutorial page
+  observeEvent(c(input$tutorial_link_home_1, input$tutorial_link_home_2), {
     updateTabsetPanel(session, inputId = "main_tabs", selected = 'tutorial')
     removeModal() ## remove modal
-  })
+  }, ignoreInit = TRUE)
   
   ####
   # Data upload ----
   ####
-  #* Data upload: setup ----
+  #* Data upload: Setup ----
   
   ## Hide data and validation tabs initially
   hideTab(inputId = "Tab_data", target = "raw_data")
   hideTab(inputId = "Tab_data", target = "data_validation")
   
   
-  ## Save data and source as a reactive variable
+  ## Save data, data source and validation as a reactive variable
   inputData <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
 
   
   #* Data upload: Navigation ----
   ## If "Prev" selected on data upload page, go back to start page
   observeEvent(input$prevDU_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "home")
+    updateTabsetPanel(session, inputId = "methods-tabs", selected = "home")
   }
   )
-  
   
   observeEvent(input$validate_btn,{
     
@@ -103,7 +118,7 @@ output$style <- renderUI({
     if (is.null(inputData$validation)){
       ## Do nothing
     } else{ ## Continue to model config page
-      updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
+      updateTabsetPanel(session, inputId = "methods-tabs", selected = "methods-approach_tab")
     }
   }
   )
@@ -204,7 +219,7 @@ output$style <- renderUI({
   observeEvent(input$Btn_sampledata, {
     
     ## Load in sample data
-    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
+    inputData$rawdata <- read.csv("data/zp_eg.csv")
     
     ## Reset any input errors and hide validate tab
     reset_upload_page(reset_errors = TRUE, hide_validation = TRUE)
@@ -284,81 +299,49 @@ output$style <- renderUI({
   
   
   ####
-  # Model configuration ----
+  # Counterfactual Appraoch ----
   ####
   
-  ## When "BUILD!" selected on model configuration, switch to PS results tab
-  observeEvent(input$nextCM_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "psres")
-  }
-  )
-  
-  ## When "Prev" selected on model configuration, go back to data upload page
-  observeEvent(input$prevCM_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
-  }
-  )
-  
+  CF_approach <- CF_approach_server("methods")
   
   ####
-  # PS results ----
+  # Balancing model ----
   ####
   
+  balancing_model_res <- balancing_model_server("methods", 
+                         parent = session,
+                         raw_data = inputData$rawdata,
+                         treatment_variable = input$treatment,
+                         matching_variables = input$matchvars)
   
-  ## When "Prev" selected on PS results page, go back to model configuration page
-  observeEvent(input$prevPSR_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
-  }
-  )
-  
-  ## When "Next" selected on PS results page, go back to get results page
-  observeEvent(input$nextPSR_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "results")
-  }
-  )
-  
-  # Source server side 
-  source("source/outcome_model.R",local=T)
-  source("source/ps_model.R",local=T)
-  react_PSmodel <- reactiveValues(psmodel=NULL)
-  react_outcomemodel <- reactiveValues(outcomemodel=NULL)
-  observeEvent(input$nextCM_btn, {
-    react_PSmodel$psmodel <- ps_model(.data = inputData$rawdata, 
-                                      treatment = input$treatment,
-                                      matchvars = input$matchvars,
-                                      model = input$psm,
-                                      method = input$counterfactual)
-    print(react_PSmodel$psmodel)
-    
-    output$PSmodel_baltab <- renderPrint({cobalt::bal.tab(react_PSmodel$psmodel)})
-    output$PSmodel_balplot <- renderPlot({cobalt::bal.plot(react_PSmodel$psmodel)})
-    output$PSmodel_loveplot <- renderPlot({cobalt::love.plot(react_PSmodel$psmodel)})
-    
-  })
-  
-  # Get results ----
+  ####
+  # Balancing ----
   ####
   
-  ## When "Prev" selected on get results page, go back to PS results page
-  observeEvent(input$resPrev_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "psres")
-  }
-  )
+  balancing_res <-  balancing_server("methods", 
+                   parent = session,
+                   treatment_variable = input$treatment,
+                   matching_variables = input$matchvars,
+                   approach = CF_approach(),
+                   balancing_model_results = balancing_model_res())
   
-  observeEvent(input$resshow_btn, {
-    react_outcomemodel$outcomemodel <- outcome_model(.data=inputData$rawdata,
-                                                     outcome = input$outcome,
-                                                     treatment = input$treatment,
-                                                     covars = input$covars,
-                                                     matchvars = input$matchvars,
-                                                     PSmodel = react_PSmodel$psmodel, 
-                                                     method = input$counterfactual,
-                                                     doubly = input$drobust)
-    output$outcome_plot <- renderPlot({react_outcomemodel$outcomemodel$plot})
-    output$outcome_table <- renderTable({react_outcomemodel$outcomemodel$est})
-    output$outcome_resid <- renderPlot({performance::check_model(react_outcomemodel$outcomemodel$mod)})
+  ####
+  # Outcome Model ----
+  ####
   
-    })
+  outcome_model_server("methods",  
+                       parent = session,
+                       treatment_variable = input$treatment,
+                       outcome_variable = input$outcome,
+                       matching_variables = input$matchvars,
+                       balancing_results = balancing_res())
+  
+  ####
+  # Get Results ----
+  ####
+  
+  get_results_server("methods")
+
 }
 
 

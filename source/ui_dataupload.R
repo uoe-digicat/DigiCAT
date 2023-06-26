@@ -4,7 +4,7 @@ library(shinycssloaders)
 dataupload_page <- 
   div(id = "dataupload",
     useShinyFeedback(), # include shinyFeedback
-      HTML('<center><img src="progress_bar/data_upload.png" width="800"></center>'),
+      HTML('<center><img src="progress_bar/new/data_upload.png" width="1000"></center>'),
       br(), br(), br(),
       sidebarLayout(
         sidebarPanel(id="sidebarPanel",
