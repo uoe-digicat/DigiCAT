@@ -5,7 +5,7 @@ get_results_ui <- function(id) {
   
   ## Tab for choosing counterfactual analysis approach
   tabPanel(title = "",
-           value = NS(id, 'get_results_tab'),
+           value = NS(id, 'tab'),
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/get_results.png" width="1000"></center>'),
            
@@ -39,14 +39,14 @@ get_results_ui <- function(id) {
   )
 }
 
-get_results_server <- function(id) {
+get_results_server <- function(id, parent) {
   
   moduleServer(id,
                function(input, output, session) {
                  
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_get_results_btn, {
-                   updateTabsetPanel(session = session, inputId = 'tabs', selected = NS(id, 'outcome_model_tab'))
+                   updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "outcome_model-tab")
                  })
                  
                  

@@ -3,9 +3,11 @@
 outcome_model_ui <- function(id) {
   ns <- NS(id)
   
+  require(shinycssloaders)
+  
   ## Tab for choosing counterfactual analysis approach
   tabPanel(title = "",
-           value = NS(id, 'outcome_model_tab'),
+           value = NS(id, 'tab'),
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/outcome_model.png" width="1000"></center>'),
            
@@ -41,7 +43,7 @@ outcome_model_ui <- function(id) {
                div(style = "width: 49%; margin-left: 2%;",
                    class = "text_blocks",
                    ## Output of selected outcome_model model
-                   uiOutput(ns("outcome_model_output")))
+                   withSpinner(uiOutput(ns("outcome_model_output"))))
            ),
            
            
@@ -55,24 +57,27 @@ outcome_model_ui <- function(id) {
   )
 }
 
-outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, balancing_results) {
+outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, balancing_results, approach) {
   
   moduleServer(id,
                function(input, output, session) {
                  
+                 ## Disable 'Next' button initially
+                 shinyjs::disable("next_outcome_model_btn")
+                 
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_outcome_model_btn, {
-                   updateTabsetPanel(session = session, inputId = 'tabs', selected = NS(id, 'balancing_tab'))
+                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "balancing-tab")
                  })
                  
                  ## When "Next is selected", show and move to new tab
                  observeEvent(input$next_outcome_model_btn, {
-                   updateTabsetPanel(session = session, inputId = 'tabs', selected = NS(id, 'get_results_tab'))
+                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "get_results-tab")
                  })
                  
                  ## If tutorial link clicked, go to tutorial page
                  observeEvent(input$outcome_model_tab_tutorial_link, {
-                   updateTabsetPanel(session = parent, inputId = 'main_tabs', selected = "tutorial")
+                   updateTabsetPanel(session = parent, inputId = "main_tabs", selected = "tutorial")
                  })
                  
                  ## Create reactive value for approach description
@@ -96,7 +101,12 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                    if(input$outcome_model_radio == "LR"){
                      outcomeModel$description_method <- p(h4("Outcome Model: Linear Regression:"),
                                                             br(),
-                                                            p("You've choosen Linear Regression, this is why is may/may not be a good choice."))
+                                                            p("Linear regression is a way of modelling the associations between exploratory variable(s) 
+                                                              and a continuous outcome variable. The model takes the form y = bX + e, where y and x are our 
+                                                              outcome and explanatory variables respectively, and e is the random error. Of interest here is 
+                                                              B, which is the estimated effect of our explanatory variable on our outcome. By fitting a model 
+                                                              to a sample that is either matched or weighted according to the propensity of treatment, we can 
+                                                              better estimate the **causal** effect of the treatment on our outcome variable."))
                      
                      outcomeModel$parameters_method <- p(h4("Outcome Model Parameters: Linear Regression"),
                                                            br(),
@@ -109,22 +119,43 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                 
                  observeEvent(input$run_outcome_model_btn, {
                    
+                   ## Disable 'Run' button
+                   shinyjs::disable("run_outcome_model_btn")
+                   
+                   ## Remove default output message
+                   outcomeModel$output <- NULL
+                   
                    outcome_res <- outcome_analysis("unweighted", 
-                                                     y_var = outcome_variable,
-                                                     t_var = treatment_variable,
-                                                     m_vars = matching_variables,
-                                                     balanced_data = balancing_results,
+                                                     y_var = outcome_variable(),
+                                                     t_var = treatment_variable(),
+                                                     m_vars = matching_variables(),
+                                                     balanced_data = balancing_results(),
                                                      ids = NULL, weights = NULL, strata = NULL, fpc = NULL, 
-                                                     cf_method = "matching")
+                                                     cf_method = approach())
                    
                    
                    ## Output estimate
                    outcomeModel$output <- p(h4("Model Output"),
-                                              p(paste0("Estimate: ", round(outcome_res[2,2], 3))),
-                                              p(paste0("Standard Error: ", round(outcome_res[2,3], 3))),
-                                              p(paste0("P-value: ", round(outcome_res[2,6], 3)))
+                                            p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, 
+                                              interventions, or treatments on mental health outcomes."),
+                                            strong(p(paste0("Estimate: ", round(outcome_res[2,2], 3)))),
+                                            br(),
+                                            p("The standard error is a statistical measure that quantifies the variability or uncertainty associated 
+                                              with the estimate. It provides a measure of how much the estimate is likely to vary from the true 
+                                              population value. "),
+                                            strong(p(paste0("Standard Error: ", round(outcome_res[2,3], 3)))),
+                                            br(),
+                                            p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test 
+                                              statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. 
+                                              Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is 
+                                              rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect 
+                                              or relationship in the data."),
+                                            strong(p(paste0("P-value: ", round(outcome_res[2,6], 3))))
                                               )
                    
+                   ## Enable 'Run' and 'Next' buttons
+                   shinyjs::enable("next_outcome_model_btn")
+                   shinyjs::enable("run_outcome_model_btn")
 
                  })
                  

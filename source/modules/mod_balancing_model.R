@@ -7,7 +7,7 @@ balancing_model_ui <- function(id) {
   
   ## Tab for choosing counterfactual analysis approach
   tabPanel(title = "",
-           value = NS(id, 'balancing_model_tab'),
+           value = NS(id, 'tab'),
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/balancing_model.png" width="1000"></center>'),
            
@@ -18,18 +18,20 @@ balancing_model_ui <- function(id) {
                div(style = "width: 23.5%;",
                    class = "text_blocks",
                    radioButtons(NS(id, "balancing_model_radio"), label = h4("Choose a Balancing Model:"),
-                                choices = list("Probit Regression" = "glm", 
-                                              "Gradient Boosting Machine (GBM)" = "gbm",
-                                              "Random Forest" = "rforest"),
+                                choices = list(
+                                  #"Gradient Boosting Machine (GBM)" = "gbm",
+                                  #"Random Forest" = "rforest"),
+                                "Probit Regression" = "glm"),
                                 selected = character(0))
                ),
                div(style = "width: 23.5%; margin-left: 2%;",
                    class = "text_blocks",
                    radioButtons(NS(id, "balancing_model_missingness_radio"), label = h4("Model Missingess:"),
-                                choices = list("Full Information Maximum Likelihood (FIML)" = "fiml", 
-                                               "Multiple Imputation" = "mi",
-                                               "Weighting" = "weighting",
-                                               "Complete Case" = "complete"),
+                                choices = list(
+                                  #"Full Information Maximum Likelihood (FIML)" = "fiml", 
+                                  "Multiple Imputation" = "mi",
+                                  #"Weighting" = "weighting",
+                                  "Complete Case" = "complete"),
                                 selected = character(0))
                ),
                div(style = "width: 49%; margin-left: 2%;",
@@ -54,7 +56,7 @@ balancing_model_ui <- function(id) {
                    br(),
                    uiOutput(ns("balancing_missingness_parameters"))),
                
-               div(style = "width: 49%; margin-left: 2%; height:350px; overflow-y: scroll;",
+               div(style = "width: 49%; margin-left: 2%; overflow-y: scroll;",
                    class = "text_blocks",
                    ## Output of selected balancing model
                    withSpinner(uiOutput(ns("balancing_model_output"))))
@@ -73,17 +75,22 @@ balancing_model_ui <- function(id) {
 
 balancing_model_server <- function(id, parent, raw_data, treatment_variable, matching_variables) {
   
+  #v <- reactiveValues(treatment_variable = treatment_variable)
+  
   moduleServer(id,
                function(input, output, session) {
                  
+                 ## Disable 'Next' button initially
+                 shinyjs::disable("next_balancing_model_btn")
+                 
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_balancing_model_btn, {
-                   updateTabsetPanel(session = session, inputId = 'tabs', selected = NS(id, 'approach_tab'))
+                   updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "CF_approach-tab")
                  })
 
                  ## When "Next is selected", show and move to new tab
                  observeEvent(input$next_balancing_model_btn, {
-                   updateTabsetPanel(session = session, inputId = 'tabs', selected = NS(id, 'balancing_tab'))
+                   updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "balancing-tab")
                  })
 
                  ## Create reactive value for approach description
@@ -96,7 +103,9 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, mat
                                    Please visit our tutorial if you would like more guidance on choosing a balancing model.")
                                    ),
                    missingness_description = p(h4("Model Missingness:"),
-                                         p("Here is some guidance on selecting an appropriate method of dealing with model missingess.")),
+                                         p("Missing data can introduce bias, affecting the validity of analyses and the reliability of conclusions drawn from 
+                                           the data. In order to minimise the impact of missingness in our data, DigiCAT offers several approaches to handle
+                                           missing values.")),
                    model_parameters = p(h4("Balancing Model Parameters:"),
                                   p("Once you have selected a balancing model, we will show you the parameters in use here.")),
                    missingness_parameters = p(h4("Balancing Model Parameters:"),
@@ -213,18 +222,27 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, mat
                  
                  observeEvent(input$run_balancing_model_btn, {
                    
+                   ## Disable 'Run' button
+                   shinyjs::disable("run_balancing_model_btn")
+                   
+                   ## Remove general output message
+                   methodsBalanceModel$output <- NULL
+                   
                    methodsBalanceModel$result <-
                      get_score(
-                       psmodel = "glm",
-                       .data = raw_data,
-                       t_var = treatment_variable,
-                       m_vars= matching_variables,
-                       missing="mi"
+                       psmodel = input$balancing_model_radio,
+                       .data = raw_data(),
+                       t_var = treatment_variable(),
+                       m_vars = matching_variables(),
+                       missing = input$balancing_model_missingness_radio
                      )
                    
                    methodsBalanceModel$output <- p(
                      h4("The Receiver Operating Characteristic (ROC) curve:"),
-                     p("The Receiver Operating Characteristic (ROC) curve is a plotting method used assess 
+                     renderPlot(performance_plot(psmodel_obj = methodsBalanceModel$result,
+                                                 t_var =treatment_variable(),
+                                                 treattype = "binary")),
+                     p("The Receiver Operating Characteristic (ROC) curve is a plotting method used to assess 
                                                      the performance of a binary classifier (such as a probit regression model) across 
                                                      various discrimination thresholds. The curve plots the true positive rate (sensitivity) 
                                                      against the false positive rate (1 - specificity) at different threshold values. 
@@ -232,10 +250,12 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, mat
                                                      to distinguish between the two outcomes. The Area Under the Curve (AUC) summarizes 
                                                      the overall performance, taking values between 0.5 and 1, with higher values indicating better 
                                                      discrimination. A value of 0.5 suggests the classifier performs no better than random guessing, 
-                                                     and the corresponding curve would be a diagonal line from bottom-left to top-right."),
-                                                   renderPlot(performance_plot(psmodel_obj = methodsBalanceModel$result,
-                                        t_var =treatment_variable,
-                                        treattype = "binary")))
+                                                     and the corresponding curve would be a diagonal line from bottom-left to top-right.")
+                                                   )
+                   ## Enable 'Run' and 'Next' buttons 
+                   shinyjs::enable("run_balancing_model_btn")
+                   shinyjs::enable("next_balancing_model_btn")
+                   
                    })
                  
                  ## Display information for choosing counterfactual approach, relevent parameters and model output
@@ -246,7 +266,8 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, mat
                  output$balancing_model_output <- renderUI(methodsBalanceModel$output)
                  
                  ## Return output of balancing model
-                 reactive(methodsBalanceModel$result)
+                 
+                 return(reactive({methodsBalanceModel$result}))
                })
 }
                
