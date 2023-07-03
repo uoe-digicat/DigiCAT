@@ -7,6 +7,7 @@ source("source/func/reset_upload_page.R")
 source("source/func/check_selected_variables.R")
 source("source/func/get_validation.R")
 
+source("source/modules/mod_home.R")
 source("source/modules/mod_counterfactual_approach.R")
 source("source/modules/mod_balancing_model.R")
 source("source/modules/mod_balancing.R")
@@ -15,7 +16,6 @@ source("source/modules/mod_get_results.R")
 source("source/modules/mod_tutorial.R")
 
 server <- function(input, output, session) {
-  
   
   
   ####
@@ -46,50 +46,8 @@ output$style <- renderUI({
   # Start Page ----
   ####
   
-  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
-  observeEvent(input$start_btn,{
-    
-    ## If user has already agreed to T&Cs, proceed to upload page
-    if (isTruthy(input$Btn_agree) | isTruthy(input$Btn_agree_TCs)){
-      updateTabsetPanel(session, inputId = "methods-tabs", selected = "upload")
-    } else{ ## If they have not yet agreed, ask (again)
-
-      ## Pop up agreement
-      showModal(modalDialog(
-        HTML("<center>"),
-        h4("Before you get started:"),
-        br(),
-        tags$div("Have you read and agree to the terms of the", actionLink("TCs_link", "DigiCAT Customer Agreement"), "?"),
-        footer=tagList(
-          div(style = "text-align:center",
-          actionButton('Btn_dont_agree', "No, I don't agree", style="color: white; background: #4f78dc"),
-          actionButton('Btn_agree', 'Yes, I agree', style="color: white; background: green"))),
-        HTML("<center>")))
-    }
-  })
-  
-  ## T&Cs agreement: If terms and conditions link clicked, close modal and switch to T&Cs tab
-  observeEvent(input$TCs_link, {
-    updateTabsetPanel(session, inputId = "main_tabs", selected = 'TC')
-    removeModal() ## remove modal
-  })
-  
-  ## T&Cs agreement: If 'No, I don't agree', remove modal and remain in start page
-  observeEvent(input$Btn_dont_agree, {
-    removeModal() ## remove modal
-  })
-      
-  ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
-  observeEvent(input$Btn_agree, {
-    updateTabsetPanel(session, inputId = "methods-tabs", selected = "upload")
-    removeModal() ## remove modal
-  })
-  
-  ## If tutorial link clicked, swtich to tutorial page
-  observeEvent(c(input$tutorial_link_home_1, input$tutorial_link_home_2), {
-    updateTabsetPanel(session, inputId = "main_tabs", selected = 'tutorial')
-    removeModal() ## remove modal
-  }, ignoreInit = TRUE)
+  home_server("home",
+              parent = session)
   
   ####
   # Data upload ----
@@ -108,7 +66,7 @@ output$style <- renderUI({
   #* Data upload: Navigation ----
   ## If "Prev" selected on data upload page, go back to start page
   observeEvent(input$prevDU_btn,{
-    updateTabsetPanel(session, inputId = "methods-tabs", selected = "home")
+    updateTabsetPanel(session, inputId = "methods-tabs", selected = "home-tab")
   }
   )
   
@@ -118,7 +76,7 @@ output$style <- renderUI({
     if (is.null(inputData$validation)){
       ## Do nothing
     } else{ ## Continue to model config page
-      updateTabsetPanel(session, inputId = "methods-tabs", selected = "methods-approach_tab")
+      updateTabsetPanel(session, inputId = "methods-tabs", selected = "CF_approach-tab")
     }
   }
   )
@@ -302,45 +260,49 @@ output$style <- renderUI({
   # Counterfactual Appraoch ----
   ####
   
-  CF_approach <- CF_approach_server("methods")
+  
+  CF_approach <- CF_approach_server("CF_approach",
+                                    parent = session)
   
   ####
   # Balancing model ----
   ####
   
-  balancing_model_res <- balancing_model_server("methods", 
+  balancing_model_res <- balancing_model_server("balancing_model", 
                          parent = session,
-                         raw_data = inputData$rawdata,
-                         treatment_variable = input$treatment,
-                         matching_variables = input$matchvars)
+                         raw_data = reactive(inputData$rawdata),
+                         treatment_variable = reactive(input$treatment),
+                         matching_variables = reactive(input$matchvars))
   
   ####
   # Balancing ----
   ####
   
-  balancing_res <-  balancing_server("methods", 
+  balancing_res <-  balancing_server("balancing", 
                    parent = session,
-                   treatment_variable = input$treatment,
-                   matching_variables = input$matchvars,
-                   approach = CF_approach(),
-                   balancing_model_results = balancing_model_res())
+                   treatment_variable = reactive(input$treatment),
+                   matching_variables = reactive(input$matchvars),
+                   approach = CF_approach,
+                   balancing_model_results = balancing_model_res)
   
   ####
   # Outcome Model ----
   ####
   
-  outcome_model_server("methods",  
+  outcome_model_server("outcome_model",  
                        parent = session,
-                       treatment_variable = input$treatment,
-                       outcome_variable = input$outcome,
-                       matching_variables = input$matchvars,
-                       balancing_results = balancing_res())
+                       treatment_variable = reactive(input$treatment),
+                       outcome_variable = reactive(input$outcome),
+                       matching_variables = reactive(input$matchvars),
+                       approach = CF_approach,
+                       balancing_results = balancing_res)
   
   ####
   # Get Results ----
   ####
   
-  get_results_server("methods")
+  get_results_server("get_results",
+                     parent = session)
 
 }
 

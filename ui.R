@@ -16,9 +16,9 @@ library(shinydashboard)
 
 
 # source individual pages
-source("source/ui_home.R")
 source("source/ui_dataupload.R")
 
+source("source/modules/mod_home.R")
 source("source/modules/mod_counterfactual_approach.R")
 source("source/modules/mod_balancing_model.R")
 source("source/modules/mod_balancing.R")
@@ -58,9 +58,9 @@ ui <- fluidPage(
                          "<br><br><br><br><br><br><br><br><br><br><br><br>",
                          "<p style = 'text-align: left; padding-left: 20px;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
                          "<br><br><br>",
-                         #"<img src='logos/WT.png' height = '40'>",
+                         "<img src='logos/WT.png' height = '60'>",
                          "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
-                         "<img src='logos/UoE.png' height = '40'>")
+                         "<img src='logos/UoE.png' height = '60'>")
                          )
                      )
                      
@@ -70,13 +70,13 @@ ui <- fluidPage(
       tabItems(
       tabItem(tabName = "analysis", tabsetPanel(
         id = "methods-tabs",
-        tabPanel(title = "Home", value = "home", home_page), 
+        home_ui("home"),  ## Load home tab
         tabPanel(title = "Upload", value = "upload", dataupload_page),
-        CF_approach_ui("methods"), ## Load CF approach tab
-        balancing_model_ui("methods"), ## Load balancing model tab
-        balancing_ui("methods"), ## Load balancing tab
-        outcome_model_ui("methods"), ## Load outcome model tab
-        get_results_ui("methods") ## Load get results tab
+        CF_approach_ui("CF_approach"), ## Load CF approach tab
+        balancing_model_ui("balancing_model"), ## Load balancing model tab
+        balancing_ui("balancing"), ## Load balancing tab
+        outcome_model_ui("outcome_model"), ## Load outcome model tab
+        get_results_ui("get_results") ## Load get results tab
       )),
       tutorial_ui("methods"),
       tabItem(tabName = "TC", TCs_page),

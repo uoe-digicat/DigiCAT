@@ -3,45 +3,19 @@
 balancing_ui <- function(id) {
   ns <- NS(id)
   
+  require(shinycssloaders)
+  
   ## Tab for choosing counterfactual analysis approach
   tabPanel(title = "",
-           value = NS(id, 'balancing_tab'),
+           value = NS(id, 'tab'),
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/balancing.png" width="1000"></center>'),
            
            br(), br(),
            
            ## matching method
-           div(style = "display: flex;",
-               div(style = "width: 23.5%;",
-                   class = "text_blocks",
-                   radioButtons(NS(id, "matching_method_radio"), label = h4("Choose a Matching Method:"),
-                                choices = c("Nearest Neighbour (NN)" = "NN", 
-                                               "Optimal" = "optimal"),
-                                selected = character(0))
-               ),
-               div(style = "width: 23.5%; margin-left: 2%;",
-                   class = "text_blocks",
-                   radioButtons(NS(id, "matching_ratio_radio"), label = h4("Choose a Ratio Matching:"),
-                                choices = list("1:1" = "one_to_one", 
-                                               "1:K" = "one_to_K"),
-                                selected = character(0))
-               ),
-               div(style = "width: 49%; margin-left: 2%;",
-                   class = "text_blocks",
-                   
-                   ## Description of selected balancing model
-                   uiOutput(ns("balancing_description_method")),
-                   br(),br(),
-                   uiOutput(ns("balancing_description_ratio")),
-                   br(),br(),
-                   p("For more information, visit our ", actionLink(ns("balancing_tab_tutorial_link"), "tutorial"), ".")
-                   
-                   
-               )),
-           
+           uiOutput(ns("balancing_options")), ## Load balancign options and descriptions based on CF appraoch chosen
            br(), br(),
-           
            div(style = "display: flex;",
                div(style = "width: 49%;",
                    class = "text_blocks",
@@ -50,30 +24,30 @@ balancing_ui <- function(id) {
                    br(),br(),
                    uiOutput(ns("balancing_parameters_ratio"))),
                
-               div(style = "width: 49%; margin-left: 2%;",
+               div(style = "width: 49%; margin-left: 2%; border-color: transparent",
                    class = "text_blocks",
                    
                    ## Show initial output message
                    uiOutput(ns("balancing_output")),
-                   
+
                    ## Add tabs to display output
                    tabsetPanel(id = NS(id, "balancing_output_plots"),
-                     tabPanel(title = "Observation Table",
-                              value = NS(id, 'observations_table_tab'),
-                              br(),
-                              DT::dataTableOutput(ns("observations_table"))),
-                     tabPanel(title = "Love Plot", 
-                              value = NS(id, 'love_plot_tab'),
-                              br(),
-                              plotOutput(ns("love_plot"))
-                              ),
-                     tabPanel(title = "Balance Table", 
-                              value = NS(id, 'balance_table_tab'),
-                              br(),
-                              DT::dataTableOutput(ns("balance_table"))
-                              )
-                     )
-           )
+                               tabPanel(title = "Observation Table",
+                                        value = NS(id, 'observations_table_tab'),
+                                        br(),
+                                        withSpinner(DT::dataTableOutput(ns("observations_table")))),
+                               tabPanel(title = "Love Plot", 
+                                        value = NS(id, 'love_plot_tab'),
+                                        br(),
+                                        plotOutput(ns("love_plot"))
+                               ),
+                               tabPanel(title = "Balance Table", 
+                                        value = NS(id, 'balance_table_tab'),
+                                        br(),
+                                        DT::dataTableOutput(ns("balance_table"))
+                               )
+                   )
+               )
            ),
            
            
@@ -92,31 +66,119 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
   moduleServer(id,
                function(input, output, session) {
                  
+                 ## Create reactive value for approach description
+                 mathingBalance <- reactiveValues(
+                   description_method = NULL,
+                   description_ratio = NULL,
+                   parameters_method = NULL,
+                   parameters_ratio = NULL,
+                   balancing_res = NULL,
+                   output = NULL)
+                 
+                 ## Render balancing analysis options based on approach chosen
+                 observeEvent(approach(),{
+                   
+                   if (approach() == "matching"){
+                     
+                     output$balancing_options <- renderUI({
+                       div(style = "display: flex;",
+                         div(style = "width: 23.5%;",
+                             class = "text_blocks",
+                             radioButtons(session$ns("matching_method_radio"), label = h4("Choose a Matching Method:"),
+                                          choices = c(
+                                            #"Optimal" = "optimal",
+                                            "Nearest Neighbour (NN)" = "NN"),
+                                          selected = character(0))
+                         ),
+                         div(style = "width: 23.5%; margin-left: 2%;",
+                             class = "text_blocks",
+                             radioButtons(session$ns("matching_ratio_radio"), label = h4("Choose a Ratio Matching:"),
+                                          choices = list( 
+                                            #"1:K" = "one_to_K",
+                                            "1:1" = "one_to_one"),
+                                          selected = character(0))
+                         ),
+                         div(style = "width: 49%; margin-left: 2%;",
+                             class = "text_blocks",
+                             
+                             ## Description of selected balancing model
+                             uiOutput(session$ns("balancing_description_method")),
+                             br(),br(),
+                             uiOutput(session$ns("balancing_description_ratio")),
+                             br(),br(),
+                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
+                         )
+                       )
+                     })
+                     
+                     ## Reactive value for approach description
+                     mathingBalance$description_method = p(h4("Matching Method:"),
+                     p("In order to balance covariates between treatment groups, propensity score matching involves matching 
+                     individuals based on their propensity scores, which represent their likelihood of being treated based on 
+                     observed characteristics. The goal is to create a pseudo-randomized comparison between the treatment and 
+                       control groups by matching individuals who have similar or close propensity scores."))
+                     mathingBalance$description_ratio = p(h4("Matching Ratio:"),
+                     p("Matching ratios in propensity score matching refer to the number of control/untreated individuals that are matched 
+                     to each treated individual. In DigiCAT, matching ratios can be specified to control the trade-off between 
+                                           achieving better balance between treatment groups and maintaining an adequate sample size."))
+                     mathingBalance$parameters_method = p(h4("Matching Parameters:"),
+                                                          p("Once you have selected a matching method and model, we will show you the parameters in use here."))
+                     mathingBalance$parameters_ratio = NULL
+                     mathingBalance$balancing_res = NULL
+                     mathingBalance$output = p(h4("Output:"),
+                     p("Once you have selected your matching method and ratio, press
+                       'Run' to get output."))
+                   }
+
+                   if (approach() == "weighting"){
+                     
+                     output$balancing_options <- renderUI({
+                       div(style = "display: flex;",
+                           div(style = "width: 49%;",
+                               class = "text_blocks",
+                               div(
+                                 "Balancing options/extra info for weighting go here"
+                               )
+                           ),
+                           div(style = "width: 49%; margin-left: 2%;",
+                               class = "text_blocks",
+                               
+                               ## Description of selected balancing model
+                               uiOutput(session$ns("balancing_description_method")),
+                               br(),br(),
+                               uiOutput(session$ns("balancing_description_ratio")),
+                               br(),br(),
+                               p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
+                           )
+                       )
+                     })
+                     
+                     ## Create reactive value for approach description
+                     mathingBalance$description_method = p(h4("Description:"),
+                                                           p("Info about balancing with weighting"))
+                     mathingBalance$description_ratio = NULL ##no ratio for weighting
+                     mathingBalance$parameters_method = p(h4("Matching Parameters:"),
+                                             p("Once you have selected a matching method and model, we will show you the parameters in use here."))
+                     mathingBalance$parameters_ratio = NULL
+                     mathingBalance$balancing_res = NULL
+                     mathingBalance$output = p(h4("Output:"),
+                                  p("Once you have selected your matching method, press
+                                'Run' to get output."))
+                   }
+                 })
+
+                 ## Disable 'Next' button initially
+                 shinyjs::disable("next_balancing_btn")
+                 
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_balancing_btn, {
-                   updateTabsetPanel(session = session, inputId = 'tabs', selected = NS(id, 'balancing_model_tab'))
+                   updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "balancing_model-tab")
                  })
                  
                  ## When "Next is selected", show and move to new tab
                  observeEvent(input$next_balancing_btn, {
-                   updateTabsetPanel(session = session, inputId = 'tabs', selected = NS(id, 'outcome_model_tab'))
+                   updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "outcome_model-tab")
                  })
-                 
-                 ## Create reactive value for approach description
-                 mathingBalance <- reactiveValues(
-                   description_method = p(h4("Matching Method:"),
-                                          p("Here is some guidance on selecting an appropriate matching method.")),
-                   description_ratio = p(h4("Matching Ratio:"),
-                                         p("Here is some guidance on selecting an appropriate matching ratio")),
-                   parameters_method = p(h4("Matching Parameters:"),
-                                         p("Once you have selected a matching method and model, we will show you the parameters in use here.")),
-                   parameters_ratio = NULL,
-                   balancing_res = NULL,
-                   output = p(h4("Output:"),
-                              p("Once you have selected your matching method and ratio, press
-                                'Run' to get output."))
-                   )
-                 
                  
                  ## If tutorial link clicked, go to tutorial page
                  observeEvent(input$balancing_tab_tutorial_link, {
@@ -129,8 +191,8 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                    
                    if(input$matching_method_radio == "NN"){
                      mathingBalance$description_method <- p(h4("Matching Method: Nearest Neighbour (NN)"),
-                                                          br(),
-                                                          p("Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated 
+                                                            br(),
+                                                            p("Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated 
                                                             and control cases with similar propensity scores. In DigiCat, nearest neighbour greedy matching 
                                                             is implemented whereby the most similar treated and control cases are matched first. Then, from 
                                                             those left the remaining most similar treated and control cases are paired and so on and so forth 
@@ -138,18 +200,18 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                                                             details."))
                      
                      mathingBalance$parameters_method <- p(h4("Matching Method Parameters: Nearest Neighbour (NN)"),
-                                                         br(),
-                                                         p("Information on parameters in use."))
+                                                           br(),
+                                                           p("Information on parameters in use."))
                    }
                    
                    if(input$matching_method_radio == "optimal"){
                      mathingBalance$description_method <- p(h4("Matching Method: Optimal"),
-                                                          br(),
-                                                          p("You've choosen optimal matching, this is why is may/may not be a good choice."))
+                                                            br(),
+                                                            p("You've choosen optimal matching, this is why is may/may not be a good choice."))
                      
                      mathingBalance$parameters_method <- p(h4("Matching Method Parameters: Optimal"),
-                                                         br(),
-                                                         p("Information on parameters in use."))
+                                                           br(),
+                                                           p("Information on parameters in use."))
                    }
                    
                  })
@@ -159,22 +221,29 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                    
                    if(input$matching_ratio_radio == "one_to_one"){
                      mathingBalance$description_ratio <- p(h4("Matching Ratio: 1:1"),
-                                                     br(),
-                                                     p("You've choosen a 1:1 matching ratio, this is why is may/may not be a good choice."))
+                                                           br(),
+                                                           p("1:1 is the most commonly used matching ratio, although this ratio can be changed, for example, 
+                                                       if there are many more members belonging to the control group than members belonging to the 
+                                                       treatment group. In 1:1 matching, we match one unit belonging to the intervention group with one 
+                                                       unit belonging to the control group that has the closest propensity score. The default matching 
+                                                       strategy in DigiCAT is a nearest neighbour (‘greedy’) matching algorithm, with a 1:1 matching 
+                                                       ratio. As our default is matching without replacement, the selected units will be taken out of 
+                                                       the donor pool once matched. If you think this may not be best for you, see our tutorial pages 
+                                                       for more detailed guidance on choosing an appropriate matching ratio. "))
                      
                      mathingBalance$parameters_ratio <- p(h4("Matching Ratio Parameters: 1:1"),
-                                                    br(),
-                                                    p("Information on parameters in use."))
+                                                          br(),
+                                                          p("Information on parameters in use."))
                    }
                    
                    if(input$matching_ratio_radio == "one_to_K"){
                      mathingBalance$description_ratio <- p(h4("Matching ratio: 1:K"),
-                                                     br(),
-                                                     p("You've choosen a 1:K matching ratio, this is why is may/may not be a good choice."))
+                                                           br(),
+                                                           p("You've choosen a 1:K matching ratio, this is why is may/may not be a good choice."))
                      
                      mathingBalance$parameters_ratio <- p(h4("Matching Ratio Parameters: 1:K"),
-                                                    br(),
-                                                    p("Information on parameters in use."))
+                                                          br(),
+                                                          p("Information on parameters in use."))
                    }
                    
                  })
@@ -190,26 +259,36 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                  hideTab(session = parent, inputId = NS(id, "balancing_output_plots"), target = NS(id, 'balance_table_tab'))
                  
                  observeEvent(input$run_balancing_btn, {
-  
-                   mathingBalance$balancing_res <- balancing(
-                     cf_method = "matching",
-                     t_var = treatment_variable,
-                     m_vars = matching_variables,
-                     psmodel_obj = balancing_model_results
-                   )
                    
+                   ## Disable 'Run' button
+                   shinyjs::disable("run_balancing_btn")
+
                    ## Remove general output message
                    mathingBalance$output <- NULL
-                   
-                   ## Output balance plots and tables
-                   output$love_plot <- renderPlot(cobalt::love.plot(mathingBalance$balancing_res))
-                   output$balance_table <- DT::renderDataTable({DT::datatable(cobalt::bal.tab(mathingBalance$balancing_res)$Balance.Across.Imputations, rownames = TRUE, options = list(scrollX = TRUE))})
-                   output$observations_table <- DT::renderDataTable({DT::datatable(cobalt::bal.tab(mathingBalance$balancing_res)$Observations, rownames = TRUE, options = list(scrollX = TRUE))})
-                   
+
                    ## Show output plots
                    showTab(session = parent, inputId = NS(id, "balancing_output_plots"), target = NS(id, 'observations_table_tab'))
                    showTab(session = parent, inputId = NS(id, "balancing_output_plots"), target = NS(id, 'love_plot_tab'))
                    showTab(session = parent, inputId = NS(id, "balancing_output_plots"), target = NS(id, 'balance_table_tab'))
+
+                   ## Balance dataset
+                   mathingBalance$balancing_res <- balancing(
+                     cf_method = approach(),
+                     t_var = treatment_variable(),
+                     m_vars = matching_variables(),
+                     psmodel_obj = balancing_model_results()
+                   )
+
+                   ## Output balance plots and tables
+                   output$love_plot <- renderPlot(cobalt::love.plot(mathingBalance$balancing_res))
+                   output$balance_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(mathingBalance$balancing_res)[[which(grepl("^Balance",names(cobalt::bal.tab(mathingBalance$balancing_res))))]]), rownames = TRUE, options = list(scrollX = TRUE))})
+                   output$observations_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(mathingBalance$balancing_res)[["Observations"]]), rownames = TRUE, options = list(scrollX = TRUE))})
+
+                   ## Enable 'Run' and 'Next' buttons
+                   shinyjs::enable("run_balancing_btn")
+                   shinyjs::enable("next_balancing_btn")
+                   
+                   
                  })
                  
                  
@@ -221,6 +300,6 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                  output$balancing_output <- renderUI(mathingBalance$output)
                  
                  ## Return balancing output
-                 reactive(mathingBalance$balancing_res)
+                 return(reactive({mathingBalance$balancing_res}))
                })
 }
