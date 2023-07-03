@@ -65,7 +65,7 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
   
   moduleServer(id,
                function(input, output, session) {
-                 
+
                  ## Create reactive value for approach description
                  mathingBalance <- reactiveValues(
                    description_method = NULL,
@@ -167,6 +167,7 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                    }
                  })
 
+                 
                  ## Disable 'Next' button initially
                  shinyjs::disable("next_balancing_btn")
                  
