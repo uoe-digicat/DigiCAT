@@ -18,7 +18,7 @@ source("source/func/performance_plot.R")
 
 
 propmodel = get_score(psmodel = "glm", 
-                      .data = df, 
+                      .data = df,
                       t_var = "t", m_vars= c("a","b","c","d","e"), 
                       missing="mi")
 
@@ -31,6 +31,7 @@ balancedata = balancing(cf_method = "matching",
                         )
 
 cobalt::love.plot(balancedata)
+
 
 cobalt::bal.tab(balancedata)[[2]]
 cobalt::bal.tab(balancedata)[[3]]

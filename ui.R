@@ -58,9 +58,9 @@ ui <- fluidPage(
                          "<br><br><br><br><br><br><br><br><br><br><br><br>",
                          "<p style = 'text-align: left; padding-left: 20px;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
                          "<br><br><br>",
-                         #"<img src='logos/WT.png' height = '40'>",
+                         "<img src='logos/WT.png' height = '60'>",
                          "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
-                         "<img src='logos/UoE.png' height = '40'>")
+                         "<img src='logos/UoE.png' height = '60'>")
                          )
                      )
                      

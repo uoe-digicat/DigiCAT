@@ -5,7 +5,7 @@ balancing_model_ui <- function(id) {
   
   require(shinycssloaders)
   
-  ## Tab for choosing counterfactual analysis approach
+  ## Tab for balancing model
   tabPanel(title = "",
            value = NS(id, 'tab'),
            ## Add navbar image

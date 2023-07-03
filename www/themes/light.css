@@ -78,9 +78,6 @@ color: #f02094;
   border-bottom-color: #76b9f5;
   color: #ffffff;
 }
-
-
-
       
 /* Home page font */  
 #home {
@@ -147,8 +144,8 @@ color: #f02094;
 }
 
 /* hide outline of navbar for balancing output */
-#methods-balancing_output_plots { 
-  border-color: transparent; 
+.nav-tabs {
+  border-color: transparent;
 }
 
 /* change colour of buttons */

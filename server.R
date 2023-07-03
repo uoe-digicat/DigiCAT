@@ -18,7 +18,6 @@ source("source/modules/mod_tutorial.R")
 server <- function(input, output, session) {
   
   
-  
   ####
   # App theme ----
   ####
