@@ -44,7 +44,7 @@ CF_approach_server <- function(id, parent) {
                  
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_CF_btn, {
-                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "upload")
+                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "data_upload-tab")
                  })
                  
                  ## When "Next is selected", show and move to new tab

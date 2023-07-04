@@ -100,7 +100,7 @@ home_server <- function(id, parent) {
                    
                    ## If user has already agreed to T&Cs, proceed to upload page
                    if (isTruthy(input$Btn_agree) | isTruthy(input$Btn_agree_TCs)){
-                     updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "upload")
+                     updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "data_upload-tab")
                    } else{ ## If they have not yet agreed, ask (again)
                      
                      ## Pop up agreement
@@ -130,7 +130,7 @@ home_server <- function(id, parent) {
                  
                  ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
                  observeEvent(input$Btn_agree, {
-                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "upload")
+                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "data_upload-tab")
                    removeModal() ## remove modal
                  })
                  

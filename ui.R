@@ -16,9 +16,8 @@ library(shinydashboard)
 
 
 # source individual pages
-source("source/ui_dataupload.R")
-
 source("source/modules/mod_home.R")
+source("source/modules/mod_data_upload.R")
 source("source/modules/mod_counterfactual_approach.R")
 source("source/modules/mod_balancing_model.R")
 source("source/modules/mod_balancing.R")
@@ -71,7 +70,7 @@ ui <- fluidPage(
       tabItem(tabName = "analysis", tabsetPanel(
         id = "methods-tabs",
         home_ui("home"),  ## Load home tab
-        tabPanel(title = "Upload", value = "upload", dataupload_page),
+        data_upload_ui("data_upload"),  ## Load home tab
         CF_approach_ui("CF_approach"), ## Load CF approach tab
         balancing_model_ui("balancing_model"), ## Load balancing model tab
         balancing_ui("balancing"), ## Load balancing tab
