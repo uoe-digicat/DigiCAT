@@ -1,14 +1,16 @@
 load("data/zp_example.RData")
 
-## Source functions to perform data checks and categorical variable identification
-source("source/func/initial_data_check.R")
-source("source/func/get_categorical_variables.R")
-source("source/func/get_descriptives.R")
-source("source/func/reset_upload_page.R")
-source("source/func/check_selected_variables.R")
+source("source/modules/mod_home.R")
+source("source/modules/mod_data_upload.R")
+source("source/modules/mod_counterfactual_approach.R")
+source("source/modules/mod_balancing_model.R")
+source("source/modules/mod_balancing.R")
+source("source/modules/mod_outcome_model.R")
+source("source/modules/mod_get_results.R")
+source("source/modules/mod_tutorial.R")
 
 server <- function(input, output, session) {
- 
+  
   
   ####
   # App theme ----
@@ -22,337 +24,79 @@ output$style <- renderUI({
     }}
   })
   
-  
-  
+  ####
+  # TCs page ----
+  ####
+
+  ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
+  observeEvent(input$Btn_agree_TCs, {
+    updateTabsetPanel(session, inputId = "main_tabs", selected = 'analysis')
+    updateTabsetPanel(session, inputId = "methods-tabs", selected = "upload")
+    removeModal() ## remove modal
+  })
+
+
   ####
   # Start Page ----
   ####
-
   
-  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
-  observeEvent(input$start_btn,{
-    
-    ## If user has already agreed to T&Cs, proceed to upload page
-    if (isTruthy(input$start_agree)){
-      updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
-    } else{ ## If they have not yet agreed, ask (again)
-
-      ## Pop up agreement
-      showModal(modalDialog(
-        HTML("<center>"),
-        h4("Before you get started:"),
-        br(),
-        tags$div("Have you read and agree to the terms of the", actionLink("TCs_link", "DigiCAT Customer Agreement"), "?"),
-        footer=tagList(
-          div(style = "text-align:center",
-          actionButton('start_dont_agree', "No, I don't agree", style="color: white; background: #4f78dc"),
-          actionButton('start_agree', 'Yes, I agree', style="color: white; background: green"))),
-        HTML("<center>")))
-    }
-  })
-  
-  ## T&Cs agreement: If terms and conditions link clicked, close modal and switch to T&Cs tab
-  observeEvent(input$TCs_link, {
-    updateTabsetPanel(session, inputId = "main_tabs", selected = 'TC')
-    removeModal() ## remove modal
-  })
-  
-  ## T&Cs agreement: If 'No, I don't agree', remove modal and remain in start page
-  observeEvent(input$start_dont_agree, {
-    removeModal() ## remove modal
-  })
-      
-  ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
-  observeEvent(input$start_agree, {
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
-    removeModal() ## remove modal
-  })
-  
-  ## If tutorial link clicked, close modal and switch to T&Cs tab
-  observeEvent(input$tutorial_link, {
-    updateTabsetPanel(session, inputId = "main_tabs", selected = 'tutorial')
-    removeModal() ## remove modal
-  })
+  home_server("home",
+              parent = session)
   
   ####
   # Data upload ----
   ####
-  
-  ## Hide descriptives tab initially
-  hideTab(inputId = "Tab_data", target = "descriptives")
-  
-  
-  ## When "Next" Selected on data upload page, check input and proceed if okay
-  observeEvent(input$nextDU_btn, {
-    # Remove error message if any present from previous upload
-    reset_upload_page(hide_descriptives = FALSE)
 
-    ## Check inputed variables. If there is an issue give informative error message, otherwise, continue to next page
-    ## First check if data has been uploaded
-    if (!isTruthy(inputData$rawdata)) { ## If there is no data, give informative error
-      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data and pick variables")
+  data_upload_res <- data_upload_server("data_upload",
+                     parent = session)
 
-    }else{variable_check_info <- check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)
-    ## If there is no missing data and no variable mismatched, proceed to next tab
-      if(all(!c(variable_check_info$required_input_missmatched, variable_check_info$required_input_missing))){
-        updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
-      }
-    }
-  })
-  
-  ## If "Prev" selected on data upload page, go back to start page
-  observeEvent(input$prevDU_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "home")
-  }
-  )
-  
-  ## If input variable(s) is changed, remove any warnings that may be present for variable selection
-  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
-    reset_upload_page(reset_errors = TRUE)
-  })
-  
-  ## Hide descriptives tab
-  hideTab(inputId = "Tab_data", target = "descriptives")
-  
-  ## Save data as a reactive variable
-  inputData <- reactiveValues(rawdata = NULL, descriptives = NULL, source = NULL)
-  
-  
-  ## Update app when file uploaded
-  observeEvent(input$file1, {
-    
-    ## Load in data
-    inputData$rawdata <- read.csv(input$file1$datapath)
-    
-    ## Reset any input errors and remove descriptives
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
-    
-    ## Go back to raw data view and delete data descriptive
-    updateTabsetPanel(session, "Tab_data",selected = "raw_data")
-    inputData$descriptives <- NULL
-    
-    ## Save data source
-    inputData$source <- "own"
-    
-    ## Reset inputs that change data 
-    reset("recode_NA", asis = TRUE)
-    suppressWarnings(rm(categorical_variables, warn))
-    
-    ## Load in own data
-    inputData$rawdata <- read.csv(input$file1$datapath)
-    
-    ## Check data upon upload
-    initial_data_check_ls <- initial_data_check(inputData$rawdata)
-    
-    ## If data is too small or contains non numeric values, give error message and delete
-    if(initial_data_check_ls$too_small){
-      feedbackDanger(inputId = "file1",
-                     show=initial_data_check_ls$too_small,
-                     text = "Data too small! (<10 rows)")
-    }
-    
-    if(initial_data_check_ls$some_nonnumeric){
-      feedbackDanger(inputId = "file1",
-                     show=initial_data_check_ls$some_nonnumeric,
-                     text = "Non numeric values detected!")
-    }
-    
-    if(any(c(initial_data_check_ls$too_small, initial_data_check_ls$some_nonnumeric))){
-      ## Remove uploaded data and list with initial data checks
-      inputData$rawdata <- NULL
-      initial_data_check_ls <- list(some_nonnumeric = FALSE,
-                                    impossible_value = FALSE,
-                                    too_small = FALSE)
-    }
-    
-    
-    ## If data contains contains "-999" give warning and option to recode as NA
-    if(initial_data_check_ls$impossible_value == TRUE){
-      
-      showModal(modalDialog(
-        title = 'Warning: "-999" value detected in data',
-        'Would you like to recode "-999" as "NA" or continue without alteration?',
-        size = "l",
-        footer=tagList(
-          actionButton('recode_NA', 'Recode as "NA"'),
-          modalButton('Continue'))))
-    }
-    
-    ## Get variable classes
-    categorical_variables <- get_categorical_variables(inputData$rawdata)
-    continuous_variables <- names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% categorical_variables]
-    
-    ## Reset variable inputs
-    updatePickerInput(session, "categorical_vars", choices = names(isolate(inputData$rawdata)), selected=categorical_variables)
-    updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
-    updatePickerInput(session, "treatment", choices=names(isolate(inputData$rawdata)), selected = NULL)
-    updatePickerInput(session, "matchvars", choices=names(isolate(inputData$rawdata)), selected = NULL, clearOptions = TRUE)
-    updatePickerInput(session, "covars", choices=names(isolate(inputData$rawdata)), selected = NULL, clearOptions = TRUE)
-  })
-  
-  ## If "recode as NA" selected remove all "-999" values from data
-  observeEvent(input$recode_NA, {
-    inputData$rawdata[inputData$rawdata == -999] <- NA
-    removeModal() ## remove modal
-  })
-  
-  ## When categorical variable selection changed, update what can be selected as the outcome variable
-  observeEvent(input$categorical_vars, {
-    
-    ## Reset any input errors and hide descriptives (these depend on categorical var selection)
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
-    
-    ## Go back to raw data view and delete data descriptive
-    updateTabsetPanel(session, "Tab_data",selected = "raw_data")
-    inputData$descriptives <- NULL
-    
-    if(inputData$source == "sample"){
-      
-    }else{
-      ## Get names of continuous variables
-      continuous_variables <- names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% input$categorical_vars]
-      ## Only allow selection from continuous variables
-      updatePickerInput(session, "outcome", selected=NULL, choices = continuous_variables) 
-      ## Clear all following pickers
-      updatePickerInput(session, "treatment", selected=character(0))
-      updatePickerInput(session, "matchvars", selected=character(0))
-      updatePickerInput(session, "covars", selected=character(0))
-    }
-  }, ignoreNULL = FALSE, ignoreInit = TRUE)
-  
-  ## Update app when sample data selected
-  observeEvent(input$Btn_sampledata, {
-    
-    ## Load in sample data
-    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
-    
-    ## Reset any input errors and hide descriptives tab
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE)
-    
-    ## Save data source
-    inputData$source <- "sample"
-    
-    ## If "sample data" is selected, upload sample data
-    inputData$rawdata <- na.omit(read.csv("data/zp_eg.csv"))
-    
-    ## Update variable selection
-    updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(inputData$rawdata)))
-    updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13")])
-    updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(inputData$rawdata)))
-    updatePickerInput(session, "matchvars", selected=names(isolate(inputData$rawdata))[-c(2:3)], choices = names(isolate(inputData$rawdata)))
-    updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata)))
-  })
-  
-  ## Generate data descriptive and switch to descriptive tab
-  observeEvent(input$Btn_descriptives, {
-    
-    ## Check if data has been uploaded
-    if (isTruthy(inputData$rawdata)) { ## `If so, generate descriptives and move to descriptives tab
-      ## Get descriptive
-      inputData$descriptives <- get_description(inputData$rawdata, input$categorical_vars)
-      ## Show and switch to descriptive tab
-      showTab(inputId = "Tab_data", target = "descriptives", select = FALSE, session = getDefaultReactiveDomain())
-      updateTabsetPanel(session, "Tab_data", selected = "descriptives")
-    }else{  ## Otherwise, give error
-      feedbackDanger(inputId = "file1", show=TRUE, text = "Upload data first")}
-  }) 
-  
-  ## Clear data when "Clear Data" button is pressed
-  ## Remove uploaded data, descriptive and list with initial data checks
-  observeEvent(input$Btn_clear,{
-    inputData$rawdata <- NULL ## Remove data
-    reset_upload_page(reset_errors = TRUE, hide_descriptives = TRUE) ## Remove errors and descriptives
-    
-    ## Clear input pickers
-    updatePickerInput(session, "categorical_vars", choices = character(0), selected=character(0)) 
-    updatePickerInput(session, "outcome", choices = character(0), selected=character(0)) 
-    updatePickerInput(session, "treatment", choices = character(0), selected=character(0))
-    updatePickerInput(session, "matchvars", choices = character(0), selected=character(0))
-    updatePickerInput(session, "covars", choices = character(0), selected=character(0))
-  })
-  
-  output$contents <- DT::renderDataTable({
-    DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))     
-  })
-  output$data_description <- renderUI(inputData$descriptives)
-  
-  
-  ####
-  # Model configuration ----
-  ####
-  
-  ## When "BUILD!" selected on model configuration, switch to PS results tab
-  observeEvent(input$nextCM_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "psres")
-  }
-  )
-  
-  ## When "Prev" selected on model configuration, go back to data upload page
-  observeEvent(input$prevCM_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "upload")
-  }
-  )
-  
-  
-  ####
-  # PS results ----
+  # Counterfactual Appraoch ----
   ####
   
   
-  ## When "Prev" selected on PS results page, go back to model configuration page
-  observeEvent(input$prevPSR_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "methods")
-  }
-  )
+  CF_approach <- CF_approach_server("CF_approach",
+                                    parent = session)
   
-  ## When "Next" selected on PS results page, go back to get results page
-  observeEvent(input$nextPSR_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "results")
-  }
-  )
-  
-  # Source server side 
-  source("source/outcome_model.R",local=T)
-  source("source/ps_model.R",local=T)
-  react_PSmodel <- reactiveValues(psmodel=NULL)
-  react_outcomemodel <- reactiveValues(outcomemodel=NULL)
-  observeEvent(input$nextCM_btn, {
-    react_PSmodel$psmodel <- ps_model(.data = inputData$rawdata, 
-                                      treatment = input$treatment,
-                                      matchvars = input$matchvars,
-                                      model = input$psm,
-                                      method = input$counterfactual)
-    print(react_PSmodel$psmodel)
-    
-    output$PSmodel_baltab <- renderPrint({cobalt::bal.tab(react_PSmodel$psmodel)})
-    output$PSmodel_balplot <- renderPlot({cobalt::bal.plot(react_PSmodel$psmodel)})
-    output$PSmodel_loveplot <- renderPlot({cobalt::love.plot(react_PSmodel$psmodel)})
-    
-  })
-  
-  # Get results ----
+  ####
+  # Balancing model ----
   ####
   
-  ## When "Prev" selected on get results page, go back to PS results page
-  observeEvent(input$resPrev_btn,{
-    updateTabsetPanel(session, inputId = "Tab_analysis", selected = "psres")
-  }
-  )
+  balancing_model_res <- balancing_model_server("balancing_model", 
+                         parent = session,
+                         raw_data = reactive(data_upload_res$data),
+                         treatment_variable = reactive(data_upload_res$treatment),
+                         matching_variables = reactive(data_upload_res$matchvars))
   
-  observeEvent(input$resshow_btn, {
-    react_outcomemodel$outcomemodel <- outcome_model(.data=inputData$rawdata,
-                                                     outcome = input$outcome,
-                                                     treatment = input$treatment,
-                                                     covars = input$covars,
-                                                     matchvars = input$matchvars,
-                                                     PSmodel = react_PSmodel$psmodel, 
-                                                     method = input$counterfactual,
-                                                     doubly = input$drobust)
-    output$outcome_plot <- renderPlot({react_outcomemodel$outcomemodel$plot})
-    output$outcome_table <- renderTable({react_outcomemodel$outcomemodel$est})
-    output$outcome_resid <- renderPlot({performance::check_model(react_outcomemodel$outcomemodel$mod)})
+  ####
+  # Balancing ----
+  ####
   
-    })
+  balancing_res <-  balancing_server("balancing", 
+                   parent = session,
+                   treatment_variable = reactive(data_upload_res$treatment),
+                   matching_variables = reactive(data_upload_res$matchvars),
+                   approach = CF_approach,
+                   balancing_model_results = balancing_model_res)
+  
+  ####
+  # Outcome Model ----
+  ####
+  
+  outcome_model_server("outcome_model",  
+                       parent = session,
+                       treatment_variable = reactive(data_upload_res$treatment),
+                       outcome_variable = reactive(data_upload_res$outcome),
+                       matching_variables = reactive(data_upload_res$matchvars),
+                       approach = CF_approach,
+                       balancing_results = balancing_res)
+  
+  ####
+  # Get Results ----
+  ####
+  
+  get_results_server("get_results",
+                     parent = session)
+
 }
 
 

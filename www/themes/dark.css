@@ -112,34 +112,46 @@ color: #f02094;
 
 /* sidebar panel */  
 .well { 
-  background: #ffffff;
-  color: #170344;
+  background: #170344;
+  color: #ffffff;
   border: 0px;
+}
+
+/* well panel */
+#well_panel {
+  background-color: #170344;
+  color: #ffffff;
 }
 
 
 /* Uploaded/sample dataframe colours */
 .dataTable {
-    color: #170344;
-    background: #ffffff;
+    color: #ffffff;
+    background: #170344;
 }
 
 /* Text blocks */
 .text_blocks {
   color: #ffffff;
-  text-align: justify;
   background: #170344; 
-  padding: 15px; 
   border-radius: 5px;
 }
 
 /* hide analysis tabs */
-#Tab_analysis { display: none; }
+#methods-tabs { 
+  display: none; 
+}
+
+/* hide outline of navbar for balancing output */
+.nav-tabs {
+  border-color: transparent;
+}
 
 /* change colour of buttons */
-.buttonagency .bttn-default{
+.default_button {
   background-color: #c5e2fc;
   color: #170344;
+  border-color: #c5e2fc;
 }
 
 /* Theme checkbox */

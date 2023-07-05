@@ -16,11 +16,16 @@ library(shinydashboard)
 
 
 # source individual pages
-source("source/ui_home.R")
-source("source/ui_dataupload.R")
-source("source/ui_psresults.R")
-source("source/ui_cfmethod.R")
-source("source/ui_results.R")
+source("source/modules/mod_home.R")
+source("source/modules/mod_data_upload.R")
+source("source/modules/mod_counterfactual_approach.R")
+source("source/modules/mod_balancing_model.R")
+source("source/modules/mod_balancing.R")
+source("source/modules/mod_outcome_model.R")
+source("source/modules/mod_get_results.R")
+source("source/modules/mod_tutorial.R")
+
+source("source/ui_TCs.R")
 
 
 # favicon (icon in browser tab)
@@ -36,12 +41,12 @@ ui <- fluidPage(
   # Dashboard page layout
   dashboardPage(
     skin = "blue",
-    dashboardHeader(title="DigiCAT"),
-    dashboardSidebar(width = 250,
+    dashboardHeader(title="DigiCAT", titleWidth = 300),
+    dashboardSidebar(width = 300,
                      sidebarMenu(
                        id = "main_tabs",
                        br(), br(),
-                       img(src = "logos/DigiCAT/logo.png", width = 250),
+                       img(src = "logos/DigiCAT/logo.png", width = 300),
                        br(), br(),
                        menuItem("Analysis", tabName = "analysis", icon = icon("home")),
                        menuItem("Tutorial", tabName = "tutorial", icon = icon("arrow-pointer")),
@@ -52,9 +57,9 @@ ui <- fluidPage(
                          "<br><br><br><br><br><br><br><br><br><br><br><br>",
                          "<p style = 'text-align: left; padding-left: 20px;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
                          "<br><br><br>",
-                         "<img src='logos/WT.png' height = '40'>",
+                         "<img src='logos/WT.png' height = '60'>",
                          "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
-                         "<img src='logos/UoE.png' height = '40'>")
+                         "<img src='logos/UoE.png' height = '60'>")
                          )
                      )
                      
@@ -63,15 +68,17 @@ ui <- fluidPage(
     dashboardBody(
       tabItems(
       tabItem(tabName = "analysis", tabsetPanel(
-        id = "Tab_analysis",
-        tabPanel(title = "Home", value = "home", home_page), 
-        tabPanel(title = "Upload", value = "upload", dataupload_page),
-        tabPanel("methods", value = "methods", method_page),
-        tabPanel("psres", value = "psres", psres_page),
-        tabPanel("results", value = "results", results_page)
+        id = "methods-tabs",
+        home_ui("home"),  ## Load home tab
+        data_upload_ui("data_upload"),  ## Load home tab
+        CF_approach_ui("CF_approach"), ## Load CF approach tab
+        balancing_model_ui("balancing_model"), ## Load balancing model tab
+        balancing_ui("balancing"), ## Load balancing tab
+        outcome_model_ui("outcome_model"), ## Load outcome model tab
+        get_results_ui("get_results") ## Load get results tab
       )),
-      tabItem(tabName = "tutorial", ""),
-      tabItem(tabName = "TC", ""),
+      tutorial_ui("methods"),
+      tabItem(tabName = "TC", TCs_page),
       tabItem(tabName = "about", ""))
       )# end dashboardBody
   )

@@ -78,7 +78,6 @@ color: #f02094;
   border-bottom-color: #76b9f5;
   color: #ffffff;
 }
-
       
 /* Home page font */  
 #home {
@@ -88,7 +87,7 @@ color: #f02094;
 
 /* data uplaod page font */  
 #dataupload {
-  color: #76b9f5;
+  color: #170344;
   text-align: left;
 }
 
@@ -117,6 +116,12 @@ color: #f02094;
   border: 0px;
 }
 
+/* well panel */
+#well_panel {
+  background-color: #ffffff;
+  color: #170344;
+}
+
 
 /* Uploaded/sample dataframe colours */
 .dataTable {
@@ -127,21 +132,35 @@ color: #f02094;
 /* Text blocks */
 .text_blocks {
   color: #170344;
-  text-align: justify;
   background: #ffffff; 
   padding: 15px; 
   border-radius: 5px;
 }
 
 
-
 /* hide analysis tabs */
-#Tab_analysis { display: none; }
+#methods-tabs { 
+  display: none; 
+}
+
+/* hide outline of navbar for balancing output */
+.nav-tabs {
+  border-color: transparent;
+}
 
 /* change colour of buttons */
-.buttonagency .bttn-default{
+.progress_button {
+  background-color: #ebfdc2;
+  color: #170344;
+  border-color: #7aad06;
+
+}
+
+/* change colour of buttons */
+.default_button {
   background-color: #c5e2fc;
   color: #170344;
+  border-color: #76b9f5;
 }
 
 /* Theme checkbox */
@@ -149,3 +168,5 @@ color: #f02094;
   color: #170344;
 }
 
+
+      
