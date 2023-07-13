@@ -18,15 +18,7 @@ get_score <- function(psmodel = "glm", .data, t_var = NULL, y_var = NULL, m_vars
   # 4. gbm
   
   # return(dist) # either vector of pscores or matrix of pairwise distances
-  
-  ## If no input has been selected, stop and give informative error
-  if (is.null(psmodel)){
-    stop("I need a valid model! (glm, gbm, rforest)")
-  }
-  if (is.null(missing)){
-    stop("How should i deal with missingness? Should be one of 'complete', 'fiml', 'mi'")
-  }
-  
+
   switch(psmodel, 
          glm = {
            res = get_score_glm(.data, t_var, y_var, m_vars, covars, missing, ...)
