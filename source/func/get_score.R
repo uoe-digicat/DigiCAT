@@ -10,8 +10,7 @@ require(mice)
 #' @param missing method by which missing data is handled, one of `"complete"` (complete cases), `"mi"` (multiple imputation), or `"fiml"` (full information maximum likelihood). TODO fiml not implemented bcause lavaan  
 #' @param ... additional arguments to be passed to model estimating functions
 get_score <- function(psmodel = "glm", .data, t_var = NULL, y_var = NULL, m_vars = NULL, covars = NULL, missing, ...){
-#get_score <- function(psmodel = "glm", .data, t_var = NULL, m_vars = NULL, missing, ...){
-    
+
   # 1. glm
   # 2. CART
   # 3. rforest
