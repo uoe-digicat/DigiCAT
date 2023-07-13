@@ -3,6 +3,8 @@
 #' @param treattype character string identifying what type of variable treatment is (binary, ordinal etc). only binary implemented thus far. 
 performance_plot <- function(psmodel_obj, t_var, treattype = "binary"){
   
+  require(ggplot2)
+  
   if(class(psmodel_obj$data)=="mids"){
     obs = lapply(mice::complete(psmodel_obj$data, "all"), function(d) d[,t_var])
     pred = psmodel_obj$score
@@ -19,14 +21,25 @@ performance_plot <- function(psmodel_obj, t_var, treattype = "binary"){
                tpr = (sum(obs2[[m]]) - cumsum(obs2[[m]])) / pos
                # TNR
                tnr = cumsum(!obs2[[m]]) / neg
+               df <- data.frame(x = 1-tnr, y = tpr)
                if(m==1){
-                 plot(x = 1-tnr, y = tpr, type = "l",lty=m,
-                      xlab = "False Positive Rate",
-                      ylab = "True Positive Rate")
+                 p <- ggplot(df, aes(x=x, y=y)) +
+                   geom_line(size = 0.5, alpha = 0.5) +
+                   xlab("False Positive Rate") + ylab("True Positive Rate") + 
+                   geom_abline(intercept = 0, slope = 1, size = 0.5, alpha = 0.3, linetype = "dashed", colour = "blue") + ## Add diagonal dashed line
+                   theme_classic() + ## Add minimal theme
+                   scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) ## Origin to start at 0
+                 
+                 
+                 AUC_measures <- round(sum(tnr*diff(c(0,1-tpr))),2)
+    
                }else{
-                 lines(x = 1-tnr, y = tpr, type = "l",lty=m)
+                 p <- p + geom_line(data = df, aes(x = x , y = y), size = 0.5, alpha = 0.5)
+                 
+                 AUC_measures <- c(AUC_measures, round(sum(tnr*diff(c(0,1-tpr))),2))
                }
              }
+             p + annotate("text", x = 0.7, y = 0.3, label = paste0("AUC = ", paste0(AUC_measures, collapse = ", ")), colour = "blue", fontface = 1) ## Add AUC
            },
            
            ordinal = {
@@ -50,11 +63,15 @@ performance_plot <- function(psmodel_obj, t_var, treattype = "binary"){
              tpr = (sum(obs2) - cumsum(obs2)) / pos
              # TNR
              tnr = cumsum(!obs2) / neg
-             plot(x = 1-tnr, y = tpr, type = "l", 
-                  xlab = "False Positive Rate",
-                  ylab = "True Positive Rate", 
-                  main = paste0("AUC = ", round(sum(tnr*diff(c(0,1-tpr))),2))
-             )
+             df <- data.frame(x = 1-tnr, y = tpr)
+             ggplot(df, aes(x=x, y=y)) +
+               geom_line(size = 0.5, alpha = 0.5) +
+               xlab("False Positive Rate") + ylab("True Positive Rate") + 
+               annotate("text", x = 0.65, y = 0.5, label = paste0("AUC = ", round(sum(tnr*diff(c(0,1-tpr))),2)), colour = "blue", fontface = 1) + ## Add AUC
+               geom_abline(intercept = 0, slope = 1, size = 0.5, alpha = 0.3, linetype = "dashed", colour = "blue") + ## Add diagonal dashed line
+               theme_classic() + ## Add minimal theme
+               scale_x_continuous(expand = c(0, 0)) + scale_y_continuous(expand = c(0, 0)) ## Origin to start at 0
+               
            },
            
            ordinal = {

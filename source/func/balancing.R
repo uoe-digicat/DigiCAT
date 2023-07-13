@@ -18,6 +18,18 @@ balancing <- function(cf_method, t_var, m_vars, psmodel_obj, eff, ...){
   # 3b. ATE weights = ?
   # 4. CEM
   # return(balance) # either match.data or weights
+  
+  
+  # ## If no input has been selected, stop and give informative error
+  # if (is.null(ratio)){
+  #   stop("I need a matching ratio! Please specify with the slider above")
+  # }
+  # if (is.null(method)){
+  #   stop("I need a matching method! Please select from the matching methods above")
+  # }
+  
+  
+  
   switch(cf_method,
          
          matching = {
