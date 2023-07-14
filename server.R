@@ -55,7 +55,13 @@ output$style <- renderUI({
   
   
   CF_approach <- CF_approach_server("CF_approach",
-                                    parent = session)
+                                    parent = session,
+                                    raw_data = reactive(data_upload_res$data),
+                                    categorical_variables = reactive(data_upload_res$categorical_vars),
+                                    outcome_variable = reactive(data_upload_res$outcome),
+                                    treatment_variable = reactive(data_upload_res$treatment),
+                                    matching_variables = reactive(data_upload_res$matchvars),
+                                    covariates = reactive(data_upload_res$covars))
   
   ####
   # Balancing model ----
@@ -64,8 +70,11 @@ output$style <- renderUI({
   balancing_model_res <- balancing_model_server("balancing_model", 
                          parent = session,
                          raw_data = reactive(data_upload_res$data),
+                         approach = CF_approach,
+                         outcome_variable = reactive(data_upload_res$outcome),
                          treatment_variable = reactive(data_upload_res$treatment),
-                         matching_variables = reactive(data_upload_res$matchvars))
+                         matching_variables = reactive(data_upload_res$matchvars),
+                         covariates = reactive(data_upload_res$covars))
   
   ####
   # Balancing ----
@@ -76,7 +85,7 @@ output$style <- renderUI({
                    treatment_variable = reactive(data_upload_res$treatment),
                    matching_variables = reactive(data_upload_res$matchvars),
                    approach = CF_approach,
-                   balancing_model_results = balancing_model_res)
+                   balancing_model_results = reactive(balancing_model_res$results))
   
   ####
   # Outcome Model ----

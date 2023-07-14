@@ -19,7 +19,10 @@ outcome_model_ui <- function(id) {
                    class = "text_blocks",
                    radioButtons(NS(id, "outcome_model_radio"), label = h4("Choose an Outcome Model:"),
                                 choices = c("Linear Regression" = "LR"),
-                                selected = character(0))
+                                selected = character(0)),
+                   uiOutput(ns("outcome_model_missing_message"), style = "color: red;"), ## If no model selected when "Run" pressed, give warning
+                   uiOutput(ns("outcome_model_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                   
                ),
                div(style = "width: 49%; margin-left: 2%;",
                    class = "text_blocks",
@@ -81,7 +84,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  })
                  
                  ## Create reactive value for approach description
-                 outcomeModel <- reactiveValues(
+                 outcome_model_values <- reactiveValues(
                    description_method = p(h4("Outcome Model:"),
                                           p("The outcome model within counterfactual analysis method provides the estimate of the effect of the ‘treatment’. 
                                             To do this, DigiCAT uses a linear regression to predict the mental health outcome of interest from the candidate 
@@ -99,7 +102,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  observeEvent(input$outcome_model_radio,{
                    
                    if(input$outcome_model_radio == "LR"){
-                     outcomeModel$description_method <- p(h4("Outcome Model: Linear Regression:"),
+                     outcome_model_values$description_method <- p(h4("Outcome Model: Linear Regression:"),
                                                             br(),
                                                             p("Linear regression is a way of modelling the associations between exploratory variable(s) 
                                                               and a continuous outcome variable. The model takes the form y = bX + e, where y and x are our 
@@ -108,61 +111,123 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                                                               to a sample that is either matched or weighted according to the propensity of treatment, we can 
                                                               better estimate the **causal** effect of the treatment on our outcome variable."))
                      
-                     outcomeModel$parameters_method <- p(h4("Outcome Model Parameters: Linear Regression"),
+                     outcome_model_values$parameters_method <- p(h4("Outcome Model Parameters: Linear Regression"),
                                                            br(),
                                                            p("Information on parameters in use."))
-                     }
-                 })
+                     
+                     ## Remove missing parameter message is present
+                     outcome_model_values$model_missing_message  <- NULL
+                   }
+                   
+                   
+                   ## If outcome model has already been run, give informative message about rerun and disable "Next" button to force rerun
+                   if (!is.null(outcome_model_values$results)){
+                     ## Replace balancing model output with explanation of why output has been deleted
+                     outcome_model_values$output <- p(h4("Output:"),
+                                                        p(
+                                                          strong("It looks like the outcome model will have to be rerun, this is because some of the required inputs have been changed since the 
+                     previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
+                     
+                     ## Disable "Next" button to force a rerun before proceeding to next step
+                     shinyjs::disable("next_outcome_model_btn")
+                     
+                   }
+               })
                  
                  ## Run outcome model 
                  source("source/func/outcome_model.R")
                 
                  observeEvent(input$run_outcome_model_btn, {
                    
-                   ## Disable 'Run' button
-                   shinyjs::disable("run_outcome_model_btn")
+                   ## If no outcome model has been selected, give error message
+                   if(is.null(input$outcome_model_radio)){
+                     outcome_model_values$model_missing_message <- p("Please select an outcome model before proceeding")
+                   }
                    
-                   ## Remove default output message
-                   outcomeModel$output <- NULL
-                   
-                   outcome_res <- outcome_analysis("unweighted", 
-                                                     y_var = outcome_variable(),
-                                                     t_var = treatment_variable(),
-                                                     m_vars = matching_variables(),
-                                                     balanced_data = balancing_results(),
-                                                     ids = NULL, weights = NULL, strata = NULL, fpc = NULL, 
-                                                     cf_method = approach())
-                   
-                   
-                   ## Output estimate
-                   outcomeModel$output <- p(h4("Model Output"),
-                                            p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, 
-                                              interventions, or treatments on mental health outcomes."),
-                                            strong(p(paste0("Estimate: ", round(outcome_res[2,2], 3)))),
-                                            br(),
-                                            p("The standard error is a statistical measure that quantifies the variability or uncertainty associated 
-                                              with the estimate. It provides a measure of how much the estimate is likely to vary from the true 
-                                              population value. "),
-                                            strong(p(paste0("Standard Error: ", round(outcome_res[2,3], 3)))),
-                                            br(),
-                                            p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test 
-                                              statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. 
-                                              Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is 
-                                              rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect 
-                                              or relationship in the data."),
-                                            strong(p(paste0("P-value: ", round(outcome_res[2,6], 3))))
-                                              )
-                   
-                   ## Enable 'Run' and 'Next' buttons
-                   shinyjs::enable("next_outcome_model_btn")
-                   shinyjs::enable("run_outcome_model_btn")
-
+                   ## If outcome model has been selected, run model
+                   if (!is.null(input$outcome_model_radio)){
+                     
+                     ## Remove default output message
+                     outcome_model_values$output <- NULL
+                     
+                     ## Save potential error to check for running of code dependent on outcome model
+                     error_check <- NA
+                     error_check <- tryCatch(
+                       outcome_model_values$results <- outcome_analysis("unweighted", 
+                                                       y_var = outcome_variable(),
+                                                       t_var = treatment_variable(),
+                                                       m_vars = matching_variables(),
+                                                       balanced_data = balancing_results(),
+                                                       ids = NULL, weights = NULL, strata = NULL, fpc = NULL, 
+                                                       cf_method = approach()),
+                       
+                       ## If outcome model does not run, return error message and enable run button 
+                       error = function(cond) {
+                         ## Enable "Run" button
+                         shinyjs::enable("run_outcome_model_btn")
+                         ## Output error message
+                         outcome_model_values$output <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
+                       })
+                     
+                     
+                     # Display output if no error in outcome model
+                     
+                     if (all(!grepl("Error:", error_check))){
+                       try({
+                     ## Output estimate
+                         outcome_model_values$output <- p(h4("Model Output"),
+                                                  p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, 
+                                                    interventions, or treatments on mental health outcomes."),
+                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$results[2,2], 3)))),
+                                                  br(),
+                                                  p("The standard error is a statistical measure that quantifies the variability or uncertainty associated 
+                                                    with the estimate. It provides a measure of how much the estimate is likely to vary from the true 
+                                                    population value. "),
+                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$results[2,3], 3)))),
+                                                  br(),
+                                                  p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test 
+                                                    statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. 
+                                                    Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is 
+                                                    rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect 
+                                                    or relationship in the data."),
+                                                  strong(p(paste0("P-value: ", round(outcome_model_values$results[2,6], 3))))
+                                                    )
+                         
+                         ## Add message noting that parameter reselection will require rerun
+                         outcome_model_values$model_rerun_message <- p("Note: Changing this parameter will require outcome model to be rerun")
+                         
+                         
+                         ## Enable 'Run' and 'Next' buttons
+                         shinyjs::enable("next_outcome_model_btn")
+                         shinyjs::enable("run_outcome_model_btn")
+                       })
+                     }
+                     }
+                   })
+                 
+                 
+                 ## Remove outcome model output and force rerun if previous steps have changed since previous run
+                 observeEvent(balancing_results(), {
+                   ## First check if outcome model has been run yet, if yes, print informative message in output
+                   if (!is.null(outcome_model_values$results)){
+                     ## Replace balancing model output with explanation of why output has been deleted
+                     outcome_model_values$output <- p(h4("Output:"),
+                                                        p(
+                                                          strong("It looks like the outcome model will have to be rerun, this is because some of the required inputs have been changed since the 
+                       previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
+                     
+                     ## Disable "Next" button to force a rerun before proceeding to next step
+                     shinyjs::disable("next_outcome_model_btn")
+                     
+                   }
                  })
                  
                  ## Display information for choosing counterfactual approach, relevent parameters and model output
-                 output$outcome_model_description_method <- renderUI(outcomeModel$description_method)
-                 output$outcome_model_parameters_method <- renderUI(outcomeModel$parameters_method)
-                 output$outcome_model_output <- renderUI(outcomeModel$output)
+                 output$outcome_model_description_method <- renderUI(outcome_model_values$description_method)
+                 output$outcome_model_missing_message <- renderUI(outcome_model_values$model_missing_message)
+                 output$outcome_model_rerun_message <- renderUI(outcome_model_values$model_rerun_message)
+                 output$outcome_model_parameters_method <- renderUI(outcome_model_values$parameters_method)
+                 output$outcome_model_output <- renderUI(outcome_model_values$output)
                  
                })
 }

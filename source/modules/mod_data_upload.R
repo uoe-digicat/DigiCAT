@@ -66,13 +66,28 @@ data_upload_ui <- function(id) {
                               shiny_iconlink() %>%
                                 bs_embed_popover(title = "covariates are characteristics (excluding the treatment) of the participants, that may also affect the outcome", placement = "right")
                             ),
-                          br(),
+                          ## Add checkbox asking if "non-response weight" should be specified
+                          checkboxInput(ns("non_response_weight_checkbox"), "Select if data includes non-response weights"),
+                          ## If check box selected, show picker input
+                          uiOutput(ns("non_response_weight_var")),
                           
-                          div(align="center",
+                          ## Add checkbox asking if "clustering variable" should be specified
+                          checkboxInput(ns("clustering_checkbox"), "Select if data includes a clustering variable"),
+                          ## If check box selected, show picker input
+                          uiOutput(ns("clustering_var")),
+                          
+                          ## Add checkbox asking if "stratification variables" should be specified
+                          checkboxInput(ns("stratification_checkbox"), "Select if data includes stratification variables?"),
+                          ## If check box selected, show picker input
+                          uiOutput(ns("stratification_vars")),
+                          
+                          ## Give warning that validation and subsequnt analysis rerun required upon re-selection of data/variables
+                          uiOutput(ns("data_upload_rerun_message"), style = "color: grey;"),
+                          ## Add button to clear data upload page
+                           div(align="center",
                               actionButton(NS(id,"clear_btn"), "Clear Data", class = "default_button")),
-                          
                           br(),
-                          
+                          ## Add buttons to move back to home page and validate uploaded data
                           div(align="center",
                               actionButton(NS(id,"prevDU_btn"), "Prev", class = "default_button"),
                               actionButton(NS(id,"validate_btn"), "Validate Data", class = "progress_button")
@@ -119,7 +134,7 @@ data_upload_server <- function(id, parent) {
                  source("source/func/check_selected_variables.R")
                  source("source/func/get_validation.R")
                  
-                 #* Setup ----
+                 # Setup ----
                  
                  ## Hide data and validation tabs initially
                  hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
@@ -128,7 +143,11 @@ data_upload_server <- function(id, parent) {
                  ## Save data, data source and validation as a reactive variable
                  inputData <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
                  
-                 #* Navigation ----
+                 ## Create reactive value to store rerun message
+                 data_upload_output <- reactiveValues(data_upload_rerun_message = NULL)
+                 
+                 
+                 # Navigation ----
                  ## If "Prev" selected on data upload page, go back to start page
                  observeEvent(input$prevDU_btn,{
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "home-tab")
@@ -147,7 +166,7 @@ data_upload_server <- function(id, parent) {
                  )
                  
 
-                 #* Variable Selection ----
+                 # Variable Selection ----
                  
                  ## If input variable(s) change(s), remove any warnings that may be present for variable selection
                  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
@@ -174,7 +193,43 @@ data_upload_server <- function(id, parent) {
                    }
                  }, ignoreNULL = FALSE, ignoreInit = TRUE)
                  
-                 #* Data Upload ----
+                 ## If "non-response weight" checked, show picker selection
+                 observeEvent(input$non_response_weight_checkbox, {
+                   
+                   if (input$non_response_weight_checkbox){
+                     output$non_response_weight_var <- renderUI(
+                       pickerInput(session$ns("non_response_weight_var"), label ="Select non-response weight",
+                                   choices=NULL,selected=NULL,multiple=FALSE,  options = pickerOptions(dropupAuto = F)))
+                   } else{
+                     output$non_response_weight_var <- NULL ## If checkbox unselceted, show nothing
+                   }
+                   })
+                 
+                 ## If "clustering variable" checked, show picker selection
+                 observeEvent(input$clustering_checkbox, {
+                   
+                   if (input$clustering_checkbox){
+                     output$clustering_var <- renderUI(
+                       pickerInput(session$ns("clustering_var"), label ="Select a clustering variable",
+                                   choices=NULL,selected=NULL,multiple=FALSE,  options = pickerOptions(dropupAuto = F)))
+                   } else{
+                     output$clustering_var <- NULL ## If checkbox unselceted, show nothing
+                   }
+                 })
+                 
+                 ## If "stratification variable" checked, show picker selection
+                 observeEvent(input$stratification_checkbox, {
+                   
+                   if (input$stratification_checkbox){
+                     output$stratification_vars <- renderUI(
+                       pickerInput(session$ns("stratification_var"), label ="Select stratification variables",
+                                   choices=NULL,selected=NULL,multiple=TRUE,  options = pickerOptions(dropupAuto = F)))
+                   } else{
+                     output$stratification_vars <- NULL ## If checkbox unselceted, show nothing
+                   }
+                 })
+                 
+                 # Data Upload ----
                  
                  ## Update app when file uploaded
                  observeEvent(input$file1, {
@@ -292,7 +347,7 @@ data_upload_server <- function(id, parent) {
                    updatePickerInput(session, "covars", choices = character(0))
                  })
                  
-                 #* Data Validation ----
+                 # Data Validation ----
                  
                  ## When "Validate" Selected on data upload page, check required input first, validate if present, flag if not
                  observeEvent(input$validate_btn, {
@@ -321,22 +376,27 @@ data_upload_server <- function(id, parent) {
                        
                        ## Change "Validate" button to "Next" button
                        updateActionButton(session, "validate_btn", label = "Next", icon = NULL)
+                       
+                       ## Display warning under data/variable selection warning about reselection requiring revalidation/rerun of subsequent analysis
+                       data_upload_output$data_upload_rerun_message <- p("Note: Changing data/variable selection will require reruning validation and 
+                                                                         all subsequent analysis steps.")
                      }
                      }}
                  })
                  
-                 #* Show data and validation ----
+                 # Show data and validation ----
                  ## Show uploaded data
                  output$contents <- DT::renderDataTable({DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))})
                  output$data_validation <- renderUI(inputData$validation)
+                 output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  
                  
-                 #* Return data and variables ----
+                 # Return data and variables ----
                  
                  ## Output list containing: dataset, categorical variables, treatment variable, outcome variable,
                  ## matching variable, covariates
                  
-                 methodsDataUpload <- reactiveValues(data = NULL,
+                 data_upload_output <- reactiveValues(data = NULL,
                                                      categorical_vars = NULL,
                                                      outcome = NULL,
                                                      treatment = NULL,
@@ -344,14 +404,15 @@ data_upload_server <- function(id, parent) {
                                                      covars = NULL)
                  
                  observe({
-                   methodsDataUpload$data <- inputData$rawdata
-                   methodsDataUpload$outcome <- input$outcome
-                   methodsDataUpload$treatment <- input$treatment
-                   methodsDataUpload$matchvars <- input$matchvars
-                   methodsDataUpload$covars <- input$covars
+                   data_upload_output$data <- inputData$rawdata
+                   data_upload_output$categorical_vars <- inputData$categorical_vars
+                   data_upload_output$outcome <- input$outcome
+                   data_upload_output$treatment <- input$treatment
+                   data_upload_output$matchvars <- input$matchvars
+                   data_upload_output$covars <- input$covars
                  })
                  
-                 return(methodsDataUpload)
+                 return(data_upload_output)
 
                })
 }

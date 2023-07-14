@@ -4,10 +4,12 @@ require(mice)
 #' @param psmodel class of model used to estimate propensity scores. character string, one of `"glm"` (default), `"gbm"`, `"rforest"`.
 #' @param .data dataset including treatment variable and any matching variables 
 #' @param t_var name of treatment variable in dataset (character string)
+#' @param y_var name of outcome variable in dataset (character string)
 #' @param m_vars vector of matching variable names in dataset
+#' @param covars vector of covariate names in dataset
 #' @param missing method by which missing data is handled, one of `"complete"` (complete cases), `"mi"` (multiple imputation), or `"fiml"` (full information maximum likelihood). TODO fiml not implemented bcause lavaan  
 #' @param ... additional arguments to be passed to model estimating functions
-get_score <- function(psmodel = "glm", .data, t_var = NULL, m_vars, missing, ...){
+get_score <- function(psmodel = "glm", .data, t_var = NULL, y_var = NULL, m_vars = NULL, covars = NULL, missing, ...){
 
   # 1. glm
   # 2. CART
@@ -15,10 +17,10 @@ get_score <- function(psmodel = "glm", .data, t_var = NULL, m_vars, missing, ...
   # 4. gbm
   
   # return(dist) # either vector of pscores or matrix of pairwise distances
-  
+
   switch(psmodel, 
          glm = {
-           res = get_score_glm(.data, t_var, m_vars, missing, ...)
+           res = get_score_glm(.data, t_var, y_var, m_vars, covars, missing, ...)
          },
          gbm = {
            cat("GBM not yet implemented, reverting to GLM")
@@ -34,7 +36,8 @@ get_score <- function(psmodel = "glm", .data, t_var = NULL, m_vars, missing, ...
 
 
 
-get_score_glm <- function(.data, t_var = NULL, m_vars = NULL, missing = NULL, ...){
+get_score_glm <- function(.data, t_var = NULL, y_var = NULL, m_vars = NULL, covars = NULL, missing = NULL, ...){
+
   # glm formula:  
   f = paste0(t_var,"~",paste0(m_vars,collapse="+"))
   
@@ -42,7 +45,8 @@ get_score_glm <- function(.data, t_var = NULL, m_vars = NULL, missing = NULL, ..
 
          complete = {
            
-           ps_data = na.omit(.data)
+           ps_data = na.omit(.data[,unique(c(t_var, y_var, m_vars, covars))])
+           
            ps_mod = sem(f, ps_data, link="probit", ordered = c(t_var), ...)
            # need to work out how to write stuff to a file for 'show me the code'. something like: 
            # expr(sem(!!f, data=!!substitute(.data)), link = "probit", c(ordered = !!t_var))
