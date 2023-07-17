@@ -1,0 +1,31 @@
+#'@import shiny
+TCs_page <- 
+  shiny::div(class = "text_blocks",
+      id="TCs",
+      shiny::h3("Terms and Conditions for DigiCAT App Usage (Non-Anonymized Data Restrictions)"),
+      shiny::br(),
+      shiny::h4("Purpose and Data Restrictions:"),
+       shiny::br(),
+      shiny::h5("The App prohibits the upload of non-anonymized data."),
+      shiny::h5("Users must not upload content that violates laws, infringes intellectual property rights, or is harmful."),
+      shiny::h5("We may monitor and remove content that violates these restrictions."),
+      shiny::br(),
+      shiny::h4("User Responsibilities:"),
+      shiny::h5("Users are responsible for complying with laws and regulations when uploading or sharing content."),
+      shiny::br(),
+      shiny::h4("Intellectual Property:"),
+      shiny::h5("App-related intellectual property belongs to The University of Edinburgh and may not be used without consent."),
+      shiny::br(),
+      shiny::h4("Limitation of Liability:"),
+      shiny::h5("The App is provided 'as is' and we are not liable for damages or interruptions in its use."),
+      shiny::br(),
+      shiny::h4("Indemnification:"),
+      shiny::h5("Users agree to indemnify The University of Edinburgh against claims or liabilities resulting from their use of the App."),
+      shiny::br(),
+      shiny::h4("Modifications and Termination:"),
+      shiny::h5("We may modify or terminate the App or these terms without prior notice."),
+      shiny::br(),
+      shiny::div(style = "text-align:center",
+          shiny::actionButton('Btn_agree_TCs', 'I agree, get started'))
+
+  )
