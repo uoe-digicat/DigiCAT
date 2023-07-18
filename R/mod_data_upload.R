@@ -96,6 +96,7 @@ data_upload_ui <- function(id) {
              mainPanel(wellPanel(id = "well_panel",
                                  tabsetPanel(id = NS(id,"Tab_data"),
                                              tabPanel(title = "Requirements", value = NS(id,"data_requirements"),
+                                                      uiOutput(ns("upload_error")),
                                                       br(),
                                                       h4(strong("Data requirements:")),
                                                       h5(strong("File type:"), "CSV"),
@@ -133,7 +134,7 @@ data_upload_server <- function(id, parent) {
                  hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "data_validation"))
                  
                  ## Save data, data source and validation as a reactive variable
-                 inputData <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
+                 data_upload_values <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
                  
                  ## Create reactive value to store rerun message
                  data_upload_output <- reactiveValues(data_upload_rerun_message = NULL)
@@ -149,7 +150,7 @@ data_upload_server <- function(id, parent) {
                  observeEvent(input$validate_btn,{
                    
                    ## Check if data has been validated
-                   if (is.null(inputData$validation)){
+                   if (is.null(data_upload_values$validation)){
                      ## Do nothing
                    } else{ ## Continue to model config page
                      updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
@@ -163,7 +164,7 @@ data_upload_server <- function(id, parent) {
                  ## If input variable(s) change(s), remove any warnings that may be present for variable selection
                  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
-                   inputData$validation <- NULL ## Remove validation info
+                   data_upload_values$validation <- NULL ## Remove validation info
                    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
                    output$no_data_warning <- NULL ## Remove "no data" warning
                  })
@@ -175,11 +176,11 @@ data_upload_server <- function(id, parent) {
                    reset_upload_page(reset_errors = TRUE, parent = parent)
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
-                   if(inputData$data_source == "sample"){
+                   if(data_upload_values$data_source == "sample"){
                      
                    }else{
                      ## Get names of continuous variables
-                     continuous_variables <- names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% input$categorical_vars]
+                     continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% input$categorical_vars]
                      ## Only allow selection from continuous variables
                      updatePickerInput(session, "outcome", selected=NULL, choices = continuous_variables)
                    }
@@ -226,108 +227,120 @@ data_upload_server <- function(id, parent) {
                  ## Update app when file uploaded
                  observeEvent(input$file1, {
                    
-                   ## Show and switch to data tab
-                   showTab(session = parent, inputId = NS(id,"Tab_data"), target = NS(id, "raw_data"), select = TRUE)
-                   
-                   ## Load in data
-                   inputData$rawdata <- read.csv(input$file1$datapath)
-                   
                    ## Reset any input errors and hide validation tab
-                   reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
-                   inputData$validation <- NULL ## Remove validation info
+                   reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, hide_data = TRUE, parent = parent)
+                   data_upload_values$validation <- NULL ## Remove validation info
                    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
-                   ## Save data source
-                   inputData$data_source <- "own"
+                   ## Load in data
+                   ## Save potential error to check for running of code dependent on data upload
+                   error_check <- NA
+                   error_check <- tryCatch({
+                   data_upload_values$rawdata <- read.csv(input$file1$datapath)},
                    
-                   ## Check data upon upload
-                   initial_data_check_ls <- initial_data_check(inputData$rawdata)
-                   
-                   ## If data is too small give error and delete
-                   if(initial_data_check_ls$small_rows){
-                     feedbackDanger(inputId = "file1",
-                                    show=initial_data_check_ls$small_rows,
-                                    text = "Data has too few rows! (<10 rows)")
-                     inputData$rawdata <- NULL
-                   }
-                   
-                   if(initial_data_check_ls$small_cols){
-                     feedbackDanger(inputId = "file1",
-                                    show=initial_data_check_ls$small_cols,
-                                    text = "Data has too few columns! (<2 columns)")
-                     inputData$rawdata <- NULL
-                   }
-                   
-                   ## If data is contains nonnumeric values, give error, delete and remove data tab
-                   if(initial_data_check_ls$some_nonnumeric){
-                     feedbackDanger(inputId = "file1",
-                                    show=initial_data_check_ls$some_nonnumeric,
-                                    text = "Non numeric values detected!")
-                     inputData$rawdata <- NULL
-                   }
-                   
-                   ## If inappropriate data is uploaded:
-                   if(any(c(initial_data_check_ls$small_cols, initial_data_check_ls$small_rows, initial_data_check_ls$some_nonnumeric))){
+                   ## If data does not upload, return error message
+                   error = function(cond) {
+                     ## Output error message
+                     data_upload_values$upload_error <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
                      
-                     ## Move back to data requirements page
-                     updateTabsetPanel(session = parent, inputId = "data_upload-Tab_data", selected = "data_upload-data_requirements")
-                     
-                     ## Hide data tab
-                     hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
-                     
-                     ## Reset variable inputs
-                     updatePickerInput(session, "categorical_vars", choices = character(0))
-                     updatePickerInput(session, "outcome", choices=character(0))
-                     updatePickerInput(session, "treatment", choices=character(0))
-                     updatePickerInput(session, "matchvars", choices=character(0))
-                     updatePickerInput(session, "covars", choices=character(0))
+                   })
+                   
+                   ## Carry out data checks if no error in data upload
+                   if (all(!grepl("Error:", error_check))){
+                     try({
+                       
+                       ## Show and switch to data tab
+                       showTab(session = parent, inputId = NS(id,"Tab_data"), target = NS(id, "raw_data"), select = TRUE)
+                       ## Remove data upload error if present
+                       data_upload_values$upload_error <- NULL
+                      
+                       ## Save data source
+                       data_upload_values$data_source <- "own"
+                       
+                       ## Check data upon upload
+                       initial_data_check_ls <- initial_data_check(data_upload_values$rawdata)
+                       
+                       ## If data is too small give error and delete
+                       if(initial_data_check_ls$small_rows){
+                         data_upload_values$upload_error <- p("Error: Data has too few rows! (<10 rows)", style = "color:red")
+                         data_upload_values$rawdata <- NULL
+                       }
+                       
+                       if(initial_data_check_ls$small_cols){
+                         data_upload_values$upload_error <- p("Error: Data has too few columns! (<2 columns)", style = "color:red")
+                         data_upload_values$rawdata <- NULL
+                       }
+                       
+                       ## If data is contains nonnumeric values, give error, delete and remove data tab
+                       if(initial_data_check_ls$some_nonnumeric){
+                         data_upload_values$upload_error <- p("Error: Non numeric values detected!", style = "color:red")
+                         data_upload_values$rawdata <- NULL
+                       }
+                       
+                       ## If inappropriate data is uploaded:
+                       if(any(c(initial_data_check_ls$small_cols, initial_data_check_ls$small_rows, initial_data_check_ls$some_nonnumeric))){
+                         
+                         ## Move back to data requirements page
+                         updateTabsetPanel(session = parent, inputId = "data_upload-Tab_data", selected = "data_upload-data_requirements")
+                         
+                         ## Hide data tab
+                         hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
+                         
+                         ## Reset variable inputs
+                         updatePickerInput(session, "categorical_vars", choices = character(0))
+                         updatePickerInput(session, "outcome", choices=character(0))
+                         updatePickerInput(session, "treatment", choices=character(0))
+                         updatePickerInput(session, "matchvars", choices=character(0))
+                         updatePickerInput(session, "covars", choices=character(0))
+                       }
+                       
+                       
+                       ## Get variable classes
+                       categorical_variables <- get_categorical_variables(data_upload_values$rawdata)
+                       continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% categorical_variables]
+                       
+                       ## Reset variable inputs
+                       updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
+                       updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
+                       updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
+                       updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
+                       updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
+                     })
                    }
-                   
-                   
-                   ## Get variable classes
-                   categorical_variables <- get_categorical_variables(inputData$rawdata)
-                   continuous_variables <- names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% categorical_variables]
-                   
-                   ## Reset variable inputs
-                   updatePickerInput(session, "categorical_vars", choices = names(isolate(inputData$rawdata)), selected=categorical_variables)
-                   updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
-                   updatePickerInput(session, "treatment", choices=names(isolate(inputData$rawdata)), selected = NULL)
-                   updatePickerInput(session, "matchvars", choices=names(isolate(inputData$rawdata)), selected = NULL, clearOptions = TRUE)
-                   updatePickerInput(session, "covars", choices=names(isolate(inputData$rawdata)), selected = NULL, clearOptions = TRUE)
                  })
                  
                  ## Update app when sample data selected
                  observeEvent(input$Btn_sampledata, {
                    
                    ## Load in sample data
-                   inputData$rawdata <- zp_eg
+                   data_upload_values$rawdata <- zp_eg
                    
                    ## Reset any input errors and hide validate tab
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
-                   inputData$validation <- NULL ## Remove validation info
+                   data_upload_values$validation <- NULL ## Remove validation info
                    updateActionButton(session = parent, NS(id,"validate_btn"), label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
                    ## Save data source
-                   inputData$data_source <- "sample"
+                   data_upload_values$data_source <- "sample"
                    
                    ## Show and switch to data tab
                    showTab(session = parent, inputId = NS(id,"Tab_data"), target = NS(id, "raw_data"), select = TRUE)
                    
                    ## Update variable selection
-                   updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(inputData$rawdata)))
-                   updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(inputData$rawdata))[!names(isolate(inputData$rawdata)) %in% c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13")])
-                   updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(inputData$rawdata)))
-                   updatePickerInput(session, "matchvars", selected=names(isolate(inputData$rawdata))[-c(2:3)], choices = names(isolate(inputData$rawdata)))
-                   updatePickerInput(session, "covars", choices = names(isolate(inputData$rawdata)))
+                   updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(data_upload_values$rawdata)))
+                   updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13")])
+                   updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(data_upload_values$rawdata)))
+                   updatePickerInput(session, "matchvars", selected=names(isolate(data_upload_values$rawdata))[-c(2:3)], choices = names(isolate(data_upload_values$rawdata)))
+                   updatePickerInput(session, "covars", choices = names(isolate(data_upload_values$rawdata)))
                  })
                  
                  ## Clear data when "Clear Data" button is pressed
                  observeEvent(input$clear_btn,{
-                   inputData$rawdata <- NULL ## Remove data
+                   data_upload_values$rawdata <- NULL ## Remove data
                    reset_upload_page(reset_errors = TRUE, hide_data = TRUE, hide_validation = TRUE, parent = parent) ## Remove errors and hide data and validate tabs
-                   inputData$validation <- NULL ## Remove validation info
+                   data_upload_values$validation <- NULL ## Remove validation info
                    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
@@ -344,7 +357,7 @@ data_upload_server <- function(id, parent) {
                  ## When "Validate" Selected on data upload page, check required input first, validate if present, flag if not
                  observeEvent(input$validate_btn, {
                    
-                   if (is.null(inputData$validation)){ ## Only validate if validation has not get been carried out
+                   if (is.null(data_upload_values$validation)){ ## Only validate if validation has not get been carried out
                      
                      # Remove error message if any present from previous upload
                      reset_upload_page(reset_errors = TRUE, parent = parent)
@@ -352,7 +365,7 @@ data_upload_server <- function(id, parent) {
                      
                      ## Check inputed variables. If there is an issue give informative error message, otherwise, continue to next page
                      ## First check if data has been uploaded
-                     if (!isTruthy(inputData$rawdata)) { ## If there is no data, give informative error
+                     if (!isTruthy(data_upload_values$rawdata)) { ## If there is no data, give informative error
                        
                        output$no_data_warning <- renderUI(h5("Please upload some data first!", style = "color:red"))
                        
@@ -364,7 +377,7 @@ data_upload_server <- function(id, parent) {
                        showTab(inputId = NS(id,"Tab_data"), target = NS(id,"data_validation"), select = TRUE, session = parent)
 
                        ## Validate data
-                       inputData$validation  <- get_validation(.data = inputData$rawdata, outcome = input$outcome, matchvars = input$matchvars, covars = input$covars)
+                       data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, outcome = input$outcome, matchvars = input$matchvars, covars = input$covars)
                        
                        ## Change "Validate" button to "Next" button
                        updateActionButton(session, "validate_btn", label = "Next", icon = NULL)
@@ -378,10 +391,10 @@ data_upload_server <- function(id, parent) {
                  
                  # Show data and validation ----
                  ## Show uploaded data
-                 output$contents <- DT::renderDataTable({DT::datatable(inputData$rawdata, options = list(scrollX = TRUE))})
-                 output$data_validation <- renderUI(inputData$validation)
+                 output$contents <- DT::renderDataTable({DT::datatable(data_upload_values$rawdata, options = list(scrollX = TRUE))})
+                 output$data_validation <- renderUI(data_upload_values$validation)
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
-                 
+                 output$upload_error <- renderUI(data_upload_values$upload_error)
                  
                  # Return data and variables ----
                  
@@ -396,8 +409,8 @@ data_upload_server <- function(id, parent) {
                                                      covars = NULL)
                  
                  observe({
-                   data_upload_output$data <- inputData$rawdata
-                   data_upload_output$categorical_vars <- inputData$categorical_vars
+                   data_upload_output$data <- data_upload_values$rawdata
+                   data_upload_output$categorical_vars <- data_upload_values$categorical_vars
                    data_upload_output$outcome <- input$outcome
                    data_upload_output$treatment <- input$treatment
                    data_upload_output$matchvars <- input$matchvars
