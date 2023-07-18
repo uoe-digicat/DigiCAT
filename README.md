@@ -14,6 +14,32 @@ With the DigiCAT app, you can upload your own data and leverage propensity score
 
 Currently, DigiCAT is available as an Shiny app, both online and as a downloadable R package.
 
-(To do: Link to tool here, need to figure out how to deploy with package format)
+### Online Tool
 
-(To do: Instructions on package install and local running)
+Our [online tool](https://digicatapp.shinyapps.io/DigiCAT/) allows users to use our example data to carry out counterfactual analysis. Please only use synthetic data if you wish to upload your own data to the online tool.
+
+### Local Tool
+
+DigiCAT is available as a downloadable R package that enables users to run the tool locally and use real data. R (\>= 2.10) required.
+
+#### 1. Install DigiCAT
+
+``` r
+install.packages("remotes")
+remotes::install_github("josiahpjking/DigiCAT")
+library(DigiCAT)
+```
+
+#### 2. Run DigiCAT locally
+
+Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or a browser.
+
+``` r
+DigiCAT::run_DigiCAT()
+```
+
+## Contact:
+
+Please get in touch with any questions/feedback you have
+
+Email: [uoe_digicat-group\@uoe.onmicrosoft.com](mailto:uoe_digicat-group@uoe.onmicrosoft.com)
