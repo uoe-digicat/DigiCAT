@@ -1,6 +1,7 @@
 #' DigiCAT balancing model performance plot function
 #' @import ggplot2
-#' @param psmodel_obj an object obtained from get_score(). this is required for matching and iptw methods, and is a list containing data, model, propensity score, and string indicating class of model. note the first 3 of these may be lists if multiple imputation has been used.#' @param t_var name of treatment variable in dataset (character string)
+#' @param psmodel_obj an object obtained from get_score(). this is required for matching and iptw methods, and is a list containing data, model, propensity score, and string indicating class of model. note the first 3 of these may be lists if multiple imputation has been used.#' 
+#' @param t_var name of treatment variable in dataset (character string)
 #' @param treattype character string identifying what type of variable treatment is (binary, ordinal etc). only binary implemented thus far.
 performance_plot <- function(psmodel_obj, t_var, treattype = "binary"){
 
