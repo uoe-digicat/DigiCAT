@@ -137,7 +137,8 @@ data_upload_server <- function(id, parent) {
                  data_upload_values <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
                  
                  ## Create reactive value to store rerun message
-                 data_upload_output <- reactiveValues(data_upload_rerun_message = NULL)
+                 data_upload_output <- reactiveValues(data_upload_rerun_message = NULL,
+                                                      validation = NULL)
                  
                  
                  # Navigation ----
@@ -164,7 +165,6 @@ data_upload_server <- function(id, parent) {
                  ## If input variable(s) change(s), remove any warnings that may be present for variable selection
                  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
-                   data_upload_values$validation <- NULL ## Remove validation info
                    updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
                    output$no_data_warning <- NULL ## Remove "no data" warning
                  })
@@ -369,10 +369,14 @@ data_upload_server <- function(id, parent) {
                        
                        output$no_data_warning <- renderUI(h5("Please upload some data first!", style = "color:red"))
                        
-                     }else{variable_check_info <- check_selected_variables(outcome = input$outcome, treatment = input$treatment, matchvars = input$matchvars, covars = input$covars)
-                     ## If there is no missing data and no variable mismatched, proceed to next tab
+                     }else{
+                       variable_check_info <- check_selected_variables(outcome = input$outcome,
+                                                                           treatment = input$treatment,
+                                                                           matchvars = input$matchvars,
+                                                                           covars = input$covars)
+                     
+                       ## If there is no missing data and no variable mismatched, proceed to next tab
                      if(all(!c(variable_check_info$required_input_missmatched, variable_check_info$required_input_missing))){
-                       ## Move to validate tab
                        ## Show and switch to validate tab
                        showTab(inputId = NS(id,"Tab_data"), target = NS(id,"data_validation"), select = TRUE, session = parent)
 
