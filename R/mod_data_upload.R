@@ -137,9 +137,7 @@ data_upload_server <- function(id, parent) {
                  data_upload_values <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
                  
                  ## Create reactive value to store rerun message
-                 data_upload_output <- reactiveValues(data_upload_rerun_message = NULL,
-                                                      validation = NULL)
-                 
+                 data_upload_output <- reactiveValues(data_upload_rerun_message = NULL)
                  
                  # Navigation ----
                  ## If "Prev" selected on data upload page, go back to start page
@@ -147,18 +145,6 @@ data_upload_server <- function(id, parent) {
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "home-tab")
                  }
                  )
-                 
-                 observeEvent(input$validate_btn,{
-                   
-                   ## Check if data has been validated
-                   if (is.null(data_upload_values$validation)){
-                     ## Do nothing
-                   } else{ ## Continue to model config page
-                     updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
-                   }
-                 }
-                 )
-                 
 
                  # Variable Selection ----
                  
@@ -391,6 +377,9 @@ data_upload_server <- function(id, parent) {
                                                                          all subsequent analysis steps.")
                      }
                      }}
+                   else{ ## If validation is present, proceed to next page
+                     updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
+                   }
                  })
                  
                  # Show data and validation ----
