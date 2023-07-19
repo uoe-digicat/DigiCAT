@@ -5,9 +5,9 @@ account: digicatapp
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 9127420
-bundleId: 7466081
+bundleId: 7474085
 url: https://digicatapp.shinyapps.io/DigiCAT/
-when: 1689604669.96981
-lastSyncTime: 1689604669.96982
+when: 1689757430.15115
+lastSyncTime: 1689757430.15117
 asMultiple: FALSE
 asStatic: FALSE
