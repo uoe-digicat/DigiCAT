@@ -118,17 +118,17 @@ get_R_script <- function(data = NULL, data_source,
   
 }
 
-get_R_script(data = DigiCAT::zp_eg, 
-             data_source = "sample",
-             file_path = NULL,
-             categorical_variables = ,
-             outcome_variable = "Anxiety_age17",
-             treatment_variable = "Reading_age15",
-             matching_variables = names(DigiCAT::zp_eg)[-c(1:3)],
-             covariates = NULL,
-             CF_approach = "matching",
-             balancing_model = "glm",
-             missingness = "mi",
-             matching_method = "NN",
-             matching_ratio = 1)
+# get_R_script(data = DigiCAT::zp_eg, 
+#              data_source = "sample",
+#              file_path = NULL,
+#              categorical_variables = ,
+#              outcome_variable = "Anxiety_age17",
+#              treatment_variable = "Reading_age15",
+#              matching_variables = names(DigiCAT::zp_eg)[-c(1:3)],
+#              covariates = NULL,
+#              CF_approach = "matching",
+#              balancing_model = "glm",
+#              missingness = "mi",
+#              matching_method = "NN",
+#              matching_ratio = 1)
 
