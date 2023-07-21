@@ -38,7 +38,8 @@ output$style <- renderUI({
   ####
 
   data_upload_res <- DigiCAT:::data_upload_server("data_upload",
-                     parent = session)
+                                                  parent = session,
+                                                  enableLocal = enable_local_data)
 
   # Counterfactual Appraoch ----
   ####

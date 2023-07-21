@@ -123,10 +123,13 @@ data_upload_ui <- function(id) {
            )
 }
 
-data_upload_server <- function(id, parent) {
+data_upload_server <- function(id, parent, enableLocal) {
   
   moduleServer(id,
                function(input, output, session) {
+                 observe({
+                   shinyjs::toggleState("file1", enableLocal)
+                 })
                  # Setup ----
                  
                  ## Hide data and validation tabs initially
