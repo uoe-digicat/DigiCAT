@@ -27,7 +27,7 @@ data_upload_ui <- function(id) {
                           uiOutput(ns("no_data_warning")), ## Give "no data" warning
                           ## Give instructions to get data
                           tags$h4(style="text-align: left;", "Choose CSV File or Use Sample Data"),
-                          
+                          uiOutput(ns("local_disabled")),
                           ## Add button to load sample data
                           div(class = "buttonagency",
                               style="max-width:40%; float:right;", ## position to right
@@ -40,8 +40,6 @@ data_upload_ui <- function(id) {
                               )),
                           
                           ## Give instructions to select/check variable class
-                          br(),
-                          br(),
                           br(),
                           
                           pickerInput(inputId=ns("categorical_vars"), label ="Select categorical variables *", multiple = TRUE, 
@@ -134,6 +132,11 @@ data_upload_server <- function(id, parent, enableLocal) {
                  observe({
                    shinyjs::toggleState("file1", enableLocal)
                  })
+                 if(enableLocal==FALSE){
+                   output$local_disabled = renderUI({
+                     p("Please install DigiCAT locally to enable file upload. See ",a("https://github.com/josiahpjking/DigiCAT"))
+                   })
+                 }
                  # Setup ----
                  
                  ## Disable 'Next' button initially
