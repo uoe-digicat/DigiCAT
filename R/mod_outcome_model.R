@@ -9,7 +9,12 @@ outcome_model_ui <- function(id) {
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/outcome_model.png" width="1000"></center>'),
            
-           br(), br(),
+           br(), 
+           div(align="center",
+               actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
+               actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button"),
+               actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button")),
+           br(),
            
            ## matching method
            div(style = "display: flex;",
@@ -45,15 +50,7 @@ outcome_model_ui <- function(id) {
                    class = "text_blocks",
                    ## Output of selected outcome_model model
                    withSpinner(uiOutput(ns("outcome_model_output"))))
-           ),
-           
-           
-           br(), br(),
-           
-           div(align="center",
-               actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
-               actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button"),
-               actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button"))
+           )
            
   )
 }

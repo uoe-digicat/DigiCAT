@@ -11,7 +11,12 @@ balancing_ui <- function(id) {
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/balancing.png" width="1000"></center>'),
            
-           br(), br(),
+           br(), 
+           div(align="center",
+               actionButton(NS(id, 'prev_balancing_btn'), 'Prev', class = "default_button"),
+               actionButton(NS(id, 'run_balancing_btn'), 'Run', class = "default_button"),
+               actionButton(NS(id, 'next_balancing_btn'), 'Next', class = "default_button")),
+           br(),
            
            ## matching method
            uiOutput(ns("balancing_options")), ## Load balancing options and descriptions based on CF approach chosen
@@ -30,15 +35,7 @@ balancing_ui <- function(id) {
                    ## Show initial output message
                    withSpinner(uiOutput(ns("balancing_output"))),
                )
-           ),
-           
-           
-           br(), br(),
-           
-           div(align="center",
-               actionButton(NS(id, 'prev_balancing_btn'), 'Prev', class = "default_button"),
-               actionButton(NS(id, 'run_balancing_btn'), 'Run', class = "default_button"),
-               actionButton(NS(id, 'next_balancing_btn'), 'Next', class = "default_button"))
+           )
            
   )
 }

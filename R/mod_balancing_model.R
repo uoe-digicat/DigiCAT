@@ -11,7 +11,12 @@ balancing_model_ui <- function(id) {
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/balancing_model.png" width="1000"></center>'),
            
-           br(), br(),
+           br(),
+           div(align="center",
+               actionButton(NS(id, 'prev_balancing_model_btn'), 'Prev', class = "default_button"),
+               actionButton(NS(id, 'run_balancing_model_btn'), 'Run', class = "default_button"),
+               actionButton(NS(id, 'next_balancing_model_btn'), 'Next', class = "default_button")),
+           br(),
            
            ## balancing model choices
            div(style = "display: flex;",
@@ -59,15 +64,7 @@ balancing_model_ui <- function(id) {
                    class = "text_blocks",
                    ## Output of selected balancing model
                    withSpinner(uiOutput(ns("balancing_model_output"))))
-           ),
-               
-           
-           br(), br(),
-           
-           div(align="center",
-               actionButton(NS(id, 'prev_balancing_model_btn'), 'Prev', class = "default_button"),
-               actionButton(NS(id, 'run_balancing_model_btn'), 'Run', class = "default_button"),
-               actionButton(NS(id, 'next_balancing_model_btn'), 'Next', class = "default_button"))
+           )
            
   )
 }

@@ -10,7 +10,11 @@ CF_approach_ui <- function(id) {
            ## Add navbar image
            HTML('<center><img src="progress_bar/new/CF_approach.png" width="1000"></center>'),
            
-           br(), br(),
+           br(), 
+           div(align="center",
+               actionButton(NS(id, 'prev_CF_btn'), 'Prev', class = "default_button"),
+               actionButton(NS(id, 'next_CF_btn'), 'Next', class = "default_button")),
+           br(),
            
            ## CF approach choices
            div(style = "display: flex;",
@@ -35,13 +39,7 @@ CF_approach_ui <- function(id) {
                    ## Description of selected counterfactual approach
                    uiOutput(ns("approach_description"))
                    
-               )),
-           
-           br(), br(),
-           
-           div(align="center",
-               actionButton(NS(id, 'prev_CF_btn'), 'Prev', class = "default_button"),
-               actionButton(NS(id, 'next_CF_btn'), 'Next', class = "default_button"))
+               ))
            
   )
 }
