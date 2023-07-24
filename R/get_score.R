@@ -1,6 +1,13 @@
+<<<<<<< HEAD:R/get_score.R
 #' DigiCAT function to calculate propensity scores
 #' @import lavaan
 #' @import mice
+=======
+require(lavaan)
+require(mice)
+
+
+>>>>>>> 537a203 (wip):source/func/get_score.R
 #' @param psmodel class of model used to estimate propensity scores. character string, one of `"glm"` (default), `"gbm"`, `"rforest"`.
 #' @param .data dataset including treatment variable and any matching variables 
 #' @param t_var name of treatment variable in dataset (character string)
@@ -27,6 +34,9 @@ get_score <- function(psmodel = "glm", .data, t_var = NULL, y_var = NULL, m_vars
          },
          rforest = {
            cat("RFOREST not yet implemented, reverting to GLM")
+         },
+         polyregression = {
+           res = get_score_polr(.data, t_var, m_vars, missing, ...)
          },
          stop("I need a valid model! (glm, gbm, rforest)")
   )
@@ -65,17 +75,33 @@ get_score_glm <- function(.data, t_var = NULL, y_var = NULL, m_vars = NULL, cova
          
          mi = {
            
-           # TODO what do we use for m? do we allow user config? 
            ps_data = mice(.data, m = 5)
-           # TODO we don't actually _NEED_ these eval'd here, because matchthem is going to do this step in balancing()
            ps_mod = lapply(complete(ps_data, "all"), 
                            function(x) glm(as.formula(f), data = x, family=binomial(link="probit"), ...))
            ps_score = lapply(complete(ps_data, "all"), 
-                             function(x) predict(glm(as.formula(f), data = x, family=binomial(link="probit"), ...), type = "response"))
+                             function(x) predict(glm(as.formula(f), data = x, family=binomial(link="probit"), ...),
+                                                 type = "response"))
          },
          stop("How should i deal with missingness? Should be one of 'complete', 'fiml', 'mi'")
   )
   return(list(data = ps_data, mod = ps_mod, score = ps_score, ps_modclass = "glm"))
 }
 
-
+get_score_polr <- function(.data, t_var, m_vars, missing, ...){
+  f = paste0(t_var,"~",paste0(m_vars,collapse="+"))
+  
+  switch(missing,
+  complete = {
+    ps_data = na.omit(.data)
+    
+  },
+  mi = {
+    
+    ps_data = mice(.data, m = 5)
+    ps_mod = lapply(complete(ps_data, "all"), 
+                    function(x) polr(as.formula(f), data = x, ...))
+  },
+  stop("How should i deal with missingness? Should be one of 'complete', 'mi'")
+  )
+  
+}
