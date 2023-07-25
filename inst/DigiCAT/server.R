@@ -61,11 +61,11 @@ output$style <- renderUI({
   balancing_model_res <- DigiCAT:::balancing_model_server("balancing_model", 
                          parent = session,
                          raw_data = reactive(data_upload_res$data),
-                         approach = CF_approach,
                          outcome_variable = reactive(data_upload_res$outcome),
                          treatment_variable = reactive(data_upload_res$treatment),
                          matching_variables = reactive(data_upload_res$matchvars),
-                         covariates = reactive(data_upload_res$covars))
+                         covariates = reactive(data_upload_res$covars),
+                         approach = CF_approach)
   
   ####
   # Balancing ----
@@ -73,10 +73,12 @@ output$style <- renderUI({
   
   balancing_res <- DigiCAT:::balancing_server("balancing", 
                    parent = session,
+                   outcome_variable = reactive(data_upload_res$outcome),
                    treatment_variable = reactive(data_upload_res$treatment),
                    matching_variables = reactive(data_upload_res$matchvars),
+                   balancing_model_results = reactive(balancing_model_res$results),
                    approach = CF_approach,
-                   balancing_model_results = reactive(balancing_model_res$results))
+                   balancing_model = balancing_model_res)
   
   ####
   # Outcome Model ----
@@ -88,6 +90,7 @@ output$style <- renderUI({
                        outcome_variable = reactive(data_upload_res$outcome),
                        matching_variables = reactive(data_upload_res$matchvars),
                        approach = CF_approach,
+                       balancing_model = balancing_model_res,
                        balancing_results = balancing_res)
   
   ####

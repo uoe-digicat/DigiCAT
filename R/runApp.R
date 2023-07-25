@@ -1,5 +1,5 @@
 #' @export
-run_DigiCAT <- function(enableLocal = FALSE) {
+run_DigiCAT <- function(enableLocal = TRUE) {
   appDir <- system.file("DigiCAT", package = "DigiCAT")
   if (appDir == "") {
     stop("Could not find DigiCAT. Try re-installing DigiCAT.", call. = FALSE)

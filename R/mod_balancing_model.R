@@ -9,9 +9,15 @@ balancing_model_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, 'tab'),
            ## Add navbar image
-           HTML('<center><img src="progress_bar/new/balancing_model.png" width="1000"></center>'),
-           
-           br(),
+           HTML('<center><img src="progress_bar/new/balancing_model.png" width="1000px"></center>'),
+           # div(style="display: flex; align: center; width: '1000px'",
+           #     div(style="width: 300px"),
+           #     div(style="width: 100px; text-align: center", uiOutput(ns("prog_choiceDU"))),
+           #     div(style="width: 100px; text-align: center", uiOutput(ns("prog_choiceCF"))),
+           #     div(style="width: 100px"),
+           #     div(style="width: 100px"),
+           #     div(style="width: 300px")
+           # ),
            div(align="center",
                actionButton(NS(id, 'prev_balancing_model_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_balancing_model_btn'), 'Run', class = "default_button"),
@@ -74,6 +80,17 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
   
   moduleServer(id,
                function(input, output, session) {
+                 
+                 # output$prog_choiceDU <- renderUI({
+                 #   p(paste0("Outcome: ", outcome_variable()),
+                 #     br(),
+                 #     paste0("Treatment: ", treatment_variable())
+                 #   )
+                 # })
+                 # output$prog_choiceCF <- renderUI({
+                 #   paste0(approach())
+                 # })
+                 
                  
                  ## Disable 'Next' button initially
                  shinyjs::disable("next_balancing_model_btn")
