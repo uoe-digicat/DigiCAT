@@ -1,6 +1,6 @@
-source("source/func/handle_missingness.R")
-source("source/func/estimate_model.R")
-source("source/func/get_propensity.R")
+source("R/handle_missingness.R")
+source("R/estimate_model.R")
+source("R/get_propensity.R")
 
 estimation_stage <- function(.data, missing_method, model_type, 
                              treatment_variable, matching_variable,

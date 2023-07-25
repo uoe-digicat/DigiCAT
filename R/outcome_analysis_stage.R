@@ -1,8 +1,8 @@
-#source("source/func/get_model_formula.R")
-source("source/func/extract_balanced_data.R")
-source("source/func/fit_outcome_model.R")
-source("source/func/extract_outcome_results.R")
-source("source/func/standardise_outcome_format.R")
+#source("R/get_model_formula.R")
+source("R/extract_balanced_data.R")
+source("R/fit_outcome_model.R")
+source("R/extract_outcome_results.R")
+source("R/standardise_outcome_format.R")
 
 
 outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome_variable,
@@ -16,7 +16,7 @@ outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome
                                     treatment_variable = treatment_variable, 
                                     matching_variable = matching_variable) # 
   extracted_outcome_results <- extract_outcome_results(fitted_model) # 
-  standardised_format <- standardise_outcome_format(extracted_outcome_results) # 
+  standardised_format <- standardise_outcome_format(extracted_outcome_results, counterfactual_method) # 
   return(standardised_format)
 }
 

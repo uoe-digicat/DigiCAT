@@ -1,13 +1,7 @@
-<<<<<<< HEAD:R/get_score.R
 #' DigiCAT function to calculate propensity scores
 #' @import lavaan
 #' @import mice
-=======
-require(lavaan)
-require(mice)
 
-
->>>>>>> 537a203 (wip):source/func/get_score.R
 #' @param psmodel class of model used to estimate propensity scores. character string, one of `"glm"` (default), `"gbm"`, `"rforest"`.
 #' @param .data dataset including treatment variable and any matching variables 
 #' @param t_var name of treatment variable in dataset (character string)

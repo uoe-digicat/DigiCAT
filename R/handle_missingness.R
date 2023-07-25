@@ -1,3 +1,5 @@
+# perhaps want to saved any logged events somewhere for diagnosis
+
 require(mice)
 
 handle_missingness <- function(.data, missing_method = NULL, ...){
@@ -16,7 +18,7 @@ handle_missingness <- function(.data, missing_method = NULL, ...){
          non_response_weights = {
            data_design = svydesign(ids = id_variable, strata = strata_variable, weights = nonresponse_weights)
          },
-         stop("How should i deal with missingness? Should be one of 'complete', 'non_response_weights', 'mi'")
+         stop("How should i deal with missingness? Should be one of 'mi', 'complete', 'non_response_weights'")
   )
   return(complete_data) # in case of weighting, add in return of data_design
 

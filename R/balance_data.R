@@ -1,13 +1,23 @@
 require(WeightIt)
 require(MatchIt)
 require(MatchThem)
+require(nbpMatching)
 
-source("source/func/prepare_dataset_nbp.R")
-source("source/func/make_matrix_nbp.R")
-source("source/func/assign_id_nbp.R")
+source("R/prepare_dataset_nbp.R")
+source("R/make_matrix_nbp.R")
+source("R/assign_id_nbp.R")
 
 
-balance_data <- function(counterfactual_method, treatment_variable, matching_variable, psmodel_obj,...){
+balance_data <- function(counterfactual_method, treatment_variable, matching_variable, psmodel_obj,
+                         eff, ...){
+  
+  # ## If no input has been selected, stop and give informative error
+  # if (is.null(ratio)){
+  #   stop("I need a matching ratio! Please specify with the slider above")
+  # }
+  # if (is.null(method)){
+  #   stop("I need a matching method! Please select from the matching methods above")
+  # }
   
   switch(counterfactual_method,
          
@@ -35,15 +45,11 @@ balancing_iptw <- function(treatment_variable, matching_variable, psmodel_obj, .
   if(class(psmodel_obj$missingness_treated_dataset)=="mids" ) {
     balanced_data = with(psmodel_obj, weightthem(as.formula(f), datasets = missingness_treated_dataset,
                                                  approach = "within", method = "ps"))
-    # balanced_data = weightthem(as.formula(f), datasets = psmodel_obj$data,
-    #                  approach = "within", method = "ps", estimand = "ATE", ...)
-    # balanced_data_indicator <- list(indicator = "wimids_output")
-    # balanced_data <- append(balanced_data, balanced_data_indicator)
+    # balanced_data = weightthem(as.formula(f), datasets = psmodel_obj$missingness_treated_dataset,
+    #                  approach = "within", method = psmodel_obj$propensity_model_class,...)
     
   } else {
     balanced_data = weightit(as.formula(f), data = psmodel_obj$missingness_treated_dataset, ps = psmodel_obj$propensity_scores, estimand = "ATE", ...)
-    # balanced_data_indicator <- list(indicator = "weightit_output")
-    # balanced_data <- append(balanced_data, balanced_data_indicator)
     
    }
   
@@ -57,14 +63,10 @@ balancing_psm <- function(treatment_variable, matching_variable, psmodel_obj, ..
   
   if( class(psmodel_obj$missingness_treated_dataset)=="mids" ) {
     balanced_data = matchthem(as.formula(f), datasets = psmodel_obj$missingness_treated_dataset, approach = "within", distance=psmodel_obj$propensity_model_class, ...)
-    # balanced_data_indicator <- list(indicator = "mimids_output")
-    # balanced_data <- append(balanced_data, balanced_data_indicator)
     
     
    } else {
     balanced_data = matchit(as.formula(f), data = psmodel_obj$missingness_treated_dataset, ps = psmodel_obj$score, ...)
-    # balanced_data_indicator <- list(indicator = "matchit_output")
-    # balanced_data <- append(balanced_data, balanced_data_indicator)
     
    }
   
@@ -80,7 +82,7 @@ balancing_cem <- function(treatment_variable, matching_variable, psmodel_obj, ..
   return(balanced_data)
 }
 
-balancing_nbp <- function(treatment_variable, matching_variable, psmodel_obj, ...){
+balancing_nbp <- function(treatment_variable, matching_variable, psmodel_obj, ...){ # to finish
   
   prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...)
   created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...)
