@@ -7,9 +7,12 @@ outcome_model_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, 'tab'),
            ## Add navbar image
-           HTML('<center><img src="progress_bar/new/outcome_model.png" width="1000"></center>'),
-           
-           br(), br(),
+           HTML('<center><img src="progress_bar/new/outcome_model.png" width="1000px"></center>'),
+           div(align="center",
+               actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
+               actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button"),
+               actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button")),
+           br(),
            
            ## matching method
            div(style = "display: flex;",
@@ -45,23 +48,25 @@ outcome_model_ui <- function(id) {
                    class = "text_blocks",
                    ## Output of selected outcome_model model
                    withSpinner(uiOutput(ns("outcome_model_output"))))
-           ),
-           
-           
-           br(), br(),
-           
-           div(align="center",
-               actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
-               actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button"),
-               actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button"))
+           )
            
   )
 }
 
-outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, balancing_results, approach) {
+outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, balancing_results, approach, balancing_model) {
   
   moduleServer(id,
                function(input, output, session) {
+                 
+                 # output$prog_choiceDU <- renderUI({
+                 #   p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))
+                 # })
+                 # output$prog_choiceCF <- renderUI({
+                 #   paste0(approach())
+                 # })
+                 # output$prog_choiceBM <- renderUI({
+                 #   paste0(balancing_model$balancing_model, ", ", balancing_model$missingness)
+                 # })
                  
                  ## Disable 'Next' button initially
                  shinyjs::disable("next_outcome_model_btn")
@@ -174,12 +179,12 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                          outcome_model_values$output <- p(h4("Model Output"),
                                                   p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, 
                                                     interventions, or treatments on mental health outcomes."),
-                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$results[2,2], 3)))),
+                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$results[2,2], 4)))),
                                                   br(),
                                                   p("The standard error is a statistical measure that quantifies the variability or uncertainty associated 
                                                     with the estimate. It provides a measure of how much the estimate is likely to vary from the true 
                                                     population value. "),
-                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$results[2,3], 3)))),
+                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$results[2,3],3)))),
                                                   br(),
                                                   p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test 
                                                     statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. 

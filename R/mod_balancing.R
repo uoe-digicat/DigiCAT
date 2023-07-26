@@ -9,9 +9,12 @@ balancing_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, 'tab'),
            ## Add navbar image
-           HTML('<center><img src="progress_bar/new/balancing.png" width="1000"></center>'),
-           
-           br(), br(),
+           HTML('<center><img src="progress_bar/new/balancing.png" width="1000px"></center>'),
+           div(align="center",
+               actionButton(NS(id, 'prev_balancing_btn'), 'Prev', class = "default_button"),
+               actionButton(NS(id, 'run_balancing_btn'), 'Run', class = "default_button"),
+               actionButton(NS(id, 'next_balancing_btn'), 'Next', class = "default_button")),
+           br(),
            
            ## matching method
            uiOutput(ns("balancing_options")), ## Load balancing options and descriptions based on CF approach chosen
@@ -30,24 +33,26 @@ balancing_ui <- function(id) {
                    ## Show initial output message
                    withSpinner(uiOutput(ns("balancing_output"))),
                )
-           ),
-           
-           
-           br(), br(),
-           
-           div(align="center",
-               actionButton(NS(id, 'prev_balancing_btn'), 'Prev', class = "default_button"),
-               actionButton(NS(id, 'run_balancing_btn'), 'Run', class = "default_button"),
-               actionButton(NS(id, 'next_balancing_btn'), 'Next', class = "default_button"))
+           )
            
   )
 }
 
-balancing_server <- function(id, parent, treatment_variable, matching_variables, balancing_model_results, approach) {
+balancing_server <- function(id, parent, outcome_variable, treatment_variable, matching_variables, balancing_model_results, approach, balancing_model) {
   
   moduleServer(id,
                function(input, output, session) {
 
+                 # output$prog_choiceDU <- renderUI({
+                 #   p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))
+                 # })
+                 # output$prog_choiceCF <- renderUI({
+                 #   paste0(approach())
+                 # })
+                 # output$prog_choiceBM <- renderUI({
+                 #   paste0(balancing_model$balancing_model, ", ", balancing_model$missingness)
+                 # })
+                 
                  ## Create reactive value for approach description
                  balancing_values <- reactiveValues(
                    description_method = NULL,
@@ -63,7 +68,7 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                      
                      output$balancing_options <- renderUI({
                        div(style = "display: flex;",
-                         div(style = "width: 23.5%;",
+                         div(style = "width: 49%;",
                              class = "text_blocks",
                              radioButtons(session$ns("method_radio"), label = h4("Choose a Matching Method:"),
                                           choices = c(
@@ -71,10 +76,13 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                                             "Nearest Neighbour (NN)" = "nearest"),
                                           selected = character(0)),
                              uiOutput(session$ns("balancing_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
-                             uiOutput(session$ns("balancing_method_rerun_message"), style = "color: grey;") ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("balancing_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             ## Description of selected balancing method and ratio
+                             uiOutput(session$ns("balancing_description_method")),
+                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
                              
                          ),
-                         div(style = "width: 23.5%; margin-left: 2%;",
+                         div(style = "width: 49%; margin-left: 2%;",
                              class = "text_blocks",
                                radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Method:"),
                                           choices = c(
@@ -83,18 +91,9 @@ balancing_server <- function(id, parent, treatment_variable, matching_variables,
                                           selected = character(0)),
                                           uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
                              uiOutput(session$ns("balancing_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
-                             uiOutput(session$ns("balancing_ratio_rerun_message"), style = "color: grey;") ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("balancing_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("balancing_description_ratio"))
                              
-                         ),
-                         div(style = "width: 49%; margin-left: 2%;",
-                             class = "text_blocks",
-                             
-                             ## Description of selected balancing method and ratio
-                             uiOutput(session$ns("balancing_description_method")),
-                             br(),br(),
-                             uiOutput(session$ns("balancing_description_ratio")),
-                             br(),br(),
-                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
                          )
                        )
                      })

@@ -11,7 +11,14 @@ data_upload_ui <- function(id) {
            value = NS(id, "tab"),
            useShinyFeedback(), # include shinyFeedback
            HTML("<center><img src='progress_bar/new/data_upload.png' width='1000'></center>"),
-           br(), br(), br(),
+           br(), 
+           ## Add buttons to move back to home page and validate uploaded data
+           div(align="center",
+               actionButton(NS(id,"prevDU_btn"), "Prev", class = "default_button"),
+               actionButton(NS(id,"validate_btn"), "Validate Data", class = "default_button"),
+               actionButton(NS(id, 'nextDU_btn'), 'Next', class = "default_button")
+           ), 
+           br(),
            sidebarLayout(
              sidebarPanel(id=ns("sidebarPanel"),
                           
@@ -20,7 +27,7 @@ data_upload_ui <- function(id) {
                           uiOutput(ns("no_data_warning")), ## Give "no data" warning
                           ## Give instructions to get data
                           tags$h4(style="text-align: left;", "Choose CSV File or Use Sample Data"),
-                          
+                          uiOutput(ns("local_disabled")),
                           ## Add button to load sample data
                           div(class = "buttonagency",
                               style="max-width:40%; float:right;", ## position to right
@@ -33,8 +40,6 @@ data_upload_ui <- function(id) {
                               )),
                           
                           ## Give instructions to select/check variable class
-                          br(),
-                          br(),
                           br(),
                           
                           pickerInput(inputId=ns("categorical_vars"), label ="Select categorical variables *", multiple = TRUE, 
@@ -83,14 +88,11 @@ data_upload_ui <- function(id) {
                           
                           ## Give warning that validation and subsequnt analysis rerun required upon re-selection of data/variables
                           uiOutput(ns("data_upload_rerun_message"), style = "color: grey;"),
-                          ## Add button to clear data upload page
-                           div(align="center",
-                              actionButton(NS(id,"clear_btn"), "Clear Data", class = "default_button")),
-                          br(),
-                          ## Add buttons to move back to home page and validate uploaded data
+                          
+                          ## Add buttons to clear/validate data  
                           div(align="center",
-                              actionButton(NS(id,"prevDU_btn"), "Prev", class = "default_button"),
-                              actionButton(NS(id,"validate_btn"), "Validate Data", class = "progress_button")
+                              ## Add button to clear data upload page
+                              actionButton(NS(id,"clear_btn"), "Clear Data", class = "default_button")
                           )
              ),
              mainPanel(wellPanel(id = "well_panel",
@@ -123,11 +125,22 @@ data_upload_ui <- function(id) {
            )
 }
 
-data_upload_server <- function(id, parent) {
+data_upload_server <- function(id, parent, enableLocal) {
   
   moduleServer(id,
                function(input, output, session) {
+                 observe({
+                   shinyjs::toggleState("file1", enableLocal)
+                 })
+                 if(enableLocal==FALSE){
+                   output$local_disabled = renderUI({
+                     p("Please install DigiCAT locally to enable file upload. See ",a("https://github.com/josiahpjking/DigiCAT"))
+                   })
+                 }
                  # Setup ----
+                 
+                 ## Disable 'Next' button initially
+                 shinyjs::disable("nextDU_btn")
                  
                  ## Hide data and validation tabs initially
                  hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
@@ -151,7 +164,9 @@ data_upload_server <- function(id, parent) {
                  ## If input variable(s) change(s), remove any warnings that may be present for variable selection
                  observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
-                   updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+                   data_upload_values$validation <- NULL
+                   shinyjs::disable("nextDU_btn")
+                   
                    output$no_data_warning <- NULL ## Remove "no data" warning
                  })
                  
@@ -160,6 +175,7 @@ data_upload_server <- function(id, parent) {
                    
                    ## Reset any input errors
                    reset_upload_page(reset_errors = TRUE, parent = parent)
+                   data_upload_values$validation <- NULL
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
                    if(data_upload_values$data_source == "sample"){
@@ -216,7 +232,8 @@ data_upload_server <- function(id, parent) {
                    ## Reset any input errors and hide validation tab
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, hide_data = TRUE, parent = parent)
                    data_upload_values$validation <- NULL ## Remove validation info
-                   updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+                   shinyjs::disable("nextDU_btn")
+                   
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
                    ## Load in data
@@ -305,7 +322,8 @@ data_upload_server <- function(id, parent) {
                    ## Reset any input errors and hide validate tab
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
                    data_upload_values$validation <- NULL ## Remove validation info
-                   updateActionButton(session = parent, NS(id,"validate_btn"), label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+                   shinyjs::disable("nextDU_btn")
+                   
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
                    ## Save data source
@@ -327,7 +345,8 @@ data_upload_server <- function(id, parent) {
                    data_upload_values$rawdata <- NULL ## Remove data
                    reset_upload_page(reset_errors = TRUE, hide_data = TRUE, hide_validation = TRUE, parent = parent) ## Remove errors and hide data and validate tabs
                    data_upload_values$validation <- NULL ## Remove validation info
-                   updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+                   shinyjs::disable("nextDU_btn")
+                   
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
                    ## Clear input pickers
@@ -351,8 +370,8 @@ data_upload_server <- function(id, parent) {
                      
                      ## Check inputed variables. If there is an issue give informative error message, otherwise, continue to next page
                      ## First check if data has been uploaded
-                     if (!isTruthy(data_upload_values$rawdata)) { ## If there is no data, give informative error
-                       
+                     if (!isTruthy(data_upload_values$rawdata)) { 
+                       ## If there is no data, give informative error
                        output$no_data_warning <- renderUI(h5("Please upload some data first!", style = "color:red"))
                        
                      }else{
@@ -370,16 +389,19 @@ data_upload_server <- function(id, parent) {
                        data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, outcome = input$outcome, matchvars = input$matchvars, covars = input$covars)
                        
                        ## Change "Validate" button to "Next" button
-                       updateActionButton(session, "validate_btn", label = "Next", icon = NULL)
+                       shinyjs::enable("nextDU_btn")
                        
                        ## Display warning under data/variable selection warning about reselection requiring revalidation/rerun of subsequent analysis
-                       data_upload_output$data_upload_rerun_message <- p("Note: Changing data/variable selection will require reruning validation and 
-                                                                         all subsequent analysis steps.")
+                       data_upload_output$data_upload_rerun_message <- p("Note: Changing data/variable selection will require reruning validation and all subsequent analysis steps.")
                      }
                      }}
                    else{ ## If validation is present, proceed to next page
-                     updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
+                     # updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
                    }
+                 })
+
+                 observeEvent(input$nextDU_btn, {
+                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
                  })
                  
                  # Show data and validation ----

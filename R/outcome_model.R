@@ -50,7 +50,14 @@ outcome_reg <- function(y_var, t_var, m_vars, balanced_data, cf_method,...){
   } else {
     matched_data = match.data(balanced_data)
     fits = lm(as.formula(f), data = matched_data)
-    output = summary(fits)
+    output = data.frame(
+      term = names(coef(fits)),
+      estimate = coef(fits),
+      std.error = summary(fits)$coefficients[,2],
+      statistic = summary(fits)$coefficients[,3],
+      df = fits$df.residual,
+      p.value = summary(fits)$coefficients[,4]
+    )
   }
   
   return(output)
