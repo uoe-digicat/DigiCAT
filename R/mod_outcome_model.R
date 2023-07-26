@@ -53,7 +53,7 @@ outcome_model_ui <- function(id) {
   )
 }
 
-outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, balancing_results, approach, balancing_model) {
+outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, balancing_results, approach, balancing_model, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -160,7 +160,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                                                        m_vars = matching_variables(),
                                                        balanced_data = balancing_results(),
                                                        ids = NULL, weights = NULL, strata = NULL, fpc = NULL, 
-                                                       cf_method = approach()),
+                                                       cf_method = approach$cfapproach_radio()),
                        
                        ## If outcome model does not run, return error message and enable run button 
                        error = function(cond) {

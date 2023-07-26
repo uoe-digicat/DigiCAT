@@ -36,21 +36,34 @@ CF_approach_ui <- function(id) {
                    uiOutput(ns("approach_missing_message")),
                    
                    ## Once approach has been selected, message warning about analysis rerun will be displayed
-                   uiOutput(ns("approach_rerun_message"))
+                   uiOutput(ns("approach_rerun_message")),
+                   uiOutput(ns("approach_rerun_warning")),
+                   
+                   ## Description of selected counterfactual approach
+                   uiOutput(ns("approach_description"))
                    
                ),
                div(style = "width: 49%; margin-left: 2%;",
                    class = "text_blocks",
                    
-                   ## Description of selected counterfactual approach
-                   uiOutput(ns("approach_description"))
+                   radioButtons(NS(id, "missingness_radio"), label = h4("Missingess:"),
+                                choices = list(
+                                  #"Full Information Maximum Likelihood (FIML)" = "fiml", 
+                                  "Multiple Imputation" = "mi",
+                                  #"Weighting" = "weighting",
+                                  "Complete Case" = "complete"),
+                                selected = character(0)),
+                   uiOutput(ns("missingness_missing_message"), style = "color: red;"), ## If no model missingness selected when "Run" pressed, give warning
+                   uiOutput(ns("missingness_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                   br(),
+                   uiOutput(ns("missingness_description"))
                    
                ))
            
   )
 }
 
-CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates) {
+CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -63,16 +76,34 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                  })
                  
                  ## Create reactive value for approach description
-                 CF_approach_values <- reactiveValues(description = div(
-                   h4("Description:"),
-                   p("The aim of counterfactual analysis is to estimate the causal effects of 'exposures' or 'treatments' by comparing what 
-                     actually happened (observed outcomes) with what would have happened if a different action had been taken (counterfactual 
-                     outcomes). Because we can never directly observe counterfactual outcomes, we compare groups who differ in their treatment. 
-                     However, in observational settings where random allocation into different treatments is not possible, researchers may employ methods that such as 'matching' or 'weighting' of participants to ensure that the different treatment groups 
-                     being compared are 'balanced' with respect to other characteristics."),
-                   br(),
-                   p("Please click on the approach you would like to take. We will give you more information about each approach as you select them.")))
+                 CF_approach_values <- reactiveValues(
+                   description = descriptions$cfapproach,
+                   approach_rerun_message = p("Note: If counterfactual analysis has already been run, changing this parameter will require the rerun of all subsequent steps.", style = "color:grey"),
+                   approach_rerun_warning = NULL)
                  
+                 missingness_values <- reactiveValues(missingness_description = descriptions$missingness)
+                 
+                 observeEvent(input$missingness_radio,{
+                   
+                   if(input$missingness_radio == "fiml"){
+                     missingness_values$missingness_description <- descriptions$fiml
+                     missingness_values$missingness_parameters <- p(h4("Model Missingness Parameters: Full Information Maximum Likelihood (FIML)"),p("Information on parameters in use."))
+                   }
+                   if(input$missingness_radio == "mi"){
+                     missingness_values$missingness_description <- descriptions$mi
+                     missingness_values$missingness_parameters <- p(h4("Model Missingness Parameters: Multiple Imputation"),p("Information on parameters in use."))
+                   }
+                   if(input$missingness_radio == "weighting"){
+                     missingness_values$missingness_description <- descriptions$weighting
+                     missingness_values$missingness_parameters <- p(h4("Model Missingness Parameters: Weighting"),p("Information on parameters in use."))
+                   }
+                   if(input$missingness_radio == "complete"){
+                     missingness_values$missingness_description <- descriptions$completecase
+                     missingness_values$missingness_parameters <- p(h4("Model Missingness Parameters: Complete Cases"),p("Information on parameters in use."))
+                   }
+                   ## Remove message with no missingness method selected error if present
+                   missingness_values$missingness_missing_message <- NULL
+                 })
                  
                  ## When "Prev is selected", go back to data upload page
                  observeEvent(input$prev_CF_btn, {
@@ -85,6 +116,9 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    if(is.null(input$CF_radio)){
                      CF_approach_values$approach_missing_message <- p("Please select an approach before proceeding", style = "color:red")
                    }
+                   if(is.null(input$missingness_radio)){
+                     missingness_values$missingness_missing_message <- p("Please select a method of dealing with missing data before proceeding", style = "color:red")
+                   }
                    else{
                      updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "balancing_model-tab")
                    }
@@ -93,24 +127,16 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
 
                  ## Update guide information based on choice of approach
                  observeEvent(input$CF_radio,{
-                   
                    if(input$CF_radio == "matching"){
-                     CF_approach_values$description <- p(h4("Propensity Matching:"), 
-                                                      br(),
-                                                      p("You've chosen propensity matching. This approach involves creating balanced comparison
-                                                        groups by matching treated individuals with similar untreated individuals based on their propensity 
-                                                        scores (probability of someone having a specific treatment based on observed characteristics). 
-                                                        This aims to ensure that the groups are comparable in terms of potential confounding variables. 
-                                                        The treatment effect is then estimated by comparing outcomes between the matched groups."))
+                     CF_approach_values$description <- descriptions$prop_matching
                    }
                    if(input$CF_radio == "weighting"){
-                     CF_approach_values$description <- p(h4("Inverse probability of treatment weighting (IPTW):"), 
-                                                      br(),
-                                                      p("You've choosen IPTW, this is why is may/may not be a good choice."))
+                     CF_approach_values$description <- descriptions$iptw
                    }
                    
                    CF_approach_values$approach_missing_message <- NULL
                    CF_approach_values$approach_rerun_message <- p("Note: If counterfactual analysis has already been run, changing this parameter will require the rerun of all subsequent steps.", style = "color:grey")
+                   CF_approach_values$approach_rerun_warning <- NULL
                    
                  })
                  
@@ -123,24 +149,12 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      
                      ## Update approach radio button so nothing is selected
                      updateRadioButtons(session, "CF_radio", selected = character(0))
-                     
+                     updateRadioButtons(session, "missingness_radio", selected = character(0))
                      ## Informative message indicating data/variables have been changed
-                     CF_approach_values$description <- p(h4("Propensity Matching:"),
-                     p("The aim of counterfactual analysis is to estimate the causal effects of 'exposures' or 'treatments' by comparing what 
-                     actually happened (observed outcomes) with what would have happened if a different action had been taken (counterfactual 
-                     outcomes). Because we can never directly observe counterfactual outcomes, we compare groups who differ in their treatment. 
-                     However, in observational settings where random allocation into different treatments is not possible, researchers may employ methods that such as 'matching' or 'weighting' of participants to ensure that the different treatment groups 
-                     being compared are 'balanced' with respect to other characteristics."),
-                     br(),
-                     p("Please click on the approach you would like to take. We will give you more information about each approach as you select them."),
-                     br(),
-                     p(strong("It looks like your data and/or variable selection has changed since first choosing an approach. Please pick the counterfactual approach that
-                                                                  you would like to carry out with your new data.")))
-                     
-
+                     CF_approach_values$approach_rerun_warning <- p(strong("It looks like your data and/or variable selection has changed since first choosing an approach. Please pick the counterfactual approach that you would like to carry out with your new data."))
                      ## Remove message about rerunning all subsequent analysis upon reselection
                      CF_approach_values$approach_rerun_message <- NULL
-  
+                     missingness_values$missingness_rerun_message <- NULL
                      
                    }
                  })
@@ -149,9 +163,18 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                  output$approach_description <- renderUI(CF_approach_values$description)
                  output$approach_missing_message <- renderUI(CF_approach_values$approach_missing_message)
                  output$approach_rerun_message <- renderUI(CF_approach_values$approach_rerun_message)
+                 output$approach_rerun_warning <- renderUI(CF_approach_values$approach_rerun_warning)
+                 
+                 output$missingness_description <- renderUI(missingness_values$missingness_description)
+                 output$missingness_rerun_message <- renderUI(missingness_values$missingness_rerun_message)
+                 output$missingness_missing_message <- renderUI(missingness_values$missingness_missing_message)
                  
                  
-                 return(reactive({input$CF_radio}))
+                 return(
+                   list(
+                     missingness_radio = reactive({input$missingness_radio}),
+                     cfapproach_radio = reactive({input$CF_radio}))
+                   )
                  
                })
 }

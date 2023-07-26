@@ -37,24 +37,17 @@ balancing_model_ui <- function(id) {
                    uiOutput(ns("balancing_model_missing_message"), style = "color: red;"), ## If no model selected when "Run" pressed, give warning
                    uiOutput(ns("balancing_model_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                    br(),
-                   uiOutput(ns("balancing_model_description")) ## Description of selected balancing model
-               ),
-               div(style = "width: 49%; margin-left: 2%;",
-                   class = "text_blocks",
-                   radioButtons(NS(id, "balancing_model_missingness_radio"), label = h4("Model Missingess:"),
-                                choices = list(
-                                  #"Full Information Maximum Likelihood (FIML)" = "fiml", 
-                                  "Multiple Imputation" = "mi",
-                                  #"Weighting" = "weighting",
-                                  "Complete Case" = "complete"),
-                                selected = character(0)),
-                   uiOutput(ns("balancing_model_missingness_missing_message"), style = "color: red;"), ## If no model missingness selected when "Run" pressed, give warning
-                   uiOutput(ns("balancing_missingness_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
-                   br(),
-                   uiOutput(ns("balancing_missingness_description")), ## Description of selected model missingness
+                   uiOutput(ns("balancing_model_description")), ## Description of selected balancing model
+                   
                    p("For more information on balancing model options, visit our ", actionLink(ns("balancing_model_tab_tutorial_link"), "tutorial"), ".")
-                   )
                ),
+               
+               div(style = "width: 49%; margin-left: 2%; overflow-y: scroll;",
+                   class = "text_blocks",
+                   ## Output of selected balancing model
+                   withSpinner(uiOutput(ns("balancing_model_output")))
+               )
+           ),
            
            br(), br(),
            
@@ -66,16 +59,15 @@ balancing_model_ui <- function(id) {
                    br(),
                    uiOutput(ns("balancing_missingness_parameters"))),
                
-               div(style = "width: 49%; margin-left: 2%; overflow-y: scroll;",
-                   class = "text_blocks",
-                   ## Output of selected balancing model
-                   withSpinner(uiOutput(ns("balancing_model_output"))))
+               div(style = "width: 49%; margin-left: 2%;"
+                   ## EMPTY DIV
+                   )
            )
            
   )
 }
 
-balancing_model_server <- function(id, parent, raw_data, treatment_variable, outcome_variable, matching_variables, covariates, approach) {
+balancing_model_server <- function(id, parent, raw_data, treatment_variable, outcome_variable, matching_variables, covariates, approach, descriptions) {
   
   
   moduleServer(id,
@@ -107,21 +99,13 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
 
                  ## Create reactive value for approach description
                  balancing_model_values <- reactiveValues(
-                   model_description = p(h4("Balancing Model:"),
-                                   p("In order to balance our dataset, we must first calculate the probability each individual has of being in our treatment
+                   model_description = p("In order to balance our dataset, we must first calculate the probability each individual has of being in our treatment
                                    group, based on their observed characteristics, i.e., their propensity score. On this page, you will select a balancing model
                                    to train on your dataset to predict the likelihood of an individual being treated. Different modelling approaches can be used 
                                    for this step and the selection of specific model depends on the characteristics of the data and the research question at hand. 
-                                   Please visit our tutorial if you would like more guidance on choosing a balancing model.")
-                                   ),
-                   missingness_description = p(h4("Model Missingness:"),
-                                         p("Missing data can introduce bias, affecting the validity of analyses and the reliability of conclusions drawn from 
-                                           the data. In order to minimise the impact of missingness in our data, DigiCAT offers several approaches to handle
-                                           missing values.")),
+                                   Please visit our tutorial if you would like more guidance on choosing a balancing model."),
                    model_parameters = p(h4("Balancing Model Parameters:"),
                                   p("Once you have selected a balancing model, we will show you the parameters in use here.")),
-                   missingness_parameters = p(h4("Balancing Model Parameters:"),
-                                        p("Once you have selected a method of dealing with missingness, we will show you the parameters in use here.")),
                    output = p(h4("Output:"),
                               p("Once you have selected your balancing model and method of dealing with missingness, press
                                 'Run' to get results.")),
@@ -181,71 +165,7 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
                    }
                  })
                  
-                                  ## Update missingness description and parameters based on choice of approach
-                 observeEvent(input$balancing_model_missingness_radio,{
-
-                   if(input$balancing_model_missingness_radio == "fiml"){
-                     balancing_model_values$missingness_description <- p(h5("Full Information Maximum Likelihood (FIML)"),
-                                                      p("You've choosen FIML, this is why is may/may not be a good choice."))
-                     
-                     balancing_model_values$missingness_parameters <- p(h4("Model Missingness Parameters: Full Information Maximum Likelihood (FIML)"),
-                                                          p("Information on parameters in use."))
-                   }
-                   
-                   if(input$balancing_model_missingness_radio == "mi"){
-                     balancing_model_values$missingness_description <- p(h5("Multiple Imputation"),
-                                                          p("The fundamental idea behind multiple imputation is to create several (M) completed datasets by 
-                                                          predicting what the missing values would have been if we could observe them. These datasets are then analysed 
-                                                          using software for completely observed datasets, and the results of each of these datasets are combined, or 
-                                                          ‘pooled’, together. The variability across datasets allows the standard errors to take account of the uncertainty 
-                                                          due to the fact that some of the data are predicted rather than observed."),
-                                                          br(),
-                                                          p("However,don’t forget that this statistical method relies on assumptions, which can be difficult to test. 
-                                                          If these assumptions are violated, your inferences may be invalid. Please see our tutorial pages for a detailed 
-                                                            discussion of which missingness handling method may be best for you. Note: if you set m = 1, you will 
-                                                            be performing single imputation. The default in DigiCAT is m = 5. "))
-                     
-                     balancing_model_values$missingness_parameters <- p(h4("Model Missingness Parameters: Multiple Imputation"),
-                                                         p("Information on parameters in use."))
-                   }
-                   
-                   if(input$balancing_model_missingness_radio == "weighting"){
-                     balancing_model_values$missingness_description <- p(h5("Weighting"),
-                                                          p("You've choosen weighting, this is why is may/may not be a good choice."))
-                     
-                     balancing_model_values$missingness_parameters <- p(h4("Model Missingness Parameters: Weighting"),
-                                                         p("Information on parameters in use."))
-                   }
-                   
-                   if(input$balancing_model_missingness_radio == "complete"){
-                     balancing_model_values$missingness_description <- p(h5("Complete Cases"),
-                                                                p("Complete case analysis (CCA) (also sometimes known as ‘listwise deletion’), will only analyse the 
-                                                                  completely observed cases. This analysis will allow valid inferences of your data if 
-                                                                  the missing data are missing completely at random (MCAR), because the observed values 
-                                                                  will be a random sample of the complete dataset. If the data are missing at random (MAR) 
-                                                                  or missing not at random (MNAR), the inferences may be invalid. Please see our tutorial 
-                                                                  pages for a detailed discussion of which missingness handling method may be best for you."))
-                     
-                     balancing_model_values$missingness_parameters <- p(h4("Model Missingness Parameters: Complete Cases"),
-                                                         p("Information on parameters in use."))
-                   }
-                   ## Remove message with no missingness method selected error if present
-                   balancing_model_values$balancing_model_missingness_missing_message <- NULL
-                   
-                   ## Check if balancing model has already been run, if so, remove give informative message and force rerun
-                   if (!is.null(balancing_model_values$result)){
-                   
-                     ## Replace balancing model output with explanation of why output has been deleted
-                     balancing_model_values$output <- p(h4("Output:"),
-                                                     p(
-                                                       strong("It looks like balancing model will have to be rerun, this is because some of the required inputs have been changed since the 
-                         previous run."), "Once you have selected your balancing model and method of dealing with missingness, press
-                                  'Run' to get results."))
-                     
-                     ## Disable 'Next' button
-                     shinyjs::disable("next_balancing_model_btn")
-                   }
-                 })
+                 
                  
                  ## Run balancing model 
                  observeEvent(input$run_balancing_model_btn,{
@@ -255,13 +175,7 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
                      balancing_model_values$balancing_model_missing_message <- p("Please select a balancing model before proceeding", style = "color:red")
                    }
                    
-                   ## If no balancing method missingness has been selected, give error message
-                   if(is.null(input$balancing_model_missingness_radio)){
-                     balancing_model_values$balancing_model_missingness_missing_message <- p("Please select a method of dealing with missing data before proceeding", style = "color:red")
-                   }
-                   
-                   if (!is.null(input$balancing_model_radio) & !is.null(input$balancing_model_missingness_radio)){
-                   
+                   if (!is.null(input$balancing_model_radio)){
                    ## Disable 'Run' button
                    shinyjs::disable("run_balancing_model_btn")
                    
@@ -282,7 +196,7 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
                        y_var = outcome_variable(),
                        covars = covariates(),
                        m_vars = matching_variables(),
-                       missing = input$balancing_model_missingness_radio
+                       missing = approach$missingness_radio()
                      ),
                      
                      ## If balancing model does not run, return error message and enable run button 
@@ -317,7 +231,6 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
                          
                          ## Add message noting that parameter reselection will require rerun
                          balancing_model_values$model_rerun_message <- p("Note: Changing this parameter will require balancing model to be rerun along with all subsequent steps.")
-                         balancing_model_values$missingness_rerun_message <- p("Note: Changing this parameter will require balancing model to be rerun along with all subsequent steps.")
               
                      })
                    }
@@ -325,7 +238,7 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
                  
                  
                  ## Remove balancing model output and force rerun if previous steps have changed since previous run
-                 observeEvent(c(approach(), raw_data(), treatment_variable(), matching_variables()), {
+                 observeEvent(c(approach$cfapproach_radio(), approach$missingness_radio(), raw_data(), treatment_variable(), matching_variables()), {
                    ## First check if balancing model has been run yet, if yes, print informative message in output
                    if (!is.null(balancing_model_values$result)){
                      ## Replace balancing model output with explanation of why output has been deleted
@@ -346,24 +259,18 @@ balancing_model_server <- function(id, parent, raw_data, treatment_variable, out
                  
                  ## Display information for choosing counterfactual approach, relevant parameters and model output
                  output$balancing_model_description <- renderUI(balancing_model_values$model_description)
-                 output$balancing_missingness_description <- renderUI(balancing_model_values$missingness_description)
                  output$balancing_model_rerun_message <- renderUI(balancing_model_values$model_rerun_message)
-                 output$balancing_missingness_rerun_message <- renderUI(balancing_model_values$missingness_rerun_message)
                  output$balancing_model_parameters <- renderUI(balancing_model_values$model_parameters)
-                 output$balancing_missingness_parameters <- renderUI(balancing_model_values$missingness_parameters)
                  output$balancing_model_output <- renderUI(balancing_model_values$output)
-                 output$balancing_model_missingness_missing_message <- renderUI(balancing_model_values$balancing_model_missingness_missing_message)
                  output$balancing_model_missing_message <- renderUI(balancing_model_values$balancing_model_missing_message)
                  
                  ## Return output of balancing model: balancing model choice, missingness choice and balancing model res
-                 
                  balancing_model_output <- reactiveValues(balancing_model = NULL,
                                                           missingness = NULL,
                                                           results = NULL)
                  
                  observe({
                    balancing_model_output$balancing_model <- input$balancing_model_radio
-                   balancing_model_output$missingness <- input$balancing_model_missingness_radio
                    balancing_model_output$results <- balancing_model_values$result
                  })
                  

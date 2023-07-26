@@ -38,7 +38,7 @@ balancing_ui <- function(id) {
   )
 }
 
-balancing_server <- function(id, parent, outcome_variable, treatment_variable, matching_variables, balancing_model_results, approach, balancing_model) {
+balancing_server <- function(id, parent, outcome_variable, treatment_variable, matching_variables, balancing_model_results, approach, balancing_model, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -62,9 +62,9 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                    output = NULL)
                  
                  ## Render balancing analysis options based on approach chosen
-                 observeEvent(approach(),{
+                 observeEvent(approach$cfapproach_radio(),{
                    
-                   if (approach() == "matching"){
+                   if (approach$cfapproach_radio() == "matching"){
                      
                      output$balancing_options <- renderUI({
                        div(style = "display: flex;",
@@ -117,7 +117,7 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                        'Run' to get output."))
                    }
 
-                   if (approach() == "weighting"){
+                   if (approach$cfapproach_radio() == "weighting"){
                      
                      output$balancing_options <- renderUI({
                        div(style = "display: flex;",
@@ -296,17 +296,17 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                  observeEvent(input$run_balancing_btn, {
                    
                    ## If matching approach selected but no balancing method, give error message
-                   if(approach() == "matching" & is.null(input$method_radio)){
+                   if(approach$cfapproach_radio() == "matching" & is.null(input$method_radio)){
                      balancing_values$method_missing_message <- p("Please select a matching method before proceeding", style = "color:red")
                    }
                    
                    ## If matching approach selected but no balancing ratio, give error message
                    ## Slider counter used as slider input cannot be initiated with NULL - counter value of greater than 0 indicates slider input has been selected
-                   if(approach() == "matching" & is.null(balancing_values$ratio)){
+                   if(approach$cfapproach_radio() == "matching" & is.null(balancing_values$ratio)){
                      balancing_values$ratio_missing_message <- p("Please select a matching ratio before proceeding", style = "color:red")
                    }
                    ## If all required input present, carry out balancing
-                   if (approach() == "weighting" | (approach() == "matching" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) {
+                   if (approach$cfapproach_radio() == "weighting" | (approach$cfapproach_radio() == "matching" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) {
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
@@ -323,9 +323,9 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                      error_check <- NA
                      error_check <- tryCatch({
                        ## Balance dataset
-                       if (approach() == "matching"){
+                       if (approach$cfapproach_radio() == "matching"){
                        balancing_values$balancing_res <- balancing(
-                         cf_method = approach(),
+                         cf_method = approach$cfapproach_radio(),
                          t_var = treatment_variable(),
                          m_vars = matching_variables(),
                          psmodel_obj = balancing_model_results(),
@@ -333,9 +333,9 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                          method = input$method_radio,
                        )}
                        
-                       if (approach() == "weighting"){
+                       if (approach$cfapproach_radio() == "weighting"){
                          balancing_values$balancing_res <- DigiCAT::balancing(
-                           cf_method = approach(),
+                           cf_method = approach$cfapproach_radio(),
                            t_var = treatment_variable(),
                            m_vars = matching_variables(),
                            psmodel_obj = balancing_model_results()
