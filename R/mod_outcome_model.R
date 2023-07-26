@@ -7,7 +7,15 @@ outcome_model_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, 'tab'),
            ## Add navbar image
-           HTML('<center><img src="progress_bar/new/outcome_model.png" width="1000px"></center>'),
+           # HTML('<center><img src="progress_bar/new/outcome_model.png" width="1000px"></center>'),
+           div(style="display: flex; align: center; width: '1000px'; margin:auto",
+               div(style="width: 160px; text-align: center;", p("GET STARTED")),
+               div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
+               div(style="width: 160px; text-align: center;", p("APPROACH"),uiOutput(ns("prog_choiceCF"))),
+               div(style="width: 160px; text-align: center;", p("BALANCING MOD"),uiOutput(ns("prog_choiceBM"))),
+               div(style="width: 160px; text-align: center;", p("BALANCING")),
+               div(style="width: 160px; text-align: center;", p("OUTCOME", style="border-bottom: solid 5px red;"))
+           ),
            div(align="center",
                actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button"),
@@ -58,15 +66,10 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
   moduleServer(id,
                function(input, output, session) {
                  
-                 # output$prog_choiceDU <- renderUI({
-                 #   p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))
-                 # })
-                 # output$prog_choiceCF <- renderUI({
-                 #   paste0(approach())
-                 # })
-                 # output$prog_choiceBM <- renderUI({
-                 #   paste0(balancing_model$balancing_model, ", ", balancing_model$missingness)
-                 # })
+                 output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))})
+                 output$prog_choiceCF <- renderUI({p(paste0(approach$cfapproach_radio()),br(),paste0(approach$missingness_radio()))})
+                 output$prog_choiceBM <- renderUI({paste0(balancing_model$balancing_model)})
+                 
                  
                  ## Disable 'Next' button initially
                  shinyjs::disable("next_outcome_model_btn")
