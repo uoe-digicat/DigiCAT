@@ -2,24 +2,25 @@
 
 require(mice)
 
-handle_missingness <- function(.data, missing_method = NULL, ...){
+handle_missingness <- function(.data, missing_method = NULL, nonresponse_weights = weighting_variable,
+                                ...){
   switch(missing_method, 
          
          complete = {
            
-           complete_data = na.omit(.data)
+           handled_missingness = na.omit(.data)
            },
          
          mi = {
            
-           complete_data = mice(.data, m = 5, maxit = 20)
+           handled_missingness = mice(.data, m = 5, maxit = 20)
          },
          
-         non_response_weights = {
-           data_design = svydesign(ids = id_variable, strata = strata_variable, weights = nonresponse_weights)
+         weighting = {
+           handled_missingness = svydesign(ids = ~1, weights = nonresponse_weights, data = .data, ...) 
          },
-         stop("How should i deal with missingness? Should be one of 'mi', 'complete', 'non_response_weights'")
+         stop("How should i deal with missingness? Should be one of 'mi', 'complete', 'weighting'")
   )
-  return(complete_data) # in case of weighting, add in return of data_design
+  return(handled_missingness) # in case of weighting, add in return of data_design
 
 }
