@@ -9,15 +9,15 @@ balancing_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, 'tab'),
            ## Add navbar image
-           #HTML('<center><img src="progress_bar/new/balancing.png" width="1000px"></center>'),
-           div(style="display: flex; align: center; width: '1000px'; margin:auto",
-               div(style="width: 160px; text-align: center;", p("GET STARTED")),
-               div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
-               div(style="width: 160px; text-align: center;", p("APPROACH"),uiOutput(ns("prog_choiceCF"))),
-               div(style="width: 160px; text-align: center;", p("BALANCING MOD"),uiOutput(ns("prog_choiceBM"))),
-               div(style="width: 160px; text-align: center;", p("BALANCING", style="border-bottom: solid 5px red;")),
-               div(style="width: 160px; text-align: center;", p("OUTCOME"))
-           ),
+           HTML('<center><img src="progress_bar/new/balancing.png" width="1000px"></center>'),
+           # div(style="display: flex; align: center; width: '1000px'; margin:auto",
+           #     div(style="width: 160px; text-align: center;", p("GET STARTED")),
+           #     div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
+           #     div(style="width: 160px; text-align: center;", p("APPROACH"),uiOutput(ns("prog_choiceCF"))),
+           #     div(style="width: 160px; text-align: center;", p("BALANCING MOD"),uiOutput(ns("prog_choiceBM"))),
+           #     div(style="width: 160px; text-align: center;", p("BALANCING", style="border-bottom: solid 5px red;")),
+           #     div(style="width: 160px; text-align: center;", p("OUTCOME"))
+           # ),
            
            div(align="center",
                actionButton(NS(id, 'prev_balancing_btn'), 'Prev', class = "default_button"),
@@ -120,7 +120,7 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                        'Run' to get output."))
                    }
 
-                   if (approach$cfapproach_radio() == "weighting"){
+                   if (approach$cfapproach_radio() == "iptw"){
                      
                      output$balancing_options <- renderUI({
                        div(style = "display: flex;",
@@ -309,7 +309,7 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                      balancing_values$ratio_missing_message <- p("Please select a matching ratio before proceeding", style = "color:red")
                    }
                    ## If all required input present, carry out balancing
-                   if (approach$cfapproach_radio() == "weighting" | (approach$cfapproach_radio() == "matching" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) {
+                   if (approach$cfapproach_radio() == "iptw" | ((approach$cfapproach_radio() == "matching" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) ) {
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
@@ -331,16 +331,18 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                          cf_method = approach$cfapproach_radio(),
                          t_var = treatment_variable(),
                          m_vars = matching_variables(),
+                         y_var = outcome_variable(),
                          psmodel_obj = balancing_model_results(),
                          ratio = balancing_values$ratio,
                          method = input$method_radio,
                        )}
                        
-                       if (approach$cfapproach_radio() == "weighting"){
-                         balancing_values$balancing_res <- DigiCAT::balancing(
+                       if (approach$cfapproach_radio() == "iptw"){
+                         balancing_values$balancing_res <- balancing(
                            cf_method = approach$cfapproach_radio(),
                            t_var = treatment_variable(),
                            m_vars = matching_variables(),
+                           y_var = outcome_variable(),
                            psmodel_obj = balancing_model_results()
                          )}
                        },

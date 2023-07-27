@@ -16,7 +16,7 @@
 #' @param cf_method whether matching or weighting was used as determines outcome procedures later on
 #' @param ... additional arguments 
 outcome_analysis <- function(outcome_method, y_var, t_var, m_vars, balanced_data,
-                             ids = NULL, weights = NULL, strata = NULL, fpc = NULL, cf_method,...){
+                             ids = NULL, weights = NULL, strata = NULL, fpc = NULL, cf_method, psmod, ...){
   
   # (i) linear regression (unweighted)
   # (ii) design-weighted regression
@@ -25,7 +25,7 @@ outcome_analysis <- function(outcome_method, y_var, t_var, m_vars, balanced_data
   switch(outcome_method,
          
          unweighted = {
-           output = outcome_reg(y_var, t_var, m_vars, balanced_data, cf_method,...)
+           output = outcome_reg(y_var, t_var, m_vars, balanced_data, cf_method, psmod, ...)
          },
          weighted = {
            output = outcome_reg_wt(y_var, t_var, m_vars, balanced_data, cf_method,
@@ -39,15 +39,17 @@ outcome_analysis <- function(outcome_method, y_var, t_var, m_vars, balanced_data
   return(output)
 }
 
-outcome_reg <- function(y_var, t_var, m_vars, balanced_data, cf_method,...){
+outcome_reg <- function(y_var, t_var, m_vars, balanced_data, cf_method, psmod, ...){
   
   f = paste0(y_var,"~",paste0(c(t_var,m_vars),collapse="+"))
   
-  if( class(balanced_data)=="mimids" & cf_method == "matching") { # is cf_method needed here? not for now but useful for future idk?
-    fits = lapply(MatchThem::complete(balanced_data, "all", all = FALSE), function(d) {
-      lm(as.formula(f), data = d)})
-    output = mice::pool(fits) |> summary()
-  } else {
+  if(cf_method == "matching") {
+    if( class(balanced_data)=="mimids" ){
+      # is cf_method needed here? not for now but useful for future idk?
+      fits = lapply(MatchThem::complete(balanced_data, "all", all = FALSE), function(d) {
+        lm(as.formula(f), data = d)})
+      output = mice::pool(fits) |> summary()
+    } else {
     matched_data = match.data(balanced_data)
     fits = lm(as.formula(f), data = matched_data)
     output = data.frame(
@@ -58,6 +60,26 @@ outcome_reg <- function(y_var, t_var, m_vars, balanced_data, cf_method,...){
       df = fits$df.residual,
       p.value = summary(fits)$coefficients[,4]
     )
+    }
+  }
+  if( cf_method == "iptw") { 
+    if( class(balanced_data)=="wimids" ){# is cf_method needed here? not for now but useful for future idk?
+    fits = lapply(MatchThem::complete(balanced_data, "all", all = FALSE), function(d) {
+      lm(as.formula(f), data = d, weights = weights)})
+    output = mice::pool(fits) |> summary()
+    } else {
+    moddf <- psmod$data
+    moddf$weights = balanced_data$weights
+    fits = lm(as.formula(f), data = moddf, weights = weights)
+    output = data.frame(
+      term = names(coef(fits)),
+      estimate = coef(fits),
+      std.error = summary(fits)$coefficients[,2],
+      statistic = summary(fits)$coefficients[,3],
+      df = fits$df.residual,
+      p.value = summary(fits)$coefficients[,4]
+    )
+    }
   }
   
   return(output)

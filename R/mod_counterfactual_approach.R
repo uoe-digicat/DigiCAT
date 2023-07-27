@@ -8,15 +8,15 @@ CF_approach_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, 'tab'),
            ## Add navbar image
-           #HTML('<center><img src="progress_bar/new/CF_approach.png" width="1000px"></center>'),
-           div(style="display: flex; align: center; width: '1000px'; margin:auto",
-               div(style="width: 160px; text-align: center;", p("GET STARTED")),
-               div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
-               div(style="width: 160px; text-align: center;", p("APPROACH", style="border-bottom: solid 5px red;")),
-               div(style="width: 160px; text-align: center;", p("BALANCING MOD")),
-               div(style="width: 160px; text-align: center;", p("BALANCING")),
-               div(style="width: 160px; text-align: center;", p("OUTCOME"))
-           ),
+           HTML('<center><img src="progress_bar/new/CF_approach.png" width="1000px"></center>'),
+           # div(style="display: flex; align: center; width: '1000px'; margin:auto",
+           #     div(style="width: 160px; text-align: center;", p("GET STARTED")),
+           #     div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
+           #     div(style="width: 160px; text-align: center;", p("APPROACH", style="border-bottom: solid 5px red;")),
+           #     div(style="width: 160px; text-align: center;", p("BALANCING MOD")),
+           #     div(style="width: 160px; text-align: center;", p("BALANCING")),
+           #     div(style="width: 160px; text-align: center;", p("OUTCOME"))
+           # ),
            div(align="center",
                actionButton(NS(id, 'prev_CF_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'next_CF_btn'), 'Next', class = "default_button")),
@@ -29,7 +29,7 @@ CF_approach_ui <- function(id) {
                    
                    radioButtons(NS(id, "CF_radio"), label = h4("Choose a Counterfactual Approach:"),
                                 choices = list("Propensity Matching" = "matching", 
-                                               " Inverse probability of treatment weighting (IPTW)" = "weighting"),
+                                               " Inverse probability of treatment weighting (IPTW)" = "iptw"),
                                 selected = character(0)),
                    
                    ## If no approach is selected before pressing "Next", error message will be displayed
