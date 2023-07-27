@@ -34,7 +34,7 @@ balancing <- function(cf_method, t_var, m_vars, psmodel_obj, eff, ...){
          matching = {
            res = balancing_match(t_var, m_vars, psmodel_obj, ...)
          },
-         weighting = {
+         iptw = {
            res = balancing_weight(t_var, m_vars, psmodel_obj, ...)
          },
          cem = {
@@ -52,7 +52,7 @@ balancing_weight <- function(t_var, m_vars, psmodel_obj, ...){
   if( class(psmodel_obj$data)=="mids" ) {
     res = weightthem(as.formula(f), datasets = psmodel_obj$data, approach = "within", method=psmodel_obj$ps_modclass, ...)
   } else {
-    res = weightit(as.formula(f), data = psmodel_obj$data, ps = psmodel_obj$score, ...)
+    res = weightit(as.formula(f), data = psmodel_obj$data, ...)
   }
   
   return(res)
