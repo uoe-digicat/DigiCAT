@@ -10,15 +10,14 @@ data_upload_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, "tab"),
            useShinyFeedback(), # include shinyFeedback
-           HTML("<center><img src='progress_bar/new/data_upload.png' width='1000'></center>"),
-           # div(style="display: flex; align: center; width: '1000px'; margin:auto",
-           #     div(style="width: 160px; text-align: center;", p("GET STARTED")),
-           #     div(style="width: 160px; text-align: center;", p("DATA UPLOAD", style="border-bottom: solid 5px red;")),
-           #     div(style="width: 160px; text-align: center;", p("APPROACH")),
-           #     div(style="width: 160px; text-align: center;", p("BALANCING MOD")),
-           #     div(style="width: 160px; text-align: center;", p("BALANCING")),
-           #     div(style="width: 160px; text-align: center;", p("OUTCOME"))
-           # ),
+           div(style="display: flex; align: center; width: '1000px'; margin:auto",
+               div(style="width: 160px; text-align: center;", p("GET STARTED")),
+               div(style="width: 160px; text-align: center;", p("DATA UPLOAD", style="border-bottom: solid 5px red;")),
+               div(style="width: 160px; text-align: center;", p("APPROACH")),
+               div(style="width: 160px; text-align: center;", p("BALANCING MOD")),
+               div(style="width: 160px; text-align: center;", p("BALANCING")),
+               div(style="width: 160px; text-align: center;", p("OUTCOME"))
+           ),
            br(), 
            ## Add buttons to move back to home page and validate uploaded data
            div(align="center",

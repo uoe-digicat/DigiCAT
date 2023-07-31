@@ -8,16 +8,14 @@ balancing_model_ui <- function(id) {
   ## Tab for balancing model
   tabPanel(title = "",
            value = NS(id, 'tab'),
-           ## Add navbar image
-           HTML('<center><img src="progress_bar/new/balancing_model.png" width="1000px"></center>'),
-           # div(style="display: flex; align: center; width: '1000px'; margin: auto",
-           #     div(style="width: 160px; text-align: center;", p("GET STARTED")),
-           #     div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
-           #     div(style="width: 160px; text-align: center;", p("APPROACH"),uiOutput(ns("prog_choiceCF"))),
-           #     div(style="width: 160px: text-align: center;", p("BALANCING MOD", style="border-bottom: solid 5px red;")),
-           #     div(style="width: 160px; text-align: center;", p("BALANCING")),
-           #     div(style="width: 160px; text-align: center;", p("OUTCOME"))
-           # ),
+           div(style="display: flex; align: center; width: '1000px'; margin: auto",
+               div(style="width: 160px; text-align: center;", p("GET STARTED")),
+               div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
+               div(style="width: 160px; text-align: center;", p("APPROACH"),uiOutput(ns("prog_choiceCF"))),
+               div(style="width: 160px: text-align: center;", p("BALANCING MOD", style="border-bottom: solid 5px red;")),
+               div(style="width: 160px; text-align: center;", p("BALANCING")),
+               div(style="width: 160px; text-align: center;", p("OUTCOME"))
+           ),
            div(align="center",
                actionButton(NS(id, 'prev_balancing_model_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_balancing_model_btn'), 'Run', class = "default_button"),
