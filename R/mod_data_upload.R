@@ -10,13 +10,17 @@ data_upload_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, "tab"),
            useShinyFeedback(), # include shinyFeedback
-           div(style="display: flex; align: center; width: '1000px'; margin:auto",
-               div(style="width: 160px; text-align: center;", p("GET STARTED")),
-               div(style="width: 160px; text-align: center;", p("DATA UPLOAD", style="border-bottom: solid 5px red;")),
-               div(style="width: 160px; text-align: center;", p("APPROACH")),
-               div(style="width: 160px; text-align: center;", p("BALANCING MOD")),
-               div(style="width: 160px; text-align: center;", p("BALANCING")),
-               div(style="width: 160px; text-align: center;", p("OUTCOME"))
+           br(),
+           div(style="display: flex; align: center; width: '100%'; margin:auto",
+               div(style="width: 12%; text-align: center;", p("GET STARTED", style="color: white;")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p("DATA UPLOAD", style="color: white; border-bottom: solid 2px white; border-radius: 5px;")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p("APPROACH", style="color: #607cc4")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p("BALANCING", style="color: #607cc4")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p("OUTCOME", style="color: #607cc4;"))
            ),
            br(), 
            ## Add buttons to move back to home page and validate uploaded data
