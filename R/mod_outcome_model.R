@@ -88,7 +88,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  }
 
                  ## Disable 'Next' button initially
-                 shinyjs::disable("next_outcome_model_btn")
+                 #shinyjs::disable("next_outcome_model_btn")
                  
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_outcome_model_btn, {
@@ -151,7 +151,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                      previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
                      
                      ## Disable "Next" button to force a rerun before proceeding to next step
-                     shinyjs::disable("next_outcome_model_btn")
+                     #shinyjs::disable("next_outcome_model_btn")
                      
                    }
                })
@@ -219,7 +219,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                          
                          
                          ## Enable 'Run' and 'Next' buttons
-                         shinyjs::enable("next_outcome_model_btn")
+                         #shinyjs::enable("next_outcome_model_btn")
                          shinyjs::enable("run_outcome_model_btn")
                        })
                      }
@@ -238,7 +238,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                        previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
                      
                      ## Disable "Next" button to force a rerun before proceeding to next step
-                     shinyjs::disable("next_outcome_model_btn")
+                     #shinyjs::disable("next_outcome_model_btn")
                      
                    }
                  })
