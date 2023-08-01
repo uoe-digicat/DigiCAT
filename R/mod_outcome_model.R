@@ -6,18 +6,22 @@ outcome_model_ui <- function(id) {
   ## Tab for choosing counterfactual analysis approach
   tabPanel(title = "",
            value = NS(id, 'tab'),
-           div(style="display: flex; align: center; width: '1000px'; margin:auto",
-               div(style="width: 160px; text-align: center;", p("GET STARTED")),
-               div(style="width: 160px; text-align: center;", p("DATA UPLOAD"),uiOutput(ns("prog_choiceDU"))),
-               div(style="width: 160px; text-align: center;", p("APPROACH"),uiOutput(ns("prog_choiceCF"))),
-               div(style="width: 160px; text-align: center;", p("BALANCING MOD"),uiOutput(ns("prog_choiceBM"))),
-               div(style="width: 160px; text-align: center;", p("BALANCING")),
-               div(style="width: 160px; text-align: center;", p("OUTCOME", style="border-bottom: solid 5px red;"))
+           br(),
+           div(style="display: flex; align: center; width: '100%'; margin:auto",
+               div(style="width: 12%; text-align: center;", p("GET STARTED", style="color: white;")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p(p("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))), style="color: white;")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p(p("APPROACH"), p(uiOutput(ns("prog_choiceCF"))), style="color: white")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p(p("BALANCING"), p(uiOutput(ns("prog_choiceBM"))), style="color: white")),
+               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
+               div(style="width: 12%; text-align: center;", p("OUTCOME", style="color: white; border-bottom: solid 2px white; border-radius: 5px;"))
            ),
            div(align="center",
                actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button"),
-               actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button")),
+               #actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button")),
            br(),
            
            ## matching method
@@ -59,16 +63,29 @@ outcome_model_ui <- function(id) {
   )
 }
 
-outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, balancing_results, approach, balancing_model, descriptions) {
+outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, approach, balancing_method, balancing_ratio, balancing_res, balancing_model_res, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
                  
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))})
-                 output$prog_choiceCF <- renderUI({p(paste0(approach$cfapproach_radio()),br(),paste0(approach$missingness_radio()))})
-                 output$prog_choiceBM <- renderUI({paste0(balancing_model$balancing_model)})
+                 output$prog_choiceCF <- renderUI({p(paste0("Counterfactual Approach: ", approach()),br(),paste0("Missingness: ", approach$missingness_radio()),br(),paste0("Model: ", approach$balancing_model()))})
                  
                  
+                 observeEvent(approach(), {
+                   
+                   ## First check balancing has been run
+                   if (!is.null(balancing_model_res)){
+                     
+                     if (approach() == "matching" | approach() == "NBP"){
+                       output$prog_choiceBM <- renderUI({paste0("Balancing Method: ",balancing_method()), br(), paste0("Balancing Ratio: ", balancing_ratio())})
+                     }
+                     if (approach() == "iptw"){
+                       output$prog_choiceBM <- NULL
+                     }
+                   }
+                 }
+
                  ## Disable 'Next' button initially
                  shinyjs::disable("next_outcome_model_btn")
                  

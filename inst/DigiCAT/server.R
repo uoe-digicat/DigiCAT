@@ -57,20 +57,6 @@ server <- function(input, output, session) {
                                     descriptions = desc_global)
   
   ####
-  # Balancing model ----
-  ####
-  
-  balancing_model_res <- DigiCAT:::balancing_model_server("balancing_model", 
-                         parent = session,
-                         raw_data = reactive(data_upload_res$data),
-                         outcome_variable = reactive(data_upload_res$outcome),
-                         treatment_variable = reactive(data_upload_res$treatment),
-                         matching_variables = reactive(data_upload_res$matchvars),
-                         covariates = reactive(data_upload_res$covars),
-                         approach = CF_approach,
-                         descriptions = desc_global)
-  
-  ####
   # Balancing ----
   ####
   
@@ -79,23 +65,25 @@ server <- function(input, output, session) {
                    outcome_variable = reactive(data_upload_res$outcome),
                    treatment_variable = reactive(data_upload_res$treatment),
                    matching_variables = reactive(data_upload_res$matchvars),
-                   balancing_model_results = reactive(balancing_model_res$results),
-                   approach = CF_approach,
-                   balancing_model = balancing_model_res,
+                   approach = reactive(CF_approach$cfapproach_radio),
+                   missingness = reactive(CF_approach$missingness),
+                   balancing_model = reactive(CF_approach$balancing_model),
                    descriptions = desc_global)
   
   ####
   # Outcome Model ----
   ####
   
-  DigiCAT:::outcome_model_server("outcome_model",  
+  outcome_res <- DigiCAT:::outcome_model_server("outcome_model",  
                        parent = session,
                        treatment_variable = reactive(data_upload_res$treatment),
                        outcome_variable = reactive(data_upload_res$outcome),
                        matching_variables = reactive(data_upload_res$matchvars),
-                       approach = CF_approach,
-                       balancing_model = balancing_model_res,
-                       balancing_results = balancing_res,
+                       approach = reactive(CF_approach$cfapproach_radio),
+                       balancing_method = reactive(balancing_res$method_radio),
+                       balancing_ratio = reactive(balancing_res$ratio_radio),
+                       balancing_model_res = reactive(balancing_res$balancing_model_res),
+                       balancing_res = reactive(balancing_res$balancing_res),
                        descriptions = desc_global)
   
   ####
