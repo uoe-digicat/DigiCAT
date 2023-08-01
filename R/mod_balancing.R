@@ -58,30 +58,32 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                    if (approach() == "matching"){
                      
                      output$balancing_options <- renderUI({
-                       div(class = "text_blocks",
-                           radioButtons(session$ns("method_radio"), label = h4("Choose a Matching Method:"),
-                                        choices = c(
-                                          "Optimal" = "optimal",
-                                          "Nearest Neighbour (NN)" = "nearest"),
-                                        selected = character(0)),
-                           uiOutput(session$ns("balancing_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
-                           uiOutput(session$ns("balancing_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
-                           ## Description of selected balancing method and ratio
-                           uiOutput(session$ns("balancing_description_method")),
-                           p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
-                       ),
-                       br(),
-                       div(style = "margin-top: 2%;",
-                           class = "text_blocks",
-                             radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Method:"),
-                                        choices = c(
-                                          "1:1" = "one_to_one",
-                                          "1:k" = "one_to_k"),
-                                        selected = character(0)),
-                                        uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
-                           uiOutput(session$ns("balancing_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
-                           uiOutput(session$ns("balancing_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
-                           uiOutput(session$ns("balancing_description_ratio"))
+                       div(
+                         div(class = "text_blocks",
+                             radioButtons(session$ns("method_radio"), label = h4("Choose a Matching Method:"),
+                                          choices = c(
+                                            "Optimal" = "optimal",
+                                            "Nearest Neighbour (NN)" = "nearest"),
+                                          selected = character(0)),
+                             uiOutput(session$ns("balancing_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
+                             uiOutput(session$ns("balancing_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             ## Description of selected balancing method and ratio
+                             uiOutput(session$ns("balancing_description_method")),
+                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
+                         ),
+                         br(),
+                         div(style = "margin-top: 2%;",
+                             class = "text_blocks",
+                               radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Method:"),
+                                          choices = c(
+                                            "1:1" = "one_to_one",
+                                            "1:k" = "one_to_k"),
+                                          selected = character(0)),
+                                          uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
+                             uiOutput(session$ns("balancing_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
+                             uiOutput(session$ns("balancing_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("balancing_description_ratio"))
+                         )
                        )
                      })
                      
