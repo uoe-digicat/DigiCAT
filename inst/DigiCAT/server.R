@@ -80,6 +80,8 @@ server <- function(input, output, session) {
                        outcome_variable = reactive(data_upload_res$outcome),
                        matching_variables = reactive(data_upload_res$matchvars),
                        approach = reactive(CF_approach$cfapproach_radio),
+                       missingness = reactive(CF_approach$missingness),
+                       balancing_model = reactive(CF_approach$balancing_model),
                        balancing_method = reactive(balancing_res$method_radio),
                        balancing_ratio = reactive(balancing_res$ratio_radio),
                        balancing_model_res = reactive(balancing_res$balancing_model_res),

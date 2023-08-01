@@ -64,22 +64,25 @@ outcome_model_ui <- function(id) {
   )
 }
 
-outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, approach, balancing_method, balancing_ratio, balancing_res, balancing_model_res, descriptions) {
+outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, approach, missingness, balancing_model, balancing_method, balancing_ratio, balancing_res, balancing_model_res, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
                  
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))})
-                 output$prog_choiceCF <- renderUI({p(paste0("Counterfactual Approach: ", approach()),br(),paste0("Missingness: ", approach$missingness_radio()),br(),paste0("Model: ", approach$balancing_model()))})
+                 output$prog_choiceCF <- renderUI({p(paste0("Counterfactual Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()))})
                  
-                 
-                 observeEvent(approach(), {
+                 observeEvent(approach() | missingness() | balancing_model(), {
                    
                    ## First check balancing has been run
                    if (!is.null(balancing_model_res)){
                      
                      if (approach() == "matching" | approach() == "NBP"){
-                       output$prog_choiceBM <- renderUI({paste0("Balancing Method: ",balancing_method()), br(), paste0("Balancing Ratio: ", balancing_ratio())})
+                       
+                       balancing_method <- balancing_method()
+                       balancing_ratio <- balancing_ratio()
+                       
+                       output$prog_choiceBM <- renderUI({paste0("Balancing Method: ", balancing_method, br(), paste0("Balancing Ratio: ", balancing_ratio)})
                      }
                      if (approach() == "iptw"){
                        output$prog_choiceBM <- NULL
