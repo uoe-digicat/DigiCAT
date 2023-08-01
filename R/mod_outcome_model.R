@@ -107,8 +107,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  
                  ## Create reactive value for approach description
                  outcome_model_values <- reactiveValues(
-                   description_method = descriptions$outcome_model
-                                          ),
+                   description_method = descriptions$outcome_model,
                    parameters_method = p(h4("Outcome Model Parameters:"),
                                          p("Information on parameters in use.")),
                    output = p(h4("Output:"),
