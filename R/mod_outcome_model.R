@@ -79,10 +79,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                      
                      if (approach() == "matching" | approach() == "NBP"){
                        
-                       balancing_method <- balancing_method()
-                       balancing_ratio <- balancing_ratio()
-                       
-                       output$prog_choiceBM <- renderUI({paste0("Balancing Method: ", balancing_method), br(), paste0("Balancing Ratio: ", balancing_ratio)})
+                       output$prog_choiceBM <- renderUI({p(paste0("Balancing Method: ",balancing_method()), br(), paste0("Balancing Ratio: ", balancing_ratio()))})
                      }
                      if (approach() == "iptw"){
                        output$prog_choiceBM <- NULL
