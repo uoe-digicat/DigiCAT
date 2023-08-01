@@ -38,6 +38,18 @@ groups by matching treated individuals with similar untreated individuals based 
   
   one_to_one = p(h5("Matching Ratio: 1:1"), p("1:1 is the most commonly used matching ratio, although this ratio can be changed, for example, if there are many more members belonging to the control group than members belonging to the treatment group. In 1:1 matching, we match one unit belonging to the intervention group with one unit belonging to the control group that has the closest propensity score. The default matching strategy in DigiCAT is a nearest neighbour (‘greedy’) matching algorithm, with a 1:1 matching ratio. As our default is matching without replacement, the selected units will be taken out of the donor pool once matched. If you think this may not be best for you, see our tutorial pages for more detailed guidance on choosing an appropriate matching ratio.")),
   
-  one_to_K = p(h5("Matching ratio: 1:K"), p("You've choosen a 1:K matching ratio, this is why is may/may not be a good choice."))
+  one_to_K = p(h5("Matching ratio: 1:K"), p("You've choosen a 1:K matching ratio, this is why is may/may not be a good choice.")),
   
+  ## Outcome
+  
+  outcome_model = p(h5("Outcome Model:"), p("The outcome model within counterfactual analysis method provides the estimate of the effect of the ‘treatment’. To do this, DigiCAT uses a linear regression to predict the mental health outcome of interest from the candidate treatment variable, using the ‘re-balanced’ data. It is recommended that the matching variables are also included in this model. It may also include other covariates to estimate the effect of the ‘treatment’ net of other influences on the outcome. See the outcome model tutorial for more details."),
+                    
+  linear_regression = p(h4("Outcome Model: Linear Regression:"), br(), p("Linear regression is a way of modelling the associations between exploratory variable(s) and a continuous outcome variable. The model takes the form y = bX + e, where y and x are our outcome and explanatory variables respectively, and e is the random error. Of interest here is B, which is the estimated effect of our explanatory variable on our outcome. By fitting a model to a sample that is either matched or weighted according to the propensity of treatment, we can better estimate the **causal** effect of the treatment on our outcome variable.")),                  
+  
+  estimate = p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, interventions, or treatments on mental health outcomes."),
+  
+  standard_error = p("The standard error is a statistical measure that quantifies the variability or uncertainty associated with the estimate. It provides a measure of how much the estimate is likely to vary from the true population value."),
+  
+  p_value = p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect or relationship in the data.")                  
+                    
 )
