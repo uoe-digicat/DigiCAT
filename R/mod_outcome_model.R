@@ -20,8 +20,9 @@ outcome_model_ui <- function(id) {
            ),
            div(align="center",
                actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
-               actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button"),
+               actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button")
                #actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button")),
+           ),
            br(),
            
            ## matching method
