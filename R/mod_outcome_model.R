@@ -21,8 +21,8 @@ outcome_model_ui <- function(id) {
            div(align="center",
                actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button")
-               #actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button")),
-           ),
+               ## actionButton(NS(id, 'next_outcome_model_btn'), 'Next', class = "default_button")
+               ),
            br(),
            
            ## matching method
@@ -85,7 +85,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                        output$prog_choiceBM <- NULL
                      }
                    }
-                 }
+                 })
 
                  ## Disable 'Next' button initially
                  #shinyjs::disable("next_outcome_model_btn")
@@ -107,12 +107,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  
                  ## Create reactive value for approach description
                  outcome_model_values <- reactiveValues(
-                   description_method = p(h4("Outcome Model:"),
-                                          p("The outcome model within counterfactual analysis method provides the estimate of the effect of the ‘treatment’. 
-                                            To do this, DigiCAT uses a linear regression to predict the mental health outcome of interest from the candidate 
-                                            treatment variable, using the ‘re-balanced’ data. It is recommended that the matching variables are also included 
-                                            in this model. It may also include other covariates to estimate the effect of the ‘treatment’ net of other influences 
-                                            on the outcome. See the outcome model tutorial for more details.")
+                   description_method = descriptions$outcome_model
                                           ),
                    parameters_method = p(h4("Outcome Model Parameters:"),
                                          p("Information on parameters in use.")),
@@ -124,14 +119,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  observeEvent(input$outcome_model_radio,{
                    
                    if(input$outcome_model_radio == "LR"){
-                     outcome_model_values$description_method <- p(h4("Outcome Model: Linear Regression:"),
-                                                            br(),
-                                                            p("Linear regression is a way of modelling the associations between exploratory variable(s) 
-                                                              and a continuous outcome variable. The model takes the form y = bX + e, where y and x are our 
-                                                              outcome and explanatory variables respectively, and e is the random error. Of interest here is 
-                                                              B, which is the estimated effect of our explanatory variable on our outcome. By fitting a model 
-                                                              to a sample that is either matched or weighted according to the propensity of treatment, we can 
-                                                              better estimate the **causal** effect of the treatment on our outcome variable."))
+                     outcome_model_values$description_method <- decriptions$linear_regression
                      
                      outcome_model_values$parameters_method <- p(h4("Outcome Model Parameters: Linear Regression"),
                                                            br(),
@@ -197,20 +185,13 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                        try({
                      ## Output estimate
                          outcome_model_values$output <- p(h4("Model Output"),
-                                                  p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, 
-                                                    interventions, or treatments on mental health outcomes."),
+                                                  descriptions$estimate,
                                                   strong(p(paste0("Estimate: ", round(outcome_model_values$results[2,2], 4)))),
                                                   br(),
-                                                  p("The standard error is a statistical measure that quantifies the variability or uncertainty associated 
-                                                    with the estimate. It provides a measure of how much the estimate is likely to vary from the true 
-                                                    population value. "),
+                                                  descriptions$standard_error,
                                                   strong(p(paste0("Standard Error: ", round(outcome_model_values$results[2,3],3)))),
                                                   br(),
-                                                  p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test 
-                                                    statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. 
-                                                    Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is 
-                                                    rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect 
-                                                    or relationship in the data."),
+                                                  descriptions$pvalue,
                                                   strong(p(paste0("P-value: ", round(outcome_model_values$results[2,6], 3))))
                                                     )
                          
