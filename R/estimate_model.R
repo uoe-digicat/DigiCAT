@@ -12,13 +12,9 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            estimated_propensity_model = glm(f, data = handled_missingness,
                                                       family = binomial(link="probit"))
            } else if(missing_method == "weighting"){
-           estimated_propensity_model = svyglm(f, design = handled_missingness) # design-weighted PS model
-           } # else if(missing_method == "weighting"){
-           #  f = paste0(treatment_variable,"~",paste0(c(matching_variable, weighting_variable), collapse="+"))
-           # estimated_propensity_model = glm(f, data = .data,
-           #                                family = binomial(link="probit"))
-           #}
-           }, # include DuGoff et al. method also? = including weighting_variable as a covariate in PS model
+           estimated_propensity_model = svyglm(f, design = handled_missingness, na.action=na.omit) # design-weighted PS model
+           }
+           }, 
          
          gbm = {
            

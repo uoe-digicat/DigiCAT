@@ -1,3 +1,8 @@
+source("R/propensity_estimation_stage.R")
+source("R/evaluate_imputations.R")
+source("R/balance_data.R")
+source("R/outcome_analysis_stage.R")
+
 N =500
 A = matrix(runif(5^2)*2-1, ncol = 5)
 Xmat = MASS::mvrnorm(N, mu=rnorm(5,0,3), Sigma = t(A)%*%A)
@@ -10,21 +15,16 @@ names(df) <- c(letters[1:5], "t", "y")
 df2 = mice::ampute(df,
                    prop = 0.05)
 
-source("R/propensity_estimation_stage.R")
-source("R/evaluate_imputations.R")
-source("R/balance_data.R")
-source("R/outcome_analysis_stage.R")
-
-abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "glm",
+abc <- estimation_stage(.data = df, missing_method = "mi", model_type = "glm",
                         treatment_variable = "t", matching_variable = c("a", "b", "c", "d", "e"))
 ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
-                    matching_variable = c("a", "b", "c", "d", "e"), psmodel_obj = abc,
-                    missing_method = "complete")
+                    matching_variable = c("a", "b", "c", "d", "e"), PS_estimation_object = abc,
+                    missing_method = "mi")
 mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
-                              psmodel_obj = abc)
+                              PS_estimation_object = abc)
 
 
 #### Weighting testing ####
@@ -64,14 +64,24 @@ Y_C <- gen_Y_C(A, X)
 d <- data.frame(A, X, Y_C, SW)
 
 df2 = mice::ampute(d,
-                   prop = 0.05)
+                   prop = 0.15)
+data_to_use <- df2$amp
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "weighting", model_type = "glm",
+#df2$amp <- subset(df2$amp, !is.na(A))
+#matchit(A ~ X1 + X2, data = df2$amp)
+
+
+abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2", "X3"),
-                        non_response_weights = SW)
+                        nonresponse_weights = SW)
 ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
-                    matching_variable = c("X1", "X2", "X3"), psmodel_obj = abc,
+                    matching_variable = c("X1", "X2", "X3"), PS_estimation_object = abc,
                     missing_method = "weighting")
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
+                              outcome_variable = "y",
+                              treatment_variable = "t", 
+                              matching_variable = c("a", "b"), 
+                              PS_estimation_object = abc)
 
 
 

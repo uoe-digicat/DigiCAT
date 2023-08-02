@@ -8,7 +8,7 @@ source("R/make_matrix_nbp.R")
 source("R/assign_id_nbp.R")
 
 
-balance_data <- function(counterfactual_method, treatment_variable, matching_variable, psmodel_obj,
+balance_data <- function(counterfactual_method, treatment_variable, matching_variable, PS_estimation_object,
                          missing_method,
                          eff, ...){
   
@@ -23,67 +23,71 @@ balance_data <- function(counterfactual_method, treatment_variable, matching_var
   switch(counterfactual_method,
          
          psm = {
-           balanced_data = balancing_psm(treatment_variable, matching_variable, psmodel_obj, missing_method,...)
+           balanced_data = balancing_psm(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
          },
          iptw = {
-           balanced_data = balancing_iptw(treatment_variable, matching_variable, psmodel_obj, missing_method,...)
+           balanced_data = balancing_iptw(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
          },
          cem = {
-           balanced_data = balancing_cem(treatment_variable, matching_variable, psmodel_obj, missing_method,...)
+           balanced_data = balancing_cem(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
          },
          nbp = {
-           balanced_data = balancing_nbp(treatment_variable, matching_variable, psmodel_obj, missing_method,...)
+           balanced_data = balancing_nbp(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
          },
          stop("Need a valid method to balance (psm, iptw, cem, nbp)")
   )
   return(balanced_data)
 }
 
-balancing_iptw <- function(treatment_variable, matching_variable, psmodel_obj, missing_method,...){
+balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method,...){
   
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
   
   if(missing_method=="mi" ) {
-     balanced_data = weightthem(as.formula(f), datasets = psmodel_obj$missingness_treated_dataset,
+     balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
                      approach = "within", method = "ps",...)
     
-  } else {
-    balanced_data = weightit(as.formula(f), data = psmodel_obj$missingness_treated_dataset, ps = psmodel_obj$propensity_scores, estimand = "ATE", ...)
+  } else if(missing_method=="complete"){
+    balanced_data = weightit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, ps = PS_estimation_object$propensity_scores, estimand = "ATE", ...)
     
-   }
+  } else if(missing_method=="weighting"){
+    balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
+                            method = "ps", ...)
+  }
   
   return(balanced_data)
 }
 
 
-balancing_psm <- function(treatment_variable, matching_variable, psmodel_obj, missing_method,...){
+balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method,...){
   
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
   
   if(missing_method=="mi" ) {
-    balanced_data = matchthem(as.formula(f), datasets = psmodel_obj$missingness_treated_dataset, approach = "within", distance=psmodel_obj$propensity_model_class, ...)
+    balanced_data = matchthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset, approach = "within", distance=PS_estimation_object$propensity_model_class, ...)
     
     
    } else if(missing_method=="complete"){
-    balanced_data = matchit(as.formula(f), data = psmodel_obj$missingness_treated_dataset, ps = psmodel_obj$propensity_score, ...)
+    balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, ps = PS_estimation_object$propensity_score, ...)
     
    } else if(missing_method=="weighting"){
-       balanced_data = matchit(as.formula(f), data = psmodel_obj$missingness_treated_dataset$variables, ps = psmodel_obj$score, ...)
+       balanced_data = matchit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
+                               ps = PS_estimation_object$propensity_score, ...)
    }
   
   return(balanced_data)
   
 }
 
-balancing_cem <- function(treatment_variable, matching_variable, psmodel_obj, ...){
+balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_object, ...){
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
 
-  balanced_data = matchit(as.formula(f), data = psmodel_obj$missingness_treated_dataset, method = "cem")
+  balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, method = "cem")
 
   return(balanced_data)
 }
 
-balancing_nbp <- function(treatment_variable, matching_variable, psmodel_obj, ...){ # to finish
+balancing_nbp <- function(treatment_variable, matching_variable, PS_estimation_object, ...){ # to finish
   
   prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...)
   created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...)

@@ -3,6 +3,7 @@
 require(mice)
 
 handle_missingness <- function(.data, missing_method = NULL, nonresponse_weights = weighting_variable,
+                               design_object = NULL,
                                 ...){
   switch(missing_method, 
          
@@ -17,7 +18,8 @@ handle_missingness <- function(.data, missing_method = NULL, nonresponse_weights
          },
          
          weighting = {
-           handled_missingness = svydesign(ids = ~1, weights = nonresponse_weights, data = .data, ...) 
+           
+           handled_missingness = design_object
          },
          stop("How should i deal with missingness? Should be one of 'mi', 'complete', 'weighting'")
   )
