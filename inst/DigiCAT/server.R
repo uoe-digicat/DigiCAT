@@ -54,6 +54,7 @@ server <- function(input, output, session) {
                                     treatment_variable = reactive(data_upload_res$treatment),
                                     matching_variables = reactive(data_upload_res$matchvars),
                                     covariates = reactive(data_upload_res$covars),
+                                    NRW_var = reactive(data_upload_res$NRW_var),
                                     descriptions = desc_global)
   
   ####
@@ -62,10 +63,12 @@ server <- function(input, output, session) {
   
   balancing_res <- DigiCAT:::balancing_server("balancing", 
                    parent = session,
+                   raw_data = reactive(data_upload_res$data),
                    outcome_variable = reactive(data_upload_res$outcome),
                    treatment_variable = reactive(data_upload_res$treatment),
                    matching_variables = reactive(data_upload_res$matchvars),
-                   approach = reactive(CF_approach$cfapproach_radio),
+                   covariates = reactive(data_upload_res$covars),
+                   approach = reactive(CF_approach$CF_radio),
                    missingness = reactive(CF_approach$missingness),
                    balancing_model = reactive(CF_approach$balancing_model),
                    descriptions = desc_global)
@@ -79,7 +82,7 @@ server <- function(input, output, session) {
                        treatment_variable = reactive(data_upload_res$treatment),
                        outcome_variable = reactive(data_upload_res$outcome),
                        matching_variables = reactive(data_upload_res$matchvars),
-                       approach = reactive(CF_approach$cfapproach_radio),
+                       approach = reactive(CF_approach$CF_radio),
                        missingness = reactive(CF_approach$missingness),
                        balancing_model = reactive(CF_approach$balancing_model),
                        balancing_method = reactive(balancing_res$method_radio),

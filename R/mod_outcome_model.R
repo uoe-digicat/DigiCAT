@@ -8,15 +8,15 @@ outcome_model_ui <- function(id) {
            value = NS(id, 'tab'),
            br(),
            div(style="display: flex; align: center; width: '100%'; margin:auto",
-               div(style="width: 12%; text-align: center;", p("GET STARTED", style="color: white;")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p(p("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))), style="color: white;")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p(p("APPROACH"), p(uiOutput(ns("prog_choiceCF"))), style="color: white")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p(p("BALANCING"), p(uiOutput(ns("prog_choiceBM"))), style="color: white")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p("OUTCOME", style="color: white; border-bottom: solid 2px white; border-radius: 5px;"))
+               div(style="width: 12%; text-align: center;", h5("GET STARTED", style="color: white;")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", p(h5("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))), style="color: white;")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", p(h5("APPROACH"), p(uiOutput(ns("prog_choiceCF"))), style="color: white")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", p(h5("BALANCING"), p(uiOutput(ns("prog_choiceBM"))), style="color: white")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: white; border-bottom: solid 2px white;"))
            ),
            div(align="center",
                actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
@@ -34,34 +34,15 @@ outcome_model_ui <- function(id) {
                                 selected = character(0)),
                    uiOutput(ns("outcome_model_missing_message"), style = "color: red;"), ## If no model selected when "Run" pressed, give warning
                    uiOutput(ns("outcome_model_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
-                   
+                   uiOutput(ns("outcome_model_description_method"))
                ),
                div(style = "width: 49%; margin-left: 2%;",
                    class = "text_blocks",
-                   
-                   ## Description of selected outcome model
-                   uiOutput(ns("outcome_model_description_method")),
-                   br(),br(),
-                   p("For more information, visit our ", actionLink(ns("outcome_model_tab_tutorial_link"), "tutorial"), ".")
-                   
-               )),
-           
-           br(), br(),
-           
-           div(style = "display: flex;",
-               div(style = "width: 49%;",
-                   class = "text_blocks",
-                   ## Parameters of selected outcome_model model
-                   uiOutput(ns("outcome_model_parameters_method")),
-                   ),
-               
-               div(style = "width: 49%; margin-left: 2%;",
-                   class = "text_blocks",
                    ## Output of selected outcome_model model
-                   withSpinner(uiOutput(ns("outcome_model_output"))))
+                   withSpinner(uiOutput(ns("outcome_model_output")))
+                   )
+               )
            )
-           
-  )
 }
 
 outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, approach, missingness, balancing_model, balancing_method, balancing_ratio, balancing_res, balancing_model_res, descriptions) {
@@ -72,20 +53,17 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))})
                  output$prog_choiceCF <- renderUI({p(paste0("Counterfactual Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()))})
                  
-                 observeEvent(approach() | missingness() | balancing_model(), {
+                 observeEvent(c(approach(), missingness(), balancing_model()), {
                    
-                   ## First check balancing has been run
-                   if (!is.null(balancing_model_res)){
-                     
-                     if (approach() == "matching" | approach() == "NBP"){
-                       
-                       output$prog_choiceBM <- renderUI({p(paste0("Balancing Method: ",balancing_method()), br(), paste0("Balancing Ratio: ", balancing_ratio()))})
-                     }
+                   if (!is.null(approach())){
+
                      if (approach() == "iptw"){
                        output$prog_choiceBM <- NULL
                      }
-                   }
-                 })
+                     else{
+                       output$prog_choiceBM <- renderUI({p(paste0("Balancing Method: ", balancing_method()), br(), paste0("Balancing Ratio: 1:", balancing_ratio()))})
+                     }}
+                   })
 
                  ## Disable 'Next' button initially
                  #shinyjs::disable("next_outcome_model_btn")
@@ -118,7 +96,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  observeEvent(input$outcome_model_radio,{
                    
                    if(input$outcome_model_radio == "LR"){
-                     outcome_model_values$description_method <- decriptions$linear_regression
+                     outcome_model_values$description_method <- descriptions$linear_regression
                      
                      outcome_model_values$parameters_method <- p(h4("Outcome Model Parameters: Linear Regression"),
                                                            br(),
@@ -164,10 +142,10 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                                                        y_var = outcome_variable(),
                                                        t_var = treatment_variable(),
                                                        m_vars = matching_variables(),
-                                                       balanced_data = balancing_results(),
+                                                       balanced_data = balancing_res(),
                                                        ids = NULL, weights = NULL, strata = NULL, fpc = NULL, 
-                                                       cf_method = approach$cfapproach_radio(),
-                                                       psmod = balancing_model$results),
+                                                       cf_method = approach(),
+                                                       psmod = balancing_model_res()),
                        
                        ## If outcome model does not run, return error message and enable run button 
                        error = function(cond) {
@@ -190,7 +168,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                                                   descriptions$standard_error,
                                                   strong(p(paste0("Standard Error: ", round(outcome_model_values$results[2,3],3)))),
                                                   br(),
-                                                  descriptions$pvalue,
+                                                  descriptions$p_value,
                                                   strong(p(paste0("P-value: ", round(outcome_model_values$results[2,6], 3))))
                                                     )
                          
@@ -208,7 +186,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  
                  
                  ## Remove outcome model output and force rerun if previous steps have changed since previous run
-                 observeEvent(balancing_results(), {
+                 observeEvent(balancing_res(), {
                    ## First check if outcome model has been run yet, if yes, print informative message in output
                    if (!is.null(outcome_model_values$results)){
                      ## Replace balancing model output with explanation of why output has been deleted

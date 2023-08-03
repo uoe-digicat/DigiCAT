@@ -4,12 +4,14 @@
 #' @param treatment Name of treatment variable.
 #' @param outcome Name of outcome variable.
 #' @param matchvars Name of matching variables.
-get_validation <- function(.data, treatment, outcome, matchvars, covars){
-
+#' @param NRW_var Name of non-response weight variable.
+get_validation <- function(.data, treatment, outcome, matchvars, covars, NRW_var){
+  
   ## Remove rows with NAs
+  data_Nas <- .data
   .data <- na.omit(.data)
   
- ## Calculate correlation matrix of matchvars and covars and get pair of highly correlated variables
+  ## Calculate correlation matrix of matchvars and covars and get pair of highly correlated variables
   cor_dat <- cor(.data[c(matchvars, covars)])
   w <- which(abs(cor_dat)>0.80 & row(cor_dat)<col(cor_dat), arr.ind=TRUE)
   high_cor <- matrix(colnames(cor_dat)[w],ncol=2)
@@ -41,7 +43,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars){
     if(length(unique(.data[[outcome]])) < 5){
       h5("There are ", length(unique(.data[[outcome]])), " unique observations in your chosen outcome variable:", outcome,". This seems a bit low for a continuous variable. We recommend you double check this before continuing." , style = "color:red")
     } else{h5("There are ", length(unique(.data[[outcome]])), " unique observations in your chosen outcome variable.", style = "color:green")}, br(),
-
+    
     ## Check outcome variable is normally distributed
     h4("Outcome Variable Skewness:"),
     
@@ -54,20 +56,61 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars){
                     xlab = "",
                     col = "#76b9f5")), br(),
     
+    ## Check treatment variable is binary/ordinal
+    h4("Treatment Variable Type:"),
+    if(length(unique(.data[[treatment]])) == 2){
+      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a binary variable and can be used in the 
+      current counterfactual approaches offered by DigiCAT." , style = "color:green")
+    }, 
+    if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
+      h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
+      current counterfactual approaches offered by DigiCAT." , style = "color:green")
+    },
+    if(length(unique(.data[[treatment]])) > 5){
+      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a continuous variable and cannot be used in the 
+      current counterfactual approaches offered by DigiCAT. Please reselect or categorize your current treatment variable." , style = "color:red")
+    },
+    br(),
+  
     ## Check multicollinearity between variables
     h4("Multicollinearity Between Variables:"),
     
     if (nrow(high_cor) == 0){
       h5("None of the selected matching variables or covariates appear to be strongly correlated (Pearson correaltion > -0.9 or < 0.9).", style = "color:green")
     } else{
-    
-    h5("It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). 
+      
+      h5("It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). 
        Please consider removing one of each highly correlated variable pair:", paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red')
+    }, br(),
+
+    ## Check selected non-response weight variable has no missingness
+    if (!is.null(NRW_var)){
+      if (any(is.na(data_Nas[[NRW_var]]))){
+        
+        p(h4("Non-response Variable Missingness:"),
+        h5(paste0("You have selected ", NRW_var, " as your non-response weight. As this includes missing data it will not be possible to use in
+                  counterfactual analysis."), style = 'color:red'))
+
+      }
+      else{
+        
+        p(h4("Non-response Variable Missingness:"),
+        h5(paste0("You have selected ", NRW_var, " as your non-response weight. No missingness has been detected in this variable."), 
+           style = 'color:green'))
+
+      }
     },
+    
     br(),
     br()
   )
 }
+
+
+
+
+
+
 
 
 

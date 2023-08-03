@@ -7,18 +7,18 @@ home_ui <- function(id) {
            value = NS(id, "tab"),
            br(),
            div(style="display: flex; align: center; width: '100%'; margin:auto",
-               div(style="width: 12%; text-align: center;", p("GET STARTED", style="color: white; border-bottom: solid 2px white; border-radius: 5px;")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p("DATA UPLOAD", style="color: #607cc4;")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p("APPROACH", style="color: #607cc4")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p("BALANCING", style="color: #607cc4")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p("OUTCOME", style="color: #607cc4;"))
+               div(style="width: 12%; text-align: center;", h5("GET STARTED", style="color: white; border-bottom: solid 2px white;")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("DATA UPLOAD", style="color: #607cc4;")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("APPROACH", style="color: #607cc4")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("BALANCING", style="color: #607cc4")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: #607cc4;"))
            ),
            br(),br(),
-           h2("How to use this tool"),
+           h2("How to use this tool", style = "text-align: center;"),
            br(),br(),
            ## Add 
            div(style = "display: flex;",
@@ -53,7 +53,8 @@ home_ui <- function(id) {
                    p("Run your outcome model to estimate the effect of the treatment on the outcome."))
            ),
            br(),br(),br(),
-           div(actionButton(ns("start_btn"),label="Get Started!", class = "default_button")),
+           div(style="text-align: center;",
+               actionButton(ns("start_btn"),label="Get Started!", class = "default_button")),
            br(),br(),br(),
            fluidRow(
              column(12,

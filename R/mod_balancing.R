@@ -10,46 +10,50 @@ balancing_ui <- function(id) {
            value = NS(id, 'tab'),
            br(),
            div(style="display: flex; align: center; width: '100%'; margin:auto",
-               div(style="width: 12%; text-align: center;", p("GET STARTED", style="color: white;")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p(p("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))), style="color: white;")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p(p("APPROACH"), p(uiOutput(ns("prog_choiceCF"))), style="color: white")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: white; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p("BALANCING", style="color: white; border-bottom: solid 2px white; border-radius: 5px;")),
-               div(style="width: 12%; text-align: center; height: 2px; background-color: #607cc4; margin-top:10px;"),
-               div(style="width: 12%; text-align: center;", p("OUTCOME", style="color: #607cc4;"))
+               div(style="width: 12%; text-align: center;", h5("GET STARTED", style="color: white;")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", p(h5("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))), style="color: white;")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", p(h5("APPROACH"), p(uiOutput(ns("prog_choiceCF"))), style="color: white")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("BALANCING", style="color: white; border-bottom: solid 2px white;")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: #607cc4;"))
            ),
            div(align="center",
                actionButton(NS(id, 'prev_balancing_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_balancing_btn'), 'Run', class = "default_button"),
                actionButton(NS(id, 'next_balancing_btn'), 'Next', class = "default_button")),
            br(),
-           div(style = "display: flex;",
+             div(style = "display: flex;",
                ## Load balancing options and descriptions based on CF approach chosen
-               uiOutput(ns("balancing_options")),
-               
+               div(style = "width: 49%;",
+                 uiOutput(ns("balancing_options"))
+                 ),
                ## Display balancing output
                div(style = "width: 49%; margin-left: 2%; border-color: transparent",
                    class = "text_blocks",
                    withSpinner(uiOutput(ns("balancing_output"))),
-               )
+                 )
            )
+           
   )
 }
 
-balancing_server <- function(id, parent, outcome_variable, treatment_variable, matching_variables, approach, missingness, balancing_model, descriptions) {
+balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, covariates, approach, missingness, balancing_model, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
 
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))})
-                 output$prog_choiceCF <- renderUI({p(paste0("Counterfactual Approach: ", approach()),br(),paste0("Missingness: ", missingness_radio()),br(),paste0("Model: ", balancing_model()))})
+                 output$prog_choiceCF <- renderUI({p(paste0("Counterfactual Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()))})
                  
                  ## Create reactive value for approach description
                  balancing_values <- reactiveValues(
                    description_method = NULL,
                    description_ratio = NULL,
+                   balancing_model_res = NULL,
+                   balancing_res = NULL,
                    output = NULL)
                  
                  ## Render balancing analysis options based on approach chosen
@@ -60,6 +64,7 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                      output$balancing_options <- renderUI({
                        div(
                          div(class = "text_blocks",
+                             style = "width: 100%;",
                              radioButtons(session$ns("method_radio"), label = h4("Choose a Matching Method:"),
                                           choices = c(
                                             "Optimal" = "optimal",
@@ -72,9 +77,9 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                              p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
                          ),
                          br(),
-                         div(style = "margin-top: 2%;",
+                         div(style = "width: 100%",
                              class = "text_blocks",
-                               radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Method:"),
+                               radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Ratio:"),
                                           choices = c(
                                             "1:1" = "one_to_one",
                                             "1:k" = "one_to_k"),
@@ -95,26 +100,55 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                      p("Once you have selected your matching method and ratio, press
                        'Run' to get output."))
                    }
+                   
+                   if (approach() == "NBP"){
+                     
+                     output$balancing_options <- renderUI({
+                       div(
+                         div(class = "text_blocks",
+                             style = "width: 100%;",
+                             radioButtons(session$ns("method_radio"), label = h4("Choose a Matching Method:"),
+                                          choices = c(
+                                            "Optimal" = "optimal",
+                                            selected = character(0)),
+                                          uiOutput(session$ns("balancing_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
+                                          uiOutput(session$ns("balancing_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                                          ## Description of selected balancing method and ratio
+                                          uiOutput(session$ns("balancing_description_method")),
+                                          p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
+                             ),
+                             br(),
+                             div(style = "width: 100%",
+                                 class = "text_blocks",
+                                 radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Ratio:"),
+                                              choices = c(
+                                                "1:1" = "one_to_one")),
+                                              selected = character(0)),
+                                 uiOutput(session$ns("balancing_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
+                                 uiOutput(session$ns("balancing_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                                 uiOutput(session$ns("balancing_description_ratio"))
+                             )
+                         )
+                     })
+                       
+                       ## Reactive value for approach description
+                       balancing_values$description_method = descriptions$balancing_method
+                       balancing_values$description_ratio = descriptions$balancing_ratio
+                       balancing_values$ratio =  NULL
+                       balancing_values$output = p(h4("Output:"),
+                                                   p("Once you have selected your matching method and ratio, press
+                       'Run' to get output."))
+                   }
 
                    if (approach() == "iptw"){
                      
                      output$balancing_options <- renderUI({
-                       div(style = "display: flex;",
-                           div(style = "width: 49%;",
+                       div(
+                           div(style = "width: 100%;",
                                class = "text_blocks",
                                div(
                                  "Balancing options/extra info for weighting go here"
                                )
-                           ),
-                           div(style = "width: 49%; margin-left: 2%;",
-                               class = "text_blocks",
-                               
-                               ## Description of selected balancing method and ratio
-                               uiOutput(session$ns("balancing_description_method")),
-                               br(),br(),
-                               uiOutput(session$ns("balancing_description_ratio")),
-                               br(),br(),
-                               p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
                            )
                        )
                      })
@@ -135,7 +169,7 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                  
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_balancing_btn, {
-                   updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "balancing_model-tab")
+                   updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "CF_approach-tab")
                  })
                  
                  ## When "Next is selected", show and move to new tab
@@ -149,7 +183,7 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                  })
                  
                  
-                 ## Update matching method description based on choice of appraoch
+                 ## Update matching method description based on choice of approach
                  observeEvent(input$method_radio,{
                    
                    if(input$method_radio == "nearest"){
@@ -265,13 +299,13 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                        
                        ## Get propensity scores
                        balancing_values$balancing_model_res <- get_score(
-                         psmodel = input$balancing_model_radio,
+                         psmodel = balancing_model(),
                          .data = raw_data(),
                          t_var = treatment_variable(),
                          y_var = outcome_variable(),
                          covars = covariates(),
                          m_vars = matching_variables(),
-                         missing = approach$missingness_radio()
+                         missing = missingness()
                        )
 
                        ## Balance dataset
@@ -283,9 +317,9 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                          y_var = outcome_variable(),
                          psmodel_obj = balancing_values$balancing_model_res,
                          ratio = balancing_values$ratio,
-                         method = input$method_radio,
+                         method = input$method_radio
                        )}
-                       
+
                        if (approach() == "iptw"){
                          balancing_values$balancing_res <- balancing(
                            cf_method = approach(),
@@ -310,46 +344,46 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                        try({
                          
                          ## Get AUC
-                         output$AUC <- p(
+                         output$AUC <- renderUI(p(
                            h4("The Receiver Operating Characteristic (ROC) curve:"),
-                           renderPlot(performance_plot(psmodel_obj = balancing_model_values$result,
-                                                       t_var =treatment_variable(),
+                           renderPlot(performance_plot(psmodel_obj = balancing_values$balancing_model_res,
+                                                       t_var = treatment_variable(),
                                                        treattype = "binary")),
-                           p("The Receiver Operating Characteristic (ROC) curve is a plotting method used to assess 
-                                                       the performance of a binary classifier (such as a probit regression model) across 
-                                                       various discrimination thresholds. The curve plots the true positive rate (sensitivity) 
-                                                       against the false positive rate (1 - specificity) at different threshold values. 
-                                                       Examining the shape and steepness of the curve shows the classifier's ability 
-                                                       to distinguish between the two outcomes. The Area Under the Curve (AUC) summarizes 
-                                                       the overall performance, taking values between 0.5 and 1, with higher values indicating better 
-                                                       discrimination. A value of 0.5 suggests the classifier performs no better than random guessing, 
+                           p("The Receiver Operating Characteristic (ROC) curve is a plotting method used to assess
+                                                       the performance of a binary classifier (such as a probit regression model) across
+                                                       various discrimination thresholds. The curve plots the true positive rate (sensitivity)
+                                                       against the false positive rate (1 - specificity) at different threshold values.
+                                                       Examining the shape and steepness of the curve shows the classifier's ability
+                                                       to distinguish between the two outcomes. The Area Under the Curve (AUC) summarizes
+                                                       the overall performance, taking values between 0.5 and 1, with higher values indicating better
+                                                       discrimination. A value of 0.5 suggests the classifier performs no better than random guessing,
                                                        and the corresponding curve would be a diagonal line from bottom-left to top-right.")
-                         )
-                         
+                         ))
+                         # 
                          ## Get love plot
                          output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_res))
                          ## Get balance table
                          output$balance_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_res))))]]), rownames = TRUE, options = list(scrollX = TRUE))})
                          ## Get observation table
                          output$observations_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_res)[["Observations"]]), rownames = TRUE, options = list(scrollX = TRUE))})
-                         
+
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
                            tabsetPanel(id = NS(id, "balancing_output_plots"),
                                      tabPanel(title = "Receiver Operating Characteristic (ROC) curve",
                                               value = NS(id, 'ROC_tab'),
                                               br(),
-                                              withSpinner(DT::dataTableOutput(session$ns("AUC")))),
+                                              withSpinner(uiOutput(session$ns("AUC")))),
                                      tabPanel(title = "Observation Table",
                                               value = NS(id, 'observations_table_tab'),
                                               br(),
                                               withSpinner(DT::dataTableOutput(session$ns("observations_table")))),
-                                     tabPanel(title = "Love Plot", 
+                                     tabPanel(title = "Love Plot",
                                               value = NS(id, 'love_plot_tab'),
                                               br(),
                                               withSpinner(plotOutput(session$ns("love_plot")))
                                      ),
-                                     tabPanel(title = "Balance Table", 
+                                     tabPanel(title = "Balance Table",
                                               value = NS(id, 'balance_table_tab'),
                                               br(),
                                               withSpinner(DT::dataTableOutput(session$ns("balance_table")))
@@ -369,20 +403,20 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                  })
                  
                  
-                 ## Remove balancing output and force rerun if previous steps have changed since previous run
-                 observeEvent(approach() | missingness() | balancing_model(), {
+                 # Remove balancing output and force rerun if previous steps have changed since previous run
+                 observeEvent(c(approach(), missingness(), balancing_model()), {
                    ## First check if balancing has been run yet, if yes, print informative message and force rerun
                    if (!is.null(balancing_values$balancing_res)){
-                     
+
                      ## Replace balancing model output with explanation of why output has been deleted
                      balancing_values$output <- p(h4("Output:"),
-                                                  strong("It looks like balancing will have to be rerun, this is because some of the required inputs have been changed since the 
+                                                  strong("It looks like balancing will have to be rerun, this is because some of the required inputs have been changed since the
                        previous run.")," Once you have selected your matching method and ratio, press
                        'Run' to get output.")
-                     
+
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
-                     
+
                    }
                  })
 
@@ -397,12 +431,21 @@ balancing_server <- function(id, parent, outcome_variable, treatment_variable, m
                  
                  ## Return balancing output
                  ## Return choices to server to pass to other tool pages
-                 return(
-                   list(
-                     balancing_model_res = reactive({balancing_values$balancing_model_res}),
-                     balancing_res = reactive({balancing_values$balancing_res}),
-                     ratio_radio = reactive({input$ratio_radio}),
-                     ratio_radio = reactive({input$method_radio}))
+                 
+                 ## Return choices to server to pass to other tool pages
+                 Balancing_output <- reactiveValues(balancing_model_res = NULL,
+                                                    balancing_res = NULL,
+                                                    ratio_radio = NULL,
+                                                    method_radio = NULL
                  )
+                 
+                 observe({
+                   Balancing_output$balancing_model_res <-  balancing_values$balancing_model_res
+                   Balancing_output$balancing_res <- balancing_values$balancing_res
+                   Balancing_output$ratio_radio <- balancing_values$ratio
+                   Balancing_output$method_radio <- input$method_radio
+                 })
+                 
+                 return(Balancing_output)
                })
 }
