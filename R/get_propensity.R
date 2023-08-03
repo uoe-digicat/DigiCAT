@@ -9,7 +9,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
              propensity_score = lapply(complete(handled_missingness, "all"), 
                                function(x) predict(glm(f, data = x, family=binomial(link="probit"), ...),
                                                    type = "response"))
-           } else {
+           } else { # for CC and weighting approaches alike
              propensity_score = estimated_propensity_model$fitted.values 
              } 
          },

@@ -62,32 +62,50 @@ SW <- gen_SW(X)
 Y_C <- gen_Y_C(A, X)
 
 d <- data.frame(A, X, Y_C, SW)
+rm(SW)
+rm(A)
+rm(Y_C)
+rm(X)
+rm(n)
 
 df2 = mice::ampute(d,
                    prop = 0.15)
 data_to_use <- df2$amp
 
-#df2$amp <- subset(df2$amp, !is.na(A))
-#matchit(A ~ X1 + X2, data = df2$amp)
-
 
 abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
-                        treatment_variable = "A", matching_variable = c("X1", "X2", "X3"),
-                        nonresponse_weights = SW)
+                        treatment_variable = "A", matching_variable = c("X1", "X2"), 
+                        weighting_variable = "SW") 
 ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
-                    matching_variable = c("X1", "X2", "X3"), PS_estimation_object = abc,
+                    matching_variable = c("X1", "X2"), PS_estimation_object = abc,
                     missing_method = "weighting")
 mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
-                              outcome_variable = "y",
-                              treatment_variable = "t", 
-                              matching_variable = c("a", "b"), 
-                              PS_estimation_object = abc)
+                              outcome_variable = "Y_C",
+                              treatment_variable = "A", 
+                              matching_variable = c("X1", "X2"), 
+                              psmodel_obj = abc,
+                              missing_method = "weighting",
+                              weighting_variable = "SW")
 
+# testing weights with example sets 
 
-
-
-
-
+data(nhanes)
+# nb: model/variable choice makes no sense due to variable types
+# but used as an example to add cluster/strata/weights etc
+abc <- estimation_stage(.data = nhanes, missing_method = "weighting", model_type = "glm",
+                        treatment_variable = "HI_CHOL", matching_variable = "race", 
+                        weighting_variable = "WTMEC2YR", cluster_variable = "SDMVPSU",
+                        strata_variable = "SDMVSTRA") # errors if weighting selected and no weights supplied :)
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "HI_CHOL", 
+                    matching_variable = c("race"), PS_estimation_object = abc,
+                    missing_method = "weighting")
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
+                              outcome_variable = "RIAGENDR",
+                              treatment_variable = "HI_CHOL", 
+                              matching_variable = "race", 
+                              psmodel_obj = abc,
+                              missing_method = "weighting",
+                              weighting_variable = "WTMEC2YR")
 
 
 

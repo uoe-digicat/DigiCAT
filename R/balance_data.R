@@ -68,7 +68,7 @@ balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_o
     
     
    } else if(missing_method=="complete"){
-    balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, ps = PS_estimation_object$propensity_score, ...)
+    balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, distance = PS_estimation_object$propensity_score, ...)
     
    } else if(missing_method=="weighting"){
        balanced_data = matchit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 

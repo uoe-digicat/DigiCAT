@@ -2,7 +2,7 @@
 
 require(mice)
 
-handle_missingness <- function(.data, missing_method = NULL, nonresponse_weights = weighting_variable,
+handle_missingness <- function(.data, missing_method = NULL,
                                design_object = NULL,
                                 ...){
   switch(missing_method, 

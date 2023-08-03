@@ -6,6 +6,9 @@ evaluate_imputations <- function(estimation_model_object, evaluation_method, gra
          convergence = {
            evaluation = check_convergence(estimation_model_object)
          },
+         eventslog = {
+           evaluation = estimation_model_object$loggedevents
+         },
          stop("I need a valid method! (distributional discrepancy, convergence)")
   )
   return(evaluation)

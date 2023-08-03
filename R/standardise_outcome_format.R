@@ -15,5 +15,15 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     results_dataframe = as.data.frame(extracted_outcome_results[[1]][[5]])
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "T statistic", "P-value")
     return(results_dataframe)
+    
+  } else if(extracted_outcome_results$process == "weighting" & counterfactual_method == "psm"){
+    results_dataframe = as.data.frame(extracted_outcome_results[[1]][[13]])
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "T statistic", "P-value")
+    return(results_dataframe)
+  }
+  else if(extracted_outcome_results$process == "weighting" & counterfactual_method == "iptw"){
+    results_dataframe = as.data.frame(extracted_outcome_results[[1]][[13]])
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "T statistic", "P-value")
+    return(results_dataframe)
   }
 }

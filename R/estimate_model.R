@@ -10,9 +10,9 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
                              function(x) glm(f, data = x, family=binomial(link="probit"), ...))
            } else if(missing_method == "complete"){
            estimated_propensity_model = glm(f, data = handled_missingness,
-                                                      family = binomial(link="probit"))
+                                                      family = binomial(link="probit"),...)
            } else if(missing_method == "weighting"){
-           estimated_propensity_model = svyglm(f, design = handled_missingness, na.action=na.omit) # design-weighted PS model
+           estimated_propensity_model = svyglm(f, design = handled_missingness) 
            }
            }, 
          
