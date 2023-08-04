@@ -1,6 +1,6 @@
 
 fit_outcome_model <- function(extracted_balanced_data, 
-                              outcome_variable = outcome_variable, treatment_variable = treatment_variable, matching_variable = matching_variable,
+                              outcome_variable, treatment_variable, matching_variable,
                               covariates = NULL, doubly = TRUE,
                               ...){
   if(doubly){
