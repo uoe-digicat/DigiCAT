@@ -5,7 +5,7 @@
 #' @param outcome Name of outcome variable.
 #' @param matchvars Name of matching variables.
 #' @param NRW_var Name of non-response weight variable.
-get_validation <- function(.data, treatment, outcome, matchvars, covars, NRW_var){
+get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight){
   
   ## Remove rows with NAs
   data_Nas <- .data
@@ -84,18 +84,19 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, NRW_var
     }, br(),
 
     ## Check selected non-response weight variable has no missingness
-    if (!is.null(NRW_var)){
-      if (any(is.na(data_Nas[[NRW_var]]))){
+    if (!is.null(survey_weight_var) & isTruthy(non_response_weight)){
+      if (any(is.na(data_Nas[[survey_weight_var]]))){
         
         p(h4("Non-response Variable Missingness:"),
-        h5(paste0("You have selected ", NRW_var, " as your non-response weight. As this includes missing data it will not be possible to use in
-                  counterfactual analysis."), style = 'color:red'))
+        h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response.
+                  As this includes missing data it cannot be used as a weight when accounting for missingness"), 
+           style = 'color:red'))
 
       }
       else{
         
         p(h4("Non-response Variable Missingness:"),
-        h5(paste0("You have selected ", NRW_var, " as your non-response weight. No missingness has been detected in this variable."), 
+        h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response. No missingness has been detected in this variable."), 
            style = 'color:green'))
 
       }

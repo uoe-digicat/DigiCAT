@@ -10,11 +10,11 @@ outcome_model_ui <- function(id) {
            div(style="display: flex; align: center; width: '100%'; margin:auto",
                div(style="width: 12%; text-align: center;", h5("GET STARTED", style="color: white;")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
-               div(style="width: 12%; text-align: center;", p(h5("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))), style="color: white;")),
+               div(style="width: 12%; text-align: center;", p(h5("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))))),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
-               div(style="width: 12%; text-align: center;", p(h5("APPROACH"), p(uiOutput(ns("prog_choiceCF"))), style="color: white")),
+               div(style="width: 12%; text-align: center;", p(h5("APPROACH"), p(uiOutput(ns("prog_choiceCF"))))),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
-               div(style="width: 12%; text-align: center;", p(h5("BALANCING"), p(uiOutput(ns("prog_choiceBM"))), style="color: white")),
+               div(style="width: 12%; text-align: center;", p(h5("BALANCING"), p(uiOutput(ns("prog_choiceBM"))))),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
                div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: white; border-bottom: solid 2px white;"))
            ),
@@ -50,8 +50,8 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
   moduleServer(id,
                function(input, output, session) {
                  
-                 output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))})
-                 output$prog_choiceCF <- renderUI({p(paste0("Counterfactual Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()))})
+                 output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()), style="width: 200%; margin-left: -50%")})
+                 output$prog_choiceCF <- renderUI({p(paste0("Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()), style="width: 200%; margin-left: -50%")})
                  
                  observeEvent(c(approach(), missingness(), balancing_model()), {
                    
@@ -61,7 +61,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                        output$prog_choiceBM <- NULL
                      }
                      else{
-                       output$prog_choiceBM <- renderUI({p(paste0("Balancing Method: ", balancing_method()), br(), paste0("Balancing Ratio: 1:", balancing_ratio()))})
+                       output$prog_choiceBM <- renderUI({p(paste0("Balancing Method: ", balancing_method()), br(), paste0("Balancing Ratio: 1:", balancing_ratio()), style="width: 200%; margin-left: -50%")})
                      }}
                    })
 
