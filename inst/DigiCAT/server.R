@@ -54,7 +54,8 @@ server <- function(input, output, session) {
                                     treatment_variable = reactive(data_upload_res$treatment),
                                     matching_variables = reactive(data_upload_res$matchvars),
                                     covariates = reactive(data_upload_res$covars),
-                                    NRW_var = reactive(data_upload_res$NRW_var),
+                                    survey_weight_var = reactive(data_upload_res$survey_weight_var),
+                                    non_response_weight = reactive(data_upload_res$non_response_weight),
                                     descriptions = desc_global)
   
   ####
@@ -90,13 +91,6 @@ server <- function(input, output, session) {
                        balancing_model_res = reactive(balancing_res$balancing_model_res),
                        balancing_res = reactive(balancing_res$balancing_res),
                        descriptions = desc_global)
-  
-  ####
-  # Get Results ----
-  ####
-  
-  DigiCAT:::get_results_server("get_results",
-                     parent = session)
 
 }
 

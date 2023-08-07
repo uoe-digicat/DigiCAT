@@ -9,9 +9,9 @@ CF_approach_ui <- function(id) {
            value = NS(id, 'tab'),
            br(),
            div(style="display: flex; align: center; width: '100%'; margin:auto",
-               div(style="width: 12%; text-align: center;", h5("GET STARTED", style="color: white;")),
+               div(style="width: 12%; text-align: center;", h5("GET STARTED")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
-               div(style="width: 12%; text-align: center;", p(h5("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))), style="color: white;")),
+               div(style="width: 12%; text-align: center;", p(h5("DATA UPLOAD"), p(uiOutput(ns("prog_choiceDU"))))),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
                div(style="width: 12%; text-align: center;", h5("APPROACH", style="color: white; border-bottom: solid 2px white;")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
@@ -59,12 +59,13 @@ CF_approach_ui <- function(id) {
   )
 }
 
-CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, NRW_var, descriptions) {
+CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, survey_weight_var, non_response_weight, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
                  
-                 output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()))})
+                 ## Navigation Bar
+                 output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()), style="width: 200%; margin-left: -50%")})
                  
                  ## Create reactive value for approach description
                  CF_approach_values <- reactiveValues(
@@ -99,7 +100,8 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    if(is.null(input$balancing_model_radio)){
                      CF_approach_values$balancing_model_missing_message <- p("Please select a method of dealing with missing data before proceeding", style = "color:red")
                    }
-                   else{
+                   ## Only continue if all required input is given
+                   if(!is.null(input$CF_radio) & !is.null(input$missingness_radio) & !is.null(input$balancing_model_radio)){
                      ## Record page completion
                      CF_approach_values$page_complete <- 1
                      ## Add rerun warning to each parameter
@@ -114,7 +116,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                  
                  ## If data/variable selection has changed since previous approach selection, add question asking if current approach is still
                  ## appropriate to approach description and reset page
-                 observeEvent(c(raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), NRW_var()), {
+                 observeEvent(c(raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), survey_weight_var(), non_response_weight()), {
                    
                    ## Remove missing input warnings
                    CF_approach_values$approach_missing_message <- NULL
@@ -165,8 +167,8 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    ## Check presents on non-response variable, update missingness and add initial balancing model message if treatment variable is non-continuous
                    if (length(unique(na.omit(raw_data()[,treatment_variable()]))) < 6){
                      
-                     ## If non-response weights provided (with no missingness), include weighting as a missingness option
-                     if (!(is.null(NRW_var()) & any(is.na(raw_data()[,NRW_var()])))){
+                     ## If survey weights provided (with no missingness) and they compensate for non-reponse, include weighting as a missingness option
+                     if (!is.null(survey_weight_var()) & !any(is.na(raw_data()[,survey_weight_var()])) & isTruthy(non_response_weight())){
                        
                        output$missingness_selection <- renderUI(
                          radioButtons(NS(id, "missingness_radio"), label = h4("2. Choose a Method of Dealing with Missingess:"),
@@ -178,7 +180,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                        )
                      }
                      ## If non-response weight provided, but missingness detected, add note
-                     if ((!is.null(NRW_var())) & any(is.na(raw_data()[,NRW_var()]))){
+                     if (!is.null(survey_weight_var()) & any(is.na(raw_data()[,survey_weight_var()])) & isTruthy(non_response_weight())){
                        
                        output$missingness_selection <-renderUI(
                          p(
@@ -195,7 +197,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                        )
                      }
                      ## If non-response weight not provided, don't add weighting
-                     if (is.null(NRW_var())){
+                     if (is.null(survey_weight_var())){
                        
                        output$missingness_selection <- renderUI(
                          radioButtons(NS(id, "missingness_radio"), label = h4("2. Choose a Method of Dealing with Missingess:"),
