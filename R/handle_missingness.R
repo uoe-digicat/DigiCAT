@@ -1,6 +1,5 @@
 # perhaps want to saved any logged events somewhere for diagnosis
-
-require(mice)
+#' @import mice
 
 handle_missingness <- function(.data, missing_method = NULL,
                                design_object = NULL,

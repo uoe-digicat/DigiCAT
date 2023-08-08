@@ -45,7 +45,7 @@ outcome_model_ui <- function(id) {
            )
 }
 
-outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, approach, missingness, balancing_model, balancing_method, balancing_ratio, balancing_res, balancing_model_res, descriptions) {
+outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, balancing_method, balancing_ratio, estimation_stage_res, balancing_stage_res, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -61,7 +61,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                        output$prog_choiceBM <- NULL
                      }
                      else{
-                       output$prog_choiceBM <- renderUI({p(paste0("Balancing Method: ", balancing_method()), br(), paste0("Balancing Ratio: 1:", balancing_ratio()), style="width: 200%; margin-left: -50%")})
+                       output$prog_choiceBM <- renderUI({p(paste0("Matching Method: ", balancing_method()), br(), paste0("Matching Ratio: 1:", balancing_ratio()), style="width: 200%; margin-left: -50%")})
                      }}
                    })
 
@@ -108,7 +108,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                    
                    
                    ## If outcome model has already been run, give informative message about rerun and disable "Next" button to force rerun
-                   if (!is.null(outcome_model_values$results)){
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                         p(
@@ -138,14 +138,19 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                      ## Save potential error to check for running of code dependent on outcome model
                      error_check <- NA
                      error_check <- tryCatch(
-                       outcome_model_values$results <- outcome_analysis("unweighted", 
-                                                       y_var = outcome_variable(),
-                                                       t_var = treatment_variable(),
-                                                       m_vars = matching_variables(),
-                                                       balanced_data = balancing_res(),
-                                                       ids = NULL, weights = NULL, strata = NULL, fpc = NULL, 
-                                                       cf_method = approach(),
-                                                       psmod = balancing_model_res()),
+                       
+                       outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
+                         balanced_data = balancing_stage_res(),
+                         counterfactual_method = approach(),
+                         outcome_variable = outcome_variable(),
+                         treatment_variable = treatment_variable(),
+                         matching_variable = matching_variables(), 
+                         psmodel_obj = estimation_stage_res(),
+                         cluster_variable = cluster_var(),
+                         nonresponse_weights = survey_weight_var(),
+                         sampling_weights = survey_weight_var(),
+                         missing_method = missingness(),
+                         weighting_variable = survey_weight_var()),
                        
                        ## If outcome model does not run, return error message and enable run button 
                        error = function(cond) {
@@ -163,13 +168,13 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                      ## Output estimate
                          outcome_model_values$output <- p(h4("Model Output"),
                                                   descriptions$estimate,
-                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$results[2,2], 4)))),
+                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[2,1], 5)))),
                                                   br(),
                                                   descriptions$standard_error,
-                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$results[2,3],3)))),
+                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[2,2], 5)))),
                                                   br(),
                                                   descriptions$p_value,
-                                                  strong(p(paste0("P-value: ", round(outcome_model_values$results[2,6], 3))))
+                                                  strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[2,4], 5))))
                                                     )
                          
                          ## Add message noting that parameter reselection will require rerun
@@ -186,9 +191,9 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                  
                  
                  ## Remove outcome model output and force rerun if previous steps have changed since previous run
-                 observeEvent(balancing_res(), {
+                 observeEvent(c(estimation_stage_res(), balancing_stage_res()), {
                    ## First check if outcome model has been run yet, if yes, print informative message in output
-                   if (!is.null(outcome_model_values$results)){
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                         p(
