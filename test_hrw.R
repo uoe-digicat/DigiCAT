@@ -1,7 +1,7 @@
-source("R/propensity_estimation_stage.R")
-source("R/evaluate_imputations.R")
-source("R/balance_data.R")
-source("R/outcome_analysis_stage.R")
+# source("R/propensity_estimation_stage.R")
+# source("R/evaluate_imputations.R")
+# source("R/balance_data.R")
+# source("R/outcome_analysis_stage.R")
 
 # N =500
 # A = matrix(runif(5^2)*2-1, ncol = 5)
@@ -11,7 +11,7 @@ source("R/outcome_analysis_stage.R")
 # y = base::cbind(Xmat,t) %*% c(rnorm(5,0,1),2) + rnorm(N,0,1)
 # df <- as.data.frame(base::cbind(Xmat, t, y))
 # names(df) <- c(letters[1:5], "t", "y")
-# 
+#
 # df2 = mice::ampute(df,
 #                    prop = 0.05)
 
@@ -26,7 +26,7 @@ gen_X <- function(n) {
 
 #~20% treated
 gen_A <- function(X) {
-  LP_A <- - 1.2 + log(2)*X[,1] - log(1.5)*X[,2] + log(2)*X[,4] - log(2.4)*X[,5] + 
+  LP_A <- - 1.2 + log(2)*X[,1] - log(1.5)*X[,2] + log(2)*X[,4] - log(2.4)*X[,5] +
     log(2)*X[,7] - log(1.5)*X[,8]
   P_A <- plogis(LP_A)
   rbinom(nrow(X), 1, P_A)
@@ -63,61 +63,61 @@ data_to_use <- df2$amp
 
 #mi
 abc <- estimation_stage(.data = data_to_use, missing_method = "mi", model_type = "glm",
-                        treatment_variable = "A", matching_variable = c("X1", "X2")) 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
+                        treatment_variable = "A", matching_variable = c("X1", "X2"))
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A",
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
                     missing_method = "mi")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm",
                               outcome_variable = "Y_C",
-                              treatment_variable = "A", 
-                              matching_variable = c("X1", "X2"), 
+                              treatment_variable = "A",
+                              matching_variable = c("X1", "X2"),
                               psmodel_obj = abc,
                               missing_method = "mi")
 
 #cc
 abc <- estimation_stage(.data = data_to_use, missing_method = "complete", model_type = "glm",
-                        treatment_variable = "A", matching_variable = c("X1", "X2")) 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
+                        treatment_variable = "A", matching_variable = c("X1", "X2"))
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A",
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
                     missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm",
                               outcome_variable = "Y_C",
-                              treatment_variable = "A", 
-                              matching_variable = c("X1", "X2"), 
+                              treatment_variable = "A",
+                              matching_variable = c("X1", "X2"),
                               psmodel_obj = abc,
                               missing_method = "complete")
 
 #weighting
 abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2"),
-                        weighting_variable = "SW") 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
+                        weighting_variable = "SW")
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A",
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
                     missing_method = "weighting")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm",
                               outcome_variable = "Y_C",
-                              treatment_variable = "A", 
-                              matching_variable = c("X1", "X2"), 
+                              treatment_variable = "A",
+                              matching_variable = c("X1", "X2"),
                               psmodel_obj = abc,
                               missing_method = "weighting",
                               weighting_variable = "SW")
 
-# testing weights with example sets 
+# testing weights with example sets
 
 data(nhanes)
 # nb: model/variable choice makes no sense due to variable types
 # but used as an example to add cluster/strata/weights etc
 abc <- estimation_stage(.data = nhanes, missing_method = "weighting", model_type = "glm",
-                        treatment_variable = "HI_CHOL", matching_variable = "race", 
+                        treatment_variable = "HI_CHOL", matching_variable = "race",
                         weighting_variable = "WTMEC2YR", cluster_variable = "SDMVPSU",
                         strata_variable = "SDMVSTRA") # errors if weighting selected and no weights supplied
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "HI_CHOL", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "HI_CHOL",
                     matching_variable = c("race"), PS_estimation_object = abc,
                     missing_method = "weighting")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw",
                               outcome_variable = "RIAGENDR",
-                              treatment_variable = "HI_CHOL", 
-                              matching_variable = "race", 
+                              treatment_variable = "HI_CHOL",
+                              matching_variable = "race",
                               psmodel_obj = abc,
                               missing_method = "weighting",
                               weighting_variable = "WTMEC2YR")

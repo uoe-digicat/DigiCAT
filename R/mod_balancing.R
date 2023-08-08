@@ -40,26 +40,32 @@ balancing_ui <- function(id) {
   )
 }
 
-balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, covariates, approach, missingness, balancing_model, descriptions) {
+balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
+                 
+                 ## Navigation bar ----
 
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()), style="width: 200%; margin-left: -50%")})
                  output$prog_choiceCF <- renderUI({p(paste0("Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()), style="width: 200%; margin-left: -50%")})
+                 
+                 ## Define Reactives ----
                  
                  ## Create reactive value for approach description
                  balancing_values <- reactiveValues(
                    description_method = NULL,
                    description_ratio = NULL,
-                   balancing_model_res = NULL,
-                   balancing_res = NULL,
+                   estimation_stage_res = NULL,
+                   balancing_stage_res = NULL,
                    output = NULL)
+                 
+                 ## Page Setup ----
                  
                  ## Render balancing analysis options based on approach chosen
                  observeEvent(approach(),{
                    
-                   if (approach() == "matching"){
+                   if (approach() == "psm"){
                      
                      output$balancing_options <- renderUI({
                        div(
@@ -101,7 +107,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                        'Run' to get output."))
                    }
                    
-                   if (approach() == "NBP"){
+                   if (approach() == "nbp"){
                      
                      output$balancing_options <- renderUI({
                        div(
@@ -168,6 +174,8 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                  ## Disable 'Next' button initially
                  shinyjs::disable("next_balancing_btn")
                  
+                 ## Navigation ----
+                 
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_balancing_btn, {
                    updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "CF_approach-tab")
@@ -183,6 +191,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                    updateTabsetPanel(session = parent, inputId = 'main_tabs', selected = "tutorial")
                  })
                  
+                 ## Get Descriptions ----
                  
                  ## Update matching method description based on choice of approach
                  observeEvent(input$method_radio,{
@@ -199,7 +208,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                    balancing_values$method_missing_message <- NULL
 
                    ## Check if balancing has already been run, if so, output informative message, hide balancing results and force rerun
-                   if (!is.null(balancing_values$balancing_res)){
+                   if (!is.null(balancing_values$balancing_stage_res)){
                      ## Replace balancing output with explanation of why output has been deleted
                      balancing_values$output <- p(h4("Output:"),
                                                 p(
@@ -254,7 +263,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                  observeEvent(balancing_values$ratio, {
                    
                    ## Check if balancing has already been run, if so, output informative message, hide balancing results and force rerun
-                   if (!is.null(balancing_values$balancing_res)){
+                   if (!is.null(balancing_values$balancing_stage_res)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      balancing_values$output <- p(h4("Output:"),
                                                   p(strong("It looks like balancing will have to be rerun, this is because some of the required inputs have been changed since the 
@@ -265,22 +274,22 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                      shinyjs::disable("next_balancing_btn")
                    }
                  })
-
-                 ## Run balancing
+                 
+                 ## Run Balancing ----
                  observeEvent(input$run_balancing_btn, {
                    
                    ## If matching approach selected but no balancing method, give error message
-                   if(approach() == "matching" & is.null(input$method_radio)){
+                   if(approach() == "psm" & is.null(input$method_radio)){
                      balancing_values$method_missing_message <- p("Please select a matching method before proceeding", style = "color:red")
                    }
                    
                    ## If matching approach selected but no balancing ratio, give error message
                    ## Slider counter used as slider input cannot be initiated with NULL - counter value of greater than 0 indicates slider input has been selected
-                   if(approach() == "matching" & is.null(balancing_values$ratio)){
+                   if(approach() == "psm" & is.null(balancing_values$ratio)){
                      balancing_values$ratio_missing_message <- p("Please select a matching ratio before proceeding", style = "color:red")
                    }
                    ## If all required input present, carry out balancing
-                   if (approach() == "iptw" | ((approach() == "matching" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) ) {
+                   if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) ) {
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
@@ -298,37 +307,42 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                      error_check <- NA
                      error_check <- tryCatch({
                        
-                       ## Get propensity scores
-                       balancing_values$balancing_model_res <- get_score(
-                         psmodel = balancing_model(),
+                       # Get propensity scores
+                       balancing_values$estimation_stage_res <- estimation_stage(
                          .data = raw_data(),
-                         t_var = treatment_variable(),
-                         y_var = outcome_variable(),
-                         covars = covariates(),
-                         m_vars = matching_variables(),
-                         missing = missingness()
-                       )
+                         missing_method = missingness(),
+                         model_type = balancing_model(),
+                         treatment_variable = treatment_variable(),
+                         matching_variable = matching_variables(),
+                         weighting_variable = survey_weight_var(),
+                         cluster_variable = cluster_var(),
+                         strata_variable = stratification_var()
+                         )
 
                        ## Balance dataset
-                       if (approach() == "matching"){
-                       balancing_values$balancing_res <- balancing(
-                         cf_method = approach(),
-                         t_var = treatment_variable(),
-                         m_vars = matching_variables(),
-                         y_var = outcome_variable(),
-                         psmodel_obj = balancing_values$balancing_model_res,
-                         ratio = balancing_values$ratio,
-                         method = input$method_radio
-                       )}
+                       if (approach() == "psm"){
+                         
+                         balancing_values$balancing_stage_res <- balance_data(
+                           counterfactual_method = approach(),
+                           treatment_variable = treatment_variable(),
+                           matching_variable = matching_variables(),
+                           PS_estimation_object = balancing_values$estimation_stage_res,
+                           missing_method = missingness(),
+                           ratio = balancing_values$ratio,
+                           method = input$method_radio)
+
+                       }
 
                        if (approach() == "iptw"){
-                         balancing_values$balancing_res <- balancing(
-                           cf_method = approach(),
-                           t_var = treatment_variable(),
-                           m_vars = matching_variables(),
-                           y_var = outcome_variable(),
-                           psmodel_obj = balancing_values$balancing_model_res
-                         )}
+
+                         balancing_values$balancing_stage_res <- balance_data(
+                           counterfactual_method = approach(),
+                           treatment_variable = treatment_variable(),
+                           matching_variable = matching_variables(),
+                           PS_estimation_object = balancing_values$estimation_stage_res,
+                           missing_method = missingness())
+
+                         }
                        },
                      
                      ## If balancing does not run, return error message and enable run button 
@@ -347,7 +361,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                          ## Get AUC
                          output$AUC <- renderUI(p(
                            h4("The Receiver Operating Characteristic (ROC) curve:"),
-                           renderPlot(performance_plot(psmodel_obj = balancing_values$balancing_model_res,
+                           renderPlot(performance_plot(psmodel_obj = balancing_values$estimation_stage_res,
                                                        t_var = treatment_variable(),
                                                        treattype = "binary")),
                            p("The Receiver Operating Characteristic (ROC) curve is a plotting method used to assess
@@ -362,11 +376,11 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                          ))
                          # 
                          ## Get love plot
-                         output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_res))
+                         output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_stage_res))
                          ## Get balance table
-                         output$balance_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_res))))]]), rownames = TRUE, options = list(scrollX = TRUE))})
+                         output$balance_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]]), rownames = TRUE, options = list(scrollX = TRUE))})
                          ## Get observation table
-                         output$observations_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_res)[["Observations"]]), rownames = TRUE, options = list(scrollX = TRUE))})
+                         output$observations_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]]), rownames = TRUE, options = list(scrollX = TRUE))})
 
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
@@ -403,11 +417,12 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                      }
                  })
                  
+                 ## Remove output if inputs have changed ----
                  
                  # Remove balancing output and force rerun if previous steps have changed since previous run
                  observeEvent(c(approach(), missingness(), balancing_model()), {
                    ## First check if balancing has been run yet, if yes, print informative message and force rerun
-                   if (!is.null(balancing_values$balancing_res)){
+                   if (!is.null(balancing_values$balancing_stage_res)){
 
                      ## Replace balancing model output with explanation of why output has been deleted
                      balancing_values$output <- p(h4("Output:"),
@@ -420,6 +435,8 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
 
                    }
                  })
+                 
+                 ## Return output ----
 
                  ## Display information for choosing counterfactual approach, relevent parameters and model output
                  output$balancing_description_method <- renderUI(balancing_values$description_method)
@@ -434,15 +451,15 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                  ## Return choices to server to pass to other tool pages
                  
                  ## Return choices to server to pass to other tool pages
-                 Balancing_output <- reactiveValues(balancing_model_res = NULL,
-                                                    balancing_res = NULL,
+                 Balancing_output <- reactiveValues(estimation_stage_res = NULL,
+                                                    balancing_stage_res = NULL,
                                                     ratio_radio = NULL,
                                                     method_radio = NULL
                  )
                  
                  observe({
-                   Balancing_output$balancing_model_res <-  balancing_values$balancing_model_res
-                   Balancing_output$balancing_res <- balancing_values$balancing_res
+                   Balancing_output$estimation_stage_res <-  balancing_values$estimation_stage_res
+                   Balancing_output$balancing_stage_res <- balancing_values$balancing_stage_res
                    Balancing_output$ratio_radio <- balancing_values$ratio
                    Balancing_output$method_radio <- input$method_radio
                  })

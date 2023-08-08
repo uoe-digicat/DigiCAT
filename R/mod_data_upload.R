@@ -37,12 +37,12 @@ data_upload_ui <- function(id) {
                           tags$h2(style="text-align: centre; margin-bottom:20px","Upload data:"),
                           uiOutput(ns("no_data_warning")), ## Give "no data" warning
                           ## Give instructions to get data
-                          tags$h4(style="text-align: left;", "Choose CSV File or Use Sample Data"),
+                          tags$h4(style="text-align: left;", "Choose CSV File or Use Example Data"),
                           uiOutput(ns("local_disabled")),
                           ## Add button to load sample data
                           div(class = "buttonagency",
                               style="max-width:40%; float:right;", ## position to right
-                              actionButton(NS(id,"Btn_sampledata"), "Load Sample Data")),
+                              actionButton(NS(id,"Btn_sampledata"), "Load Example Data")),
                           
                           ## Add file input for user to upload own data
                           div(style=";max-width:55%; float:left;", ## position to left
@@ -98,7 +98,7 @@ data_upload_ui <- function(id) {
                           br(),
                           ## Add checkbox asking if "stratification variables" should be specified
                           div(style = "background-color: #F4F4F3; padding: 10px; border-radius: 3px;",
-                            checkboxInput(ns("stratification_checkbox"), "Select if data includes stratification variables?"),
+                            checkboxInput(ns("stratification_checkbox"), "Select if data includes stratification variables"),
                             ## If check box selected, show picker input
                             uiOutput(ns("stratification_var"))
                           ),
@@ -154,7 +154,15 @@ data_upload_server <- function(id, parent, enableLocal) {
                      p("Please install DigiCAT locally to enable file upload. See ",a("https://github.com/josiahpjking/DigiCAT"))
                    })
                  }
-                 # Setup ----
+                 
+                 ## Define Reactives ----
+                 
+                 ## Save data, data source and validation as a reactive variable
+                 data_upload_values <- reactiveValues(rawdata = NULL, 
+                                                      data_source = NULL, 
+                                                      validation = NULL)
+                 
+                 # Setup Page ----
                  
                  ## Disable 'Next' button initially
                  shinyjs::disable("nextDU_btn")
@@ -162,9 +170,6 @@ data_upload_server <- function(id, parent, enableLocal) {
                  ## Hide data and validation tabs initially
                  hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
                  hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "data_validation"))
-                 
-                 ## Save data, data source and validation as a reactive variable
-                 data_upload_values <- reactiveValues(rawdata = NULL, data_source = NULL, validation = NULL)
                  
                  ## Create reactive value to store rerun message
                  data_upload_output <- reactiveValues(data_upload_rerun_message = NULL)
@@ -380,10 +385,19 @@ data_upload_server <- function(id, parent, enableLocal) {
                  
                  ## Clear data when "Clear Data" button is pressed
                  observeEvent(input$clear_btn,{
-                   data_upload_values$rawdata <- NULL ## Remove data
-                   reset_upload_page(reset_errors = TRUE, hide_data = TRUE, hide_validation = TRUE, parent = parent) ## Remove errors and hide data and validate tabs
-                   data_upload_values$validation <- NULL ## Remove validation info
+                   ## Remove data
+                   data_upload_values$rawdata <- NULL 
+                   ## Remove errors and hide data and validate tabs
+                   reset_upload_page(reset_errors = TRUE, hide_data = TRUE, hide_validation = TRUE, parent = parent) 
+                   ## Remove validation info
+                   data_upload_values$validation <- NULL
+                   ## Disable "Next" button
                    shinyjs::disable("nextDU_btn")
+                   
+                   ## Reset "survey weights", "clustering" and stratification" checkboxes to null
+                   updateCheckboxInput(session, inputId = "survey_weight_checkbox", value = FALSE)
+                   updateCheckboxInput(session, inputId = "clustering_checkbox", value = FALSE)
+                   updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
                    
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
@@ -468,7 +482,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                                                      matchvars = NULL,
                                                      covars = NULL,
                                                      survey_weight_var = NULL,
-                                                     non_response_weight_checkbox = NULL,
+                                                     non_response_weight = NULL,
                                                      cluster_var = NULL,
                                                      stratification_var = NULL)
                  

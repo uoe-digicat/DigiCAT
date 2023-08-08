@@ -89,7 +89,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         
         p(h4("Non-response Variable Missingness:"),
         h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response.
-                  As this includes missing data it cannot be used as a weight when accounting for missingness"), 
+                  As this includes missing data it won't be used as a weight when accounting for missingness"), 
            style = 'color:red'))
 
       }
