@@ -48,7 +48,7 @@ performance_plot <- function(psmodel_obj, t_var, treattype = "binary"){
            
     )
   }
-  if(any(class(psmodel_obj$missingness_treated_dataset)=="survey.design")){
+  else if(any(class(psmodel_obj$missingness_treated_dataset)=="survey.design")){
     
     obs = psmodel_obj$survey_design_object$variables[,t_var]
     pred = psmodel_obj$propensity_scores
