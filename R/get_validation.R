@@ -23,12 +23,12 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## Print info on number of columns
     if((dim(.data)[2] > 2) & (dim(.data)[2] < 100)){
       h5("Your data has an appropriate number of columns.", style = "color:green")
-    }else{h5("It is reccomended that data has between 2 and 100 columns, please reconsider that data you are using.", style = "color:red")},
+    }else{h5("It is recommended that data has between 2 and 100 columns, please reconsider that data you are using.", style = "color:red")},
     
     ## Print info on number of rows
     if((dim(.data)[1] > 10) & (dim(.data)[1] < 10000)){
       h5("Your data has an appropriate number of rows.", style = "color:green")
-    }else{h5("It is reccomended that data has between 10 and 10,000 rows, please reconsider that data you are using.", style = "color:red")},  br(),
+    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider that data you are using.", style = "color:red")},  br(),
     
     ## Print warning if any variables contain letters
     h4("Non-Numberic Data:"),

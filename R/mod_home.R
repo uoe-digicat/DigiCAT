@@ -3,9 +3,12 @@
 home_ui <- function(id) {
   ns <- NS(id)
   
+  ## Tab displaying tool summary and start button
   tabPanel(title = "",
            value = NS(id, "tab"),
            br(),
+           
+           ## Navigation bar ----
            div(style="display: flex; align: center; width: '100%'; margin:auto",
                div(style="width: 12%; text-align: center;", h5("GET STARTED")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
@@ -18,6 +21,8 @@ home_ui <- function(id) {
                div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: #607cc4;"))
            ),
            br(),br(),
+           
+           ## Tool overview ----
            h2("How to use this tool", style = "text-align: center;"),
            br(),br(),
            ## Add 
@@ -48,9 +53,13 @@ home_ui <- function(id) {
                    p("Run your outcome model to estimate the effect of the treatment on the outcome."))
            ),
            br(),br(),br(),
+           
+           ## Navigation ----
            div(style="text-align: center;",
                actionButton(ns("start_btn"),label="Get Started!", class = "default_button")),
            br(),br(),br(),
+           
+           ## Tool description ----
            fluidRow(
              column(12,
                     div(style = "display: flex; text-align: justify;", 
@@ -100,7 +109,7 @@ home_server <- function(id, parent) {
   moduleServer(id,
                function(input, output, session) {
                  
-                 
+                 ## Start and terms of use ----
                  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
                  observeEvent(input$start_btn,{
                    
@@ -140,6 +149,7 @@ home_server <- function(id, parent) {
                    removeModal() ## remove modal
                  })
                  
+                 ## Tutorial link ----
                  ## If tutorial link clicked, switch to tutorial page
                  observeEvent(c(input$tutorial_link_home_1, input$tutorial_link_home_2), {
                    updateTabsetPanel(session = parent, inputId = "main_tabs", selected = 'tutorial')

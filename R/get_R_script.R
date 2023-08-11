@@ -13,122 +13,172 @@
 #' @param matching_ratio Name of balancing ratio being used (numeric)
 #' @param outcome_model Name of outcome model being used (character string)
 
-get_R_script <- function(data = NULL, data_source, 
+get_R_script <- function(
+  ## Data upload
+  data_source, 
   file_path = NULL,
   categorical_variables = NULL,
-  outcome_variable = NULL, 
-  treatment_variable = NULL, 
-  matching_variables = NULL, 
+  outcome_variable, 
+  treatment_variable, 
+  matching_variables, 
   covariates = NULL,
+  weighting_variable = NULL,
+  cluster_variable = NULL,
+  stratification_variable = NULL,
   ## Counterfactual approach
-  CF_approach = NULL, 
-  ## Balancing model
-  balancing_model = NULL, 
-  missingness = NULL,
+  CF_approach, 
+  missingness,
+  balancing_model, 
   ## Balancing
   matching_method = NULL,
   matching_ratio = NULL, 
   ## Outcome model
-  outcome_model = NULL){
+  outcome_model){
   
   ## Libraries required ----
   library_code <- paste0(
-    "library(WeightIt)", "\n",
-    "library(MatchIt)", "\n",
-    "library(MatchThem)", "\n"
+    "install.packages('remotes')\n",
+    "library(remotes)\n",
+    "remotes::install_github('josiahpjking/DigiCAT@develop')\n",
+    "library(DigiCAT)\n"
   )
+
   
   ## Data upload ----
   if (data_source == "own"){
-    data_source_code <- paste0("\n","\n", "## Load in data (own)", "\n", "df <- read.csv(",file_path,")")
+    data_source_code <- paste0("\n","\n", "## Load in data (own)\n", "df <- read.csv(",file_path,")")
     }
   if (data_source == "sample"){
-    data_source_code <- paste0("\n","\n", "## Load in data (sample)", "\n", "df <- DigiCAT::zp_eg")
+    data_source_code <- paste0("\n","\n", "## Load in data (sample)\n", "df <- DigiCAT::zp_eg")
     }
   
   ## Variable input
-  variable_input_code <- paste0("\n","\n", "## Define input variables","\n", 
-                                paste0("categorical_vars <- c(", paste0("'", categorical_variables, "'", collapse = ","),")"),"\n",
-                                "y_var <- ","'",  outcome_variable, "'","\n",
-                                "t_var <- ", "'", treatment_variable, "'", "\n",
-                                paste0("m_vars <- c(", "'", paste0(matching_variables, collapse = ","), "'",")"),"\n",
-                                paste0("covars <- c(", "'", paste0(covariates, collapse = ","), "'",")"), "\n")
-  ## Balancing model ----
+  variable_input_code <- paste0("\n \n ## Define input variables \n",
+                                "categorical_vars <- c(", paste0("'", categorical_variables, "'", collapse = ","),")\n",
+                                "y_var <- ", "'",  outcome_variable, "'","\n",
+                                "t_var <- ", "'", treatment_variable, "'\n",
+                                "m_vars <- c(", paste0("'", matching_variables, "'", collapse = ","),")\n"
+                                )
   
-  ## glm formula
-  formula_code <- paste0(
-    paste0("\n","\n", "## Define balancing model formula"),"\n",
-    paste0("balancing_model_mod <- paste0(t_var,'~',paste0(m_vars,collapse='+'))"))
-  
-  ## Missingness
-  
-  if(missingness == "complete"){
-    balancing_model_code <- paste0("\n","\n", "## Remove missing values from data using listwise deletion","\n",
-                                   paste0("ps_data <- na.omit(df[,unique(c(t_var, y_var, m_vars, covars))])"),"\n",
-                                   paste0("\n","\n", "## Run balancing model using probit regression"),"\n",
-                                   paste0("ps_mod <- sem(balancing_model_mod, ps_data, link='probit', ordered = c(t_var))"),"\n",
-                                   paste0("ps_score <- pnorm(ps_mod@Data@eXo[[1]] %*% coef(ps_mod)[1:ncol(ps_mod@Data@eXo[[1]])]-coef(ps_mod)[ncol(ps_mod@Data@eXo[[1]])+1])"),
-                                   "\n")
+  if (is.null(covariates)){
+    variable_input_code <- paste0(variable_input_code, "covars <- NULL \n")
+  } else{
+    variable_input_code <- paste0(variable_input_code, "covars <- c(", paste0("'",covariates, "'", collapse = ","),")\n")
   }
   
-  if(missingness == "mi"){
-    balancing_model_code <- paste0("\n","\n", "## Remove missing values from data using multiple imputation","\n",
-                                   paste0("ps_data <- mice(df, m = 5)"),"\n",
-                                   paste0("ps_mod = lapply(complete(ps_data, 'all'),", "\n", 
-                                          "function(x) glm(as.formula(balancing_model_mod), data = x, family=binomial(link='probit')))"),"\n",
-                                          paste0("ps_score = lapply(complete(ps_data, 'all'), 
-                                                 function(x) predict(glm(as.formula(balancing_model_mod), data = x, family=binomial(link='probit')), type = 'response'))"),
-                                   "\n")
+  if (is.null(weighting_variable)){
+    variable_input_code <- paste0(variable_input_code, "weighting_var <- NULL \n")
+  } else{
+    variable_input_code <- paste0(variable_input_code, "weighting_var <- ", "'", weighting_variable, "'\n")
   }
   
-  balancing_model_code <- c(balancing_model_code,
-                            paste0("psmodel_obj <- (list(data = ps_data, mod = ps_mod, score = ps_score, ps_modclass = 'glm'))"))
+  if (is.null(cluster_variable)){
+    variable_input_code <- paste0(variable_input_code, "cluster_var <- NULL \n")
+  } else{
+    variable_input_code <- paste0(variable_input_code, "cluster_var <- ", "'", cluster_variable, "'\n")
+  }
+  
+  if (is.null(stratification_variable)){
+    variable_input_code <- paste0(variable_input_code, "stratification_var <- NULL \n")
+  } else{
+    variable_input_code <- paste0(variable_input_code, "stratification_var <- ", "'", stratification_variable, "'\n")
+  }
+  
+  ## Propensity score estimation ----
+  
+  PS_score_estimation_code <- paste0(
+    "\n",
+    "\n", 
+    "## Estimate propensity scores\n",
+    "PS_estimation_results <- DigiCAT:::estimation_stage(\n",
+    "  .data = df,\n",
+    "  treatment_variable = t_var,\n",
+    "  matching_variable = m_vars,\n",
+    "  weighting_variable = weighting_var,\n",
+    "  cluster_variable = cluster_var,\n",
+    "  strata_variable = stratification_var,\n",
+    "  missing_method = '", missingness,"',\n",
+    "  model_type = '", balancing_model,"'\n",
+    ")"
+    )
+  
   
   ## Balancing ----
-  
-  balancing_code <- paste0("\n","\n", "## Balance datasets using IPTW","\n")
-  
-  if (CF_approach == "weighting"){
     
-    if (missingness == "mi"){
-      balancing_code <- c(balancing_code, paste0("balancing_res <- weightthem(as.formula(mod), datasets = psmodel_obj$data, approach = 'within', method=psmodel_obj$ps_modclass)"))
-    } else{
-      balancing_code <- c(balancing_code, paste0("balancing_res <- weightit(as.formula(mod), data = psmodel_obj$data, ps = psmodel_obj$score)"))
-    }
-  }
-  
-  if (CF_approach == "matching"){
+  if (CF_approach == "psm"){
     
-    if (missingness == "mi"){
-      balancing_code <- c(balancing_code, paste0("balancing_res <- matchthem(as.formula(mod), datasets = psmodel_obj$data, approach = 'within', distance=psmodel_obj$ps_modclass, method = ", 
-             matching_method, ", ratio = ", matching_ratio, ")"))
-    }else{
-      balancing_code <- c(balancing_code, paste0("balancing_res <- matchit(as.formula(mod), data = psmodel_obj$data, ps = psmodel_obj$score, method = ", 
-             matching_method, ", ratio = ", matching_ratio, ")"))
+    balancing_code <- paste0("\n",
+                             "\n", 
+                             "## Balance datasets using propensity score matching\n",
+                             "balancing_results <- DigiCAT:::balance_data(\n",
+                             "  treatment_variable = t_var,\n",
+                             "  matching_variable = m_vars,\n",
+                             "  counterfactual_method = '", CF_approach, "',\n",
+                             "  missing_method = '", missingness,"',\n",
+                             "  PS_estimation_object = PS_estimation_results,\n",
+                             "  ratio = ", matching_ratio, ",\n",
+                             "  method = '", matching_method,"'\n",
+                             ")"
+    )
     }
-  }
+  
+    if (CF_approach == "iptw"){
+    
+    balancing_code <- paste0("\n",
+                             "\n", 
+                             "## Balance datasets using IPTW\n\n",
+                             "balancing_results <- DigiCAT:::balance_data(\n",
+                             "  treatment_variable = t_var,\n",
+                             "  matching_variable = m_vars,\n",
+                             "  counterfactual_method = '", CF_approach, "',\n",
+                             "  missing_method = '", missingness,"',\n",
+                             "  PS_estimation_object = PS_estimation_results\n",
+                             ")"
+                             )
+    }
+  
+
   
   ## Outcome model ----
   
+  outcome_model_code <- paste0(
+    "\n",
+    "\n", 
+    "## Run outcome model \n",
+    "outcome_model_results <- DigiCAT:::outcome_analysis_stage(\n",
+    "  balanced_data = balancing_results,\n",
+    "  outcome_variable = y_var,\n",
+    "  treatment_variable = t_var,\n",
+    "  matching_variable = m_vars,\n",
+    "  sampling_weights = weighting_var,\n",
+    "  nonresponse_weights = weighting_var,\n",
+    "  weighting_variable = weighting_var,\n",
+    "  cluster_variable = cluster_var,\n",
+    "  strata_variable = stratification_var,\n",
+    "  counterfactual_method = '", CF_approach, "',\n",
+    "  missing_method = '", missingness,"',\n",
+    "  psmodel_obj = PS_estimation_results\n",
+    ")"
+  )
   
   ## Create R script ----
-  r_script <- c(library_code, data_source_code, variable_input_code, formula_code, balancing_model_code, balancing_code)
-  
-  cat(r_script)
+  r_script <- c(library_code, data_source_code, variable_input_code, PS_score_estimation_code, 
+                balancing_code, outcome_model_code)
+  noquote(capture.output(cat(r_script)))
   
 }
 
-# get_R_script(data = DigiCAT::zp_eg, 
-#              data_source = "sample",
+# get_R_script(data_source = "sample",
 #              file_path = NULL,
-#              categorical_variables = ,
+#              categorical_variables = c("Gender", "Reading_age15"),
 #              outcome_variable = "Anxiety_age17",
 #              treatment_variable = "Reading_age15",
 #              matching_variables = names(DigiCAT::zp_eg)[-c(1:3)],
 #              covariates = NULL,
-#              CF_approach = "matching",
+#              CF_approach = "psm",
 #              balancing_model = "glm",
 #              missingness = "mi",
 #              matching_method = "NN",
-#              matching_ratio = 1)
+#              matching_ratio = 1
+#              )
 

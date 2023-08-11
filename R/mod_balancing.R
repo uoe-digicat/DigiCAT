@@ -5,10 +5,13 @@
 balancing_ui <- function(id) {
   ns <- NS(id)
   
-  ## Tab for choosing counterfactual analysis approach
+  ## Tab for choosing matching options and running balancing
   tabPanel(title = "",
            value = NS(id, 'tab'),
            br(),
+           
+           ## Navigation bar ----
+           
            div(style="display: flex; align: center; width: '100%'; margin:auto",
                div(style="width: 12%; text-align: center;", h5("GET STARTED")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
@@ -20,17 +23,25 @@ balancing_ui <- function(id) {
                div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
                div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: #607cc4;"))
            ),
+           
+           ## Navigation ----
+           
            div(align="center",
                actionButton(NS(id, 'prev_balancing_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_balancing_btn'), 'Run', class = "default_button"),
                actionButton(NS(id, 'next_balancing_btn'), 'Next', class = "default_button")),
            br(),
+           
+           ## Balancing choice selection ----
+           
              div(style = "display: flex;",
                ## Load balancing options and descriptions based on CF approach chosen
                div(style = "width: 49%;",
                  uiOutput(ns("balancing_options"))
                  ),
-               ## Display balancing output
+               
+               ## Balancing output ----
+               
                div(style = "width: 49%; margin-left: 2%; border-color: transparent",
                    class = "text_blocks",
                    withSpinner(uiOutput(ns("balancing_output"))),
@@ -76,8 +87,8 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                                             "Optimal" = "optimal",
                                             "Nearest Neighbour (NN)" = "nearest"),
                                           selected = character(0)),
-                             uiOutput(session$ns("balancing_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
-                             uiOutput(session$ns("balancing_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("matching_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
+                             uiOutput(session$ns("matching_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                              ## Description of selected balancing method and ratio
                              uiOutput(session$ns("balancing_description_method")),
                              p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
@@ -91,16 +102,16 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                                             "1:k" = "one_to_k"),
                                           selected = character(0)),
                                           uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
-                             uiOutput(session$ns("balancing_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
-                             uiOutput(session$ns("balancing_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("matching_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
+                             uiOutput(session$ns("matching_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                              uiOutput(session$ns("balancing_description_ratio"))
                          )
                        )
                      })
                      
                      ## Reactive value for approach description
-                     balancing_values$description_method = descriptions$balancing_method
-                     balancing_values$description_ratio = descriptions$balancing_ratio
+                     balancing_values$description_method = descriptions$matching_method
+                     balancing_values$description_ratio = descriptions$matching_ratio
                      balancing_values$ratio =  NULL
                      balancing_values$output = p(h4("Output:"),
                      p("Once you have selected your matching method and ratio, press
@@ -117,8 +128,8 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                                           choices = c(
                                             "Optimal" = "optimal"),
                                           selected = character(0)),
-                             uiOutput(session$ns("balancing_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
-                             uiOutput(session$ns("balancing_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("matching_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
+                             uiOutput(session$ns("matching_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                              ## Description of selected balancing method and ratio
                              uiOutput(session$ns("balancing_description_method")),
                              p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
@@ -131,16 +142,16 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                                             "1:1" = "one_to_one"),
                                           selected = character(0)),
                              uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
-                             uiOutput(session$ns("balancing_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
-                             uiOutput(session$ns("balancing_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
+                             uiOutput(session$ns("matching_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
+                             uiOutput(session$ns("matching_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                              uiOutput(session$ns("balancing_description_ratio"))
                          )
                        )
                      })
                      
                      ## Reactive value for approach description
-                     balancing_values$description_method = descriptions$balancing_method
-                     balancing_values$description_ratio = descriptions$balancing_ratio
+                     balancing_values$description_method = descriptions$matching_method
+                     balancing_values$description_ratio = descriptions$matching_ratio
                      balancing_values$ratio =  NULL
                      balancing_values$output = p(h4("Output:"),
                                                  p("Once you have selected your matching method and ratio, press
@@ -191,7 +202,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                    updateTabsetPanel(session = parent, inputId = 'main_tabs', selected = "tutorial")
                  })
                  
-                 ## Get Descriptions ----
+                 ## Update descriptions and rerun message when input changes ----
                  
                  ## Update matching method description based on choice of approach
                  observeEvent(input$method_radio,{
@@ -276,6 +287,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                  })
                  
                  ## Run Balancing ----
+                 
                  observeEvent(input$run_balancing_btn, {
                    
                    ## If matching approach selected but no balancing method, give error message
@@ -417,7 +429,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                      }
                  })
                  
-                 ## Remove output if inputs have changed ----
+                 ## Reset if balancing inputs have changed ----
                  
                  # Remove balancing output and force rerun if previous steps have changed since previous run
                  observeEvent(c(approach(), missingness(), balancing_model()), {
@@ -436,19 +448,17 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                    }
                  })
                  
-                 ## Return output ----
-
-                 ## Display information for choosing counterfactual approach, relevent parameters and model output
+                 ## Pass output to UI ----
+                 
                  output$balancing_description_method <- renderUI(balancing_values$description_method)
-                 output$balancing_method_rerun_message <- renderUI(balancing_values$method_rerun_message)
-                 output$balancing_method_missing_message <- renderUI(balancing_values$method_missing_message)
+                 output$matching_method_rerun_message <- renderUI(balancing_values$method_rerun_message)
+                 output$matching_method_missing_message <- renderUI(balancing_values$method_missing_message)
                  output$balancing_description_ratio <- renderUI(balancing_values$description_ratio)
-                 output$balancing_ratio_rerun_message <- renderUI(balancing_values$ratio_rerun_message)
-                 output$balancing_ratio_missing_message <- renderUI(balancing_values$ratio_missing_message)
+                 output$matching_ratio_rerun_message <- renderUI(balancing_values$ratio_rerun_message)
+                 output$matching_ratio_missing_message <- renderUI(balancing_values$ratio_missing_message)
                  output$balancing_output <- renderUI(balancing_values$output)
                  
-                 ## Return balancing output
-                 ## Return choices to server to pass to other tool pages
+                 ## Return balancing output to server ----
                  
                  ## Return choices to server to pass to other tool pages
                  Balancing_output <- reactiveValues(estimation_stage_res = NULL,

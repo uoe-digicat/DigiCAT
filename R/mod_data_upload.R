@@ -1,16 +1,15 @@
-# home module ----
-
 data_upload_ui <- function(id) {
   ns <- NS(id)
   
   require(shinyFeedback)
   require(shinycssloaders)
   
-  
+  ## Tab for data upload and variable selection
   tabPanel(title = "",
            value = NS(id, "tab"),
            useShinyFeedback(), # include shinyFeedback
            br(),
+           ## Navigation bar ----
            div(style="display: flex; align: center; width: '100%'; margin:auto",
                div(style="width: 12%; text-align: center;", h5("GET STARTED")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
@@ -23,6 +22,8 @@ data_upload_ui <- function(id) {
                div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: #607cc4;"))
            ),
            br(), 
+           
+           ## Navigation ----
            ## Add buttons to move back to home page and validate uploaded data
            div(align="center",
                actionButton(NS(id,"prevDU_btn"), "Prev", class = "default_button"),
@@ -30,6 +31,8 @@ data_upload_ui <- function(id) {
                actionButton(NS(id, 'nextDU_btn'), 'Next', class = "default_button")
            ), 
            br(),
+           
+           ## Data upload input ----
            sidebarLayout(
              sidebarPanel(id=ns("sidebarPanel"),
                           
@@ -83,21 +86,21 @@ data_upload_ui <- function(id) {
                                 bs_embed_popover(title = "covariates are characteristics (excluding the treatment) of the participants, that may also affect the outcome", placement = "right")
                             ),
                           ## Add checkbox asking if "survey weight" should be specified
-                          div(style = "background-color: #F4F4F3; padding: 10px; border-radius: 3px;",
+                          div(class = "tab_panel_feature",
                             checkboxInput(ns("survey_weight_checkbox"), "Select if data includes survey weights"),
                             ## If check box selected, show picker input
                             uiOutput(ns("survey_weight_var"))
                           ),
                           br(),
                           ## Add checkbox asking if "clustering variable" should be specified
-                          div(style = "background-color: #F4F4F3; padding: 10px; border-radius: 3px;",
+                          div(class = "tab_panel_feature",
                             checkboxInput(ns("clustering_checkbox"), "Select if data includes a clustering variable"),
                             ## If check box selected, show picker input
                             uiOutput(ns("clustering_var"))
                           ),
                           br(),
                           ## Add checkbox asking if "stratification variables" should be specified
-                          div(style = "background-color: #F4F4F3; padding: 10px; border-radius: 3px;",
+                          div(class = "tab_panel_feature",
                             checkboxInput(ns("stratification_checkbox"), "Select if data includes stratification variables"),
                             ## If check box selected, show picker input
                             uiOutput(ns("stratification_var"))
@@ -189,7 +192,8 @@ data_upload_server <- function(id, parent, enableLocal) {
                    data_upload_values$validation <- NULL
                    shinyjs::disable("nextDU_btn")
                    
-                   output$no_data_warning <- NULL ## Remove "no data" warning
+                   ## Remove "no data" warning
+                   output$no_data_warning <- NULL 
                  })
                  
                  ## When categorical variable selection changed, update what can be selected as the outcome variable
@@ -463,19 +467,19 @@ data_upload_server <- function(id, parent, enableLocal) {
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
                  })
                  
-                 # Show data and validation ----
-                 ## Show uploaded data
+                 ## Pass output to UI ----
+                 
                  output$contents <- DT::renderDataTable({DT::datatable(data_upload_values$rawdata, options = list(scrollX = TRUE))})
                  output$data_validation <- renderUI(data_upload_values$validation)
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
                  
-                 # Return data and variables ----
+                 ## Return data upload output to server ----
                  
-                 ## Output list containing: dataset, categorical variables, treatment variable, outcome variable,
-                 ## matching variable, covariates
-                 
+                 ## Output list containing: dataset and input variables
                  data_upload_output <- reactiveValues(data = NULL,
+                                                      data_source = NULL,
+                                                      file_path = NULL,
                                                      categorical_vars = NULL,
                                                      outcome = NULL,
                                                      treatment = NULL,
@@ -488,6 +492,8 @@ data_upload_server <- function(id, parent, enableLocal) {
                  
                  observe({
                    data_upload_output$data <- data_upload_values$rawdata
+                   data_upload_output$data_source <- data_upload_values$data_source
+                   data_upload_output$file_path <- input$file1$datapath
                    data_upload_output$categorical_vars <- data_upload_values$categorical_vars
                    data_upload_output$outcome <- input$outcome
                    data_upload_output$treatment <- input$treatment
