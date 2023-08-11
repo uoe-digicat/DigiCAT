@@ -4,7 +4,15 @@
 \alias{get_validation}
 \title{Data validation in DigiCAT}
 \usage{
-get_validation(.data, treatment, outcome, matchvars, covars)
+get_validation(
+  .data,
+  treatment,
+  outcome,
+  matchvars,
+  covars,
+  survey_weight_var,
+  non_response_weight
+)
 }
 \arguments{
 \item{treatment}{Name of treatment variable.}
@@ -14,6 +22,8 @@ get_validation(.data, treatment, outcome, matchvars, covars)
 \item{matchvars}{Name of matching variables.}
 
 \item{data}{Name of upladed dataset. Default is 'inputData$rawdata'.}
+
+\item{NRW_var}{Name of non-response weight variable.}
 }
 \description{
 Data validation in DigiCAT

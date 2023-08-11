@@ -8,6 +8,9 @@ CF_approach_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, 'tab'),
            br(),
+           
+           ## Navigation bar ----
+           
            div(style="display: flex; align: center; width: '100%'; margin:auto",
                div(style="width: 12%; text-align: center;", h5("GET STARTED")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
@@ -19,13 +22,18 @@ CF_approach_ui <- function(id) {
                div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
                div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: #607cc4;"))
            ),
+           
+           ## Navigation ----
+           
            div(align="center",
                actionButton(NS(id, 'prev_CF_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'next_CF_btn'), 'Next', class = "default_button")),
            br(),
            
-           ## CF approach choices
+           ## Approach selection ----
+
            div(style = "display: flex;",
+               ## CF approach choices
                div(style = "width: 32.67%;",
                    class = "text_blocks",
                    uiOutput(ns("approach_selection")), ## Based on treatment variable type, display approach choices
@@ -36,6 +44,7 @@ CF_approach_ui <- function(id) {
                    uiOutput(ns("approach_description")) ## Add description of approach selected
                    
                ),
+               ## Missingness choices
                div(style = "width: 32.67%; margin-left: 2%;",
                    class = "text_blocks",
                    uiOutput(ns("missingness_selection")), ## Based on presence of complete non-response weights, display approach choices
@@ -45,7 +54,7 @@ CF_approach_ui <- function(id) {
                    uiOutput(ns("missingness_description")) ## Add description of missingness selected
                    
                ),
-               
+               ## Balancing model choices
                div(style = "width: 32.67%; margin-left: 2%;",
                    class = "text_blocks",
                    uiOutput(ns("balancing_model_selection")), ## Based on missingness choices, display balancing model choices
@@ -65,8 +74,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                function(input, output, session) {
                  
                  ## Navigation bar ----
-                 
-                 ## Navigation Bar
+
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()), style="width: 200%; margin-left: -50%")})
                  
                  ## Define Reactives ----
@@ -117,7 +125,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    }
                  })
                  
-                 ## Reset page if inputs have changed ----
+                 ## Reset page if counterfactual approach inputs have changed ----
                  
                  ## If data/variable selection has changed since previous approach selection, add question asking if current approach is still
                  ## appropriate to approach description and reset page
@@ -237,8 +245,8 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                  })
 
 
-                 
-                 ## Update balancing model choices based on appraoch and missingness selected
+                 ## Update balancing model choice when approach/missingness changes ----
+
                  observeEvent(c(input$CF_radio, input$missingness_radio), {
                    
                    ## Do nothing if approach and missingess have not both been selected
@@ -266,7 +274,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                         choices = list(
                                           #"Gradient Boosting Machine (GBM)" = "gbm",
                                           #"Random Forest" = "rforest",
-                                        "Probit Regression" = "glm"),
+                                        "Logistic Regression" = "glm"),
                            selected = character(0)))
                        }
                        
@@ -274,12 +282,13 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                          output$balancing_model_selection <- renderUI(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                        "Probit Regression" = "glm"),
+                                        "Logistic Regression" = "glm"),
                            selected = character(0)))
                        }
                      }
                    }
                  })
+                 
                  
                  
                  ## Update guide information based on choice of approach
@@ -331,7 +340,8 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                  })
                  
                  
-                 ## Display information for choosing counterfactual approach, missingness and balancing model
+                 ## Pass output to UI ----
+                 
                  output$approach_description <- renderUI(CF_approach_values$approach_description)
                  output$approach_missing_message <- renderUI(CF_approach_values$approach_missing_message)
                  output$approach_rerun_message <- renderUI(CF_approach_values$approach_rerun_message)
@@ -343,9 +353,9 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                  output$balancing_model_description <- renderUI(CF_approach_values$balancing_model_description)
                  output$balancing_model_rerun_message <- renderUI(CF_approach_values$balancing_model_rerun_message)
                  output$balancing_model_missing_message <- renderUI(CF_approach_values$balancing_model_missing_message)
+
+                 ## Return counterfactual approach output to server ----
                  
-                 
-                 ## Return choices to server to pass to other tool pages
                  CF_approach_output <- reactiveValues(missingness = NULL,
                                                       CF_radio = NULL,
                                                       balancing_model = NULL
