@@ -92,8 +92,8 @@ balancing_nbp <- function(treatment_variable, matching_variable, PS_estimation_o
   prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...)
   created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...)
   assigned_matrix <- assign_id_nbp(distance_matrix, id_variable, propensity_score, ...)
-  formatted_matrix <- distancematrix(assigned_matrix,...)
-  performed_matching <- nonbimatch(formatted_matrix, threshold, precision, ...)
+  formatted_matrix <- distancematrix(assigned_matrix,...) # fine
+  performed_matching <- nonbimatch(formatted_matrix, threshold, precision, ...) # fine
 
   return(balanced_data)
   

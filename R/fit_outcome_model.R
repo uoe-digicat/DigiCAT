@@ -25,6 +25,9 @@ fit_outcome_model <- function(extracted_balanced_data,
     return(model_fit)
   } else if(extracted_balanced_data$process == "cc_psm"){ 
     model_fit = lm(model_formula, data = extracted_balanced_data[[1]])
+    # marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
+    # vcov = ~subclass, newdata = subset(extracted_balanced_data, treatment_variable == 1),
+    # wts = "weights")
     return(model_fit)
     
   } 
@@ -38,6 +41,10 @@ fit_outcome_model <- function(extracted_balanced_data,
   } 
   else if (extracted_balanced_data$process == "cc_iptw"){
     model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+    #avg_comparisons(model_fit, variables = treatment_variable,
+     #               vcov = "HC3",
+      #              newdata = subset(extracted_balanced_data, treatment_variable == 1),
+       #             wts = "weights")
   return(model_fit)
   
   } else if (extracted_balanced_data$process == "weighting_iptw"){

@@ -9,6 +9,9 @@ evaluate_imputations <- function(estimation_model_object, evaluation_method, gra
          eventslog = {
            evaluation = estimation_model_object$loggedevents
          },
+         inspect_matrix = {
+           evaluation = estimation_model_object$predictorMatrix
+         },
          stop("I need a valid method! (distributional discrepancy, convergence)")
   )
   return(evaluation)

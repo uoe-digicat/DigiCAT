@@ -18,6 +18,6 @@ estimation_stage <- function(.data, missing_method, model_type,
   return(list(missingness_treated_dataset = handled_missingness, 
               propensity_scores = prop_scores, 
               estimated_propensity_model = propensity_model,
-              propensity_model_class = "glm",
+              propensity_model_class = class(propensity_model), # nb: ensure this works now changing models
               survey_design_object = propensity_model$survey.design)) # note if weighting, this is the object containing data, not missingness_treated_dataset
 }

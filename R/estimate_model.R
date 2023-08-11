@@ -17,22 +17,33 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            }, 
          
          gbm = {
-           
-           # add in
+           if(missing_method == "mi"){
+             estimated_propensity_model = lapply(complete(handled_missingness, "all"), # switch to lightgbm for comp speed
+                                                 function(x) gbm(f, data = x, ...)) 
+           }
+           if(missing_method == "complete"){
+             estimated_propensity_model <- gbm(f, data = handled_missingness,...) # switch to lightgbm for comp speed
+           }
          },
          
          rf = {
-           # add in 
+           if(missing_method == "mi"){
+             estimated_propensity_model = lapply(complete(handled_missingness, "all"), # switch to ranger for comp speed
+                                                 function(x) randomForest(f, data = x, ...)) 
+           }
+           if(missing_method == "complete"){
+             estimated_propensity_model <- randomForest(f, data = handled_missingness,...) # switch to ranger for comp speed
+           }
          },
          
          poly = {
            if(missing_method == "mi"){
-             estimated_propensity_model = lapply(complete(handled_missingness, "all"),
-                                                 function(x) MASS::polr(f, data = x, method = "probit",
-                                                                        Hess = T, ...))
+             estimated_propensity_model = lapply(complete(handled_missingness, "all"), 
+                                                function(x) polr(f, data = x, Hess =T,...))
+                                          
            } else if(missing_method == "complete"){
              estimated_propensity_model = MASS::polr(f, data = handled_missingness, 
-                                               method = "probit", Hess = T, ...)
+                                               Hess = T, ...)
            }
            
          },
