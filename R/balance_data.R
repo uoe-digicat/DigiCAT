@@ -68,7 +68,7 @@ balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_o
     
     
    } else if(missing_method=="complete"){
-    balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, distance = PS_estimation_object$propensity_score, ...)
+    balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, distance = PS_estimation_object$propensity_scores, ...)
     
    } else if(missing_method=="weighting"){
        balanced_data = matchit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
@@ -79,7 +79,7 @@ balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_o
   
 }
 
-balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_object, ...){
+balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_object, ...){ # ignore for now
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
 
   balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, method = "cem")
@@ -87,11 +87,11 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
   return(balanced_data)
 }
 
-balancing_nbp <- function(treatment_variable, matching_variable, PS_estimation_object, ...){ # to finish
+balancing_nbp <- function(treatment_variable, matching_variable, PS_estimation_object, id_variable,...){ # to finish
   
-  prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...)
-  created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...)
-  assigned_matrix <- assign_id_nbp(distance_matrix, id_variable, propensity_score, ...)
+  prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...) # hmmmm
+  created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...) # fine?
+  assigned_matrix <- assign_id_nbp(distance_matrix, propensity_score, id_variable,...) # need ID variable
   formatted_matrix <- distancematrix(assigned_matrix,...) # fine
   performed_matching <- nonbimatch(formatted_matrix, threshold, precision, ...) # fine
 

@@ -1,3 +1,10 @@
+# todo - add residuals of imputation models
+# here or in handle_missingness() - if common error, e.g., cat data -> default to more robust eg pmm
+# if convergence = bad, advise to increase maxit and re-examine
+# missing data pattern?
+# % missingness calc to inform m as per v Hippel formula?
+# predmatrix = allows inspection of collinearity removals also
+
 evaluate_imputations <- function(estimation_model_object, evaluation_method, graph_display,...){
   switch(evaluation_method, 
          distributional_discrepancy = {
@@ -7,10 +14,10 @@ evaluate_imputations <- function(estimation_model_object, evaluation_method, gra
            evaluation = check_convergence(estimation_model_object)
          },
          eventslog = {
-           evaluation = estimation_model_object$loggedevents
+           evaluation = estimation_model_object$missingness_treated_dataset$loggedEvents
          },
          inspect_matrix = {
-           evaluation = estimation_model_object$predictorMatrix
+           evaluation = estimation_model_object$missingness_treated_dataset$predictorMatrix
          },
          stop("I need a valid method! (distributional discrepancy, convergence)")
   )

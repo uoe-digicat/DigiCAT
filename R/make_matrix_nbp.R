@@ -4,12 +4,10 @@ make_matrix_nbp <- function(propensity_score, estimated_propensity_model, treatm
   eps = 1*10^-100 
   result = matrix(ncol = nrow(propensity_score), nrow = nrow(propensity_score))
   
-  # Matrix (in Lu et al. 2011)
-  
   matj = matrix(data = propensity_score[[treatment_variable]], nrow = nrow(propensity_score), ncol = nrow(propensity_score), byrow = F)
   matk = matrix(data = propensity_score[[treatment_variable]], nrow = nrow(propensity_score), ncol = nrow(propensity_score), byrow = T)
   
-  res = matj - matk # error
+  res = matj - matk 
   res_squared = res^2
   
   lpj = matrix(data = estimated_propensity_model$lp, nrow = nrow(propensity_score), ncol = nrow(propensity_score), byrow = F)
