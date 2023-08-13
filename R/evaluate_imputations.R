@@ -36,7 +36,7 @@ evaluate_imputations <- function(estimation_model_object, evaluation_method, gra
          #   evaluation = 
          # },
          stop("I need a valid method! (distributional discrepancy, convergence,
-              logged events, matrix inspection, Little's MCAR test, missing pattern)")
+              logged events, matrix inspection, Little's MCAR test, missing pattern, flux)")
   )
   return(evaluation)
 }
