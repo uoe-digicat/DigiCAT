@@ -2,17 +2,18 @@
 
 server <- function(input, output, session) {
   
+  source(system.file("DigiCAT/desc_global.R", package = "DigiCAT"), local=TRUE)
   ####
   # App theme ----
   ####
-output$style <- renderUI({
-  if (!is.null(input$style)){
-    if (input$style) {
-      includeCSS("./www/themes/dark.css")
-    } else {
-      includeCSS("./www/themes/light.css")
-    }}
-  })
+  output$style <- renderUI({
+    if (!is.null(input$style)){
+      if (input$style) {
+        includeCSS("./www/themes/dark.css")
+      } else {
+        includeCSS("./www/themes/light.css")
+      }}
+    })
   
   ####
   # TCs page ----
@@ -38,7 +39,8 @@ output$style <- renderUI({
   ####
 
   data_upload_res <- DigiCAT:::data_upload_server("data_upload",
-                     parent = session)
+                                                  parent = session,
+                                                  enableLocal = enable_local_data)
 
   # Counterfactual Appraoch ----
   ####
@@ -51,20 +53,10 @@ output$style <- renderUI({
                                     outcome_variable = reactive(data_upload_res$outcome),
                                     treatment_variable = reactive(data_upload_res$treatment),
                                     matching_variables = reactive(data_upload_res$matchvars),
-                                    covariates = reactive(data_upload_res$covars))
-  
-  ####
-  # Balancing model ----
-  ####
-  
-  balancing_model_res <- DigiCAT:::balancing_model_server("balancing_model", 
-                         parent = session,
-                         raw_data = reactive(data_upload_res$data),
-                         approach = CF_approach,
-                         outcome_variable = reactive(data_upload_res$outcome),
-                         treatment_variable = reactive(data_upload_res$treatment),
-                         matching_variables = reactive(data_upload_res$matchvars),
-                         covariates = reactive(data_upload_res$covars))
+                                    covariates = reactive(data_upload_res$covars),
+                                    survey_weight_var = reactive(data_upload_res$survey_weight_var),
+                                    non_response_weight = reactive(data_upload_res$non_response_weight),
+                                    descriptions = desc_global)
   
   ####
   # Balancing ----
@@ -72,29 +64,33 @@ output$style <- renderUI({
   
   balancing_res <- DigiCAT:::balancing_server("balancing", 
                    parent = session,
+                   raw_data = reactive(data_upload_res$data),
+                   outcome_variable = reactive(data_upload_res$outcome),
                    treatment_variable = reactive(data_upload_res$treatment),
                    matching_variables = reactive(data_upload_res$matchvars),
-                   approach = CF_approach,
-                   balancing_model_results = reactive(balancing_model_res$results))
+                   covariates = reactive(data_upload_res$covars),
+                   approach = reactive(CF_approach$CF_radio),
+                   missingness = reactive(CF_approach$missingness),
+                   balancing_model = reactive(CF_approach$balancing_model),
+                   descriptions = desc_global)
   
   ####
   # Outcome Model ----
   ####
   
-  DigiCAT:::outcome_model_server("outcome_model",  
+  outcome_res <- DigiCAT:::outcome_model_server("outcome_model",  
                        parent = session,
                        treatment_variable = reactive(data_upload_res$treatment),
                        outcome_variable = reactive(data_upload_res$outcome),
                        matching_variables = reactive(data_upload_res$matchvars),
-                       approach = CF_approach,
-                       balancing_results = balancing_res)
-  
-  ####
-  # Get Results ----
-  ####
-  
-  DigiCAT:::get_results_server("get_results",
-                     parent = session)
+                       approach = reactive(CF_approach$CF_radio),
+                       missingness = reactive(CF_approach$missingness),
+                       balancing_model = reactive(CF_approach$balancing_model),
+                       balancing_method = reactive(balancing_res$method_radio),
+                       balancing_ratio = reactive(balancing_res$ratio_radio),
+                       balancing_model_res = reactive(balancing_res$balancing_model_res),
+                       balancing_res = reactive(balancing_res$balancing_res),
+                       descriptions = desc_global)
 
 }
 

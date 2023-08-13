@@ -87,13 +87,14 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
   return(balanced_data)
 }
 
+# BELOW = TO DO
 balancing_nbp <- function(treatment_variable, matching_variable, PS_estimation_object, id_variable,...){ # to finish
   
-  prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...) # hmmmm
-  created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...) # fine?
-  assigned_matrix <- assign_id_nbp(distance_matrix, propensity_score, id_variable,...) # need ID variable
-  formatted_matrix <- distancematrix(assigned_matrix,...) # fine
-  performed_matching <- nonbimatch(formatted_matrix, threshold, precision, ...) # fine
+  prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...) 
+  created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...) 
+  assigned_matrix <- assign_id_nbp(distance_matrix, propensity_score, id_variable,...) # depends on str
+  formatted_matrix <- distancematrix(assigned_matrix,...) 
+  performed_matching <- nonbimatch(formatted_matrix, threshold, precision, ...) 
 
   return(balanced_data)
   

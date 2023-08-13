@@ -10,8 +10,26 @@ data_upload_ui <- function(id) {
   tabPanel(title = "",
            value = NS(id, "tab"),
            useShinyFeedback(), # include shinyFeedback
-           HTML("<center><img src='progress_bar/new/data_upload.png' width='1000'></center>"),
-           br(), br(), br(),
+           br(),
+           div(style="display: flex; align: center; width: '100%'; margin:auto",
+               div(style="width: 12%; text-align: center;", h5("GET STARTED")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("DATA UPLOAD")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("APPROACH", style="color: #607cc4")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("BALANCING", style="color: #607cc4")),
+               div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
+               div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: #607cc4;"))
+           ),
+           br(), 
+           ## Add buttons to move back to home page and validate uploaded data
+           div(align="center",
+               actionButton(NS(id,"prevDU_btn"), "Prev", class = "default_button"),
+               actionButton(NS(id,"validate_btn"), "Validate Data", class = "default_button"),
+               actionButton(NS(id, 'nextDU_btn'), 'Next', class = "default_button")
+           ), 
+           br(),
            sidebarLayout(
              sidebarPanel(id=ns("sidebarPanel"),
                           
@@ -20,7 +38,7 @@ data_upload_ui <- function(id) {
                           uiOutput(ns("no_data_warning")), ## Give "no data" warning
                           ## Give instructions to get data
                           tags$h4(style="text-align: left;", "Choose CSV File or Use Sample Data"),
-                          
+                          uiOutput(ns("local_disabled")),
                           ## Add button to load sample data
                           div(class = "buttonagency",
                               style="max-width:40%; float:right;", ## position to right
@@ -33,8 +51,6 @@ data_upload_ui <- function(id) {
                               )),
                           
                           ## Give instructions to select/check variable class
-                          br(),
-                          br(),
                           br(),
                           
                           pickerInput(inputId=ns("categorical_vars"), label ="Select categorical variables *", multiple = TRUE, 
@@ -66,31 +82,34 @@ data_upload_ui <- function(id) {
                               shiny_iconlink() %>%
                                 bs_embed_popover(title = "covariates are characteristics (excluding the treatment) of the participants, that may also affect the outcome", placement = "right")
                             ),
-                          ## Add checkbox asking if "non-response weight" should be specified
-                          checkboxInput(ns("non_response_weight_checkbox"), "Select if data includes non-response weights"),
-                          ## If check box selected, show picker input
-                          uiOutput(ns("non_response_weight_var")),
-                          
+                          ## Add checkbox asking if "survey weight" should be specified
+                          div(style = "background-color: #F4F4F3; padding: 10px; border-radius: 3px;",
+                            checkboxInput(ns("survey_weight_checkbox"), "Select if data includes survey weights"),
+                            ## If check box selected, show picker input
+                            uiOutput(ns("survey_weight_var"))
+                          ),
+                          br(),
                           ## Add checkbox asking if "clustering variable" should be specified
-                          checkboxInput(ns("clustering_checkbox"), "Select if data includes a clustering variable"),
-                          ## If check box selected, show picker input
-                          uiOutput(ns("clustering_var")),
-                          
+                          div(style = "background-color: #F4F4F3; padding: 10px; border-radius: 3px;",
+                            checkboxInput(ns("clustering_checkbox"), "Select if data includes a clustering variable"),
+                            ## If check box selected, show picker input
+                            uiOutput(ns("clustering_var"))
+                          ),
+                          br(),
                           ## Add checkbox asking if "stratification variables" should be specified
-                          checkboxInput(ns("stratification_checkbox"), "Select if data includes stratification variables?"),
-                          ## If check box selected, show picker input
-                          uiOutput(ns("stratification_vars")),
-                          
+                          div(style = "background-color: #F4F4F3; padding: 10px; border-radius: 3px;",
+                            checkboxInput(ns("stratification_checkbox"), "Select if data includes stratification variables?"),
+                            ## If check box selected, show picker input
+                            uiOutput(ns("stratification_var"))
+                          ),
+                          br(),
                           ## Give warning that validation and subsequnt analysis rerun required upon re-selection of data/variables
                           uiOutput(ns("data_upload_rerun_message"), style = "color: grey;"),
-                          ## Add button to clear data upload page
-                           div(align="center",
-                              actionButton(NS(id,"clear_btn"), "Clear Data", class = "default_button")),
-                          br(),
-                          ## Add buttons to move back to home page and validate uploaded data
+                          
+                          ## Add buttons to clear/validate data  
                           div(align="center",
-                              actionButton(NS(id,"prevDU_btn"), "Prev", class = "default_button"),
-                              actionButton(NS(id,"validate_btn"), "Validate Data", class = "progress_button")
+                              ## Add button to clear data upload page
+                              actionButton(NS(id,"clear_btn"), "Clear Data", class = "default_button")
                           )
              ),
              mainPanel(wellPanel(id = "well_panel",
@@ -123,11 +142,22 @@ data_upload_ui <- function(id) {
            )
 }
 
-data_upload_server <- function(id, parent) {
+data_upload_server <- function(id, parent, enableLocal) {
   
   moduleServer(id,
                function(input, output, session) {
+                 observe({
+                   shinyjs::toggleState("file1", enableLocal)
+                 })
+                 if(enableLocal==FALSE){
+                   output$local_disabled = renderUI({
+                     p("Please install DigiCAT locally to enable file upload. See ",a("https://github.com/josiahpjking/DigiCAT"))
+                   })
+                 }
                  # Setup ----
+                 
+                 ## Disable 'Next' button initially
+                 shinyjs::disable("nextDU_btn")
                  
                  ## Hide data and validation tabs initially
                  hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
@@ -149,18 +179,16 @@ data_upload_server <- function(id, parent) {
                  # Variable Selection ----
                  
                  ## If input variable(s) change(s), remove any warnings that may be present for variable selection
-                 observeEvent(c(input$outcome, input$treatment, input$matchvars, input$covars), {
+                 observeEvent(c(input$categorical_vars, input$outcome, input$treatment, input$matchvars, input$covars, input$survey_weight_var, input$non_response_weight_checkbox), {
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
-                   updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+                   data_upload_values$validation <- NULL
+                   shinyjs::disable("nextDU_btn")
+                   
                    output$no_data_warning <- NULL ## Remove "no data" warning
                  })
                  
                  ## When categorical variable selection changed, update what can be selected as the outcome variable
                  observeEvent(input$categorical_vars, {
-                   
-                   ## Reset any input errors
-                   reset_upload_page(reset_errors = TRUE, parent = parent)
-                   output$no_data_warning <- NULL ## Remove "no data" warning
                    
                    if(data_upload_values$data_source == "sample"){
                      
@@ -173,14 +201,19 @@ data_upload_server <- function(id, parent) {
                  }, ignoreNULL = FALSE, ignoreInit = TRUE)
                  
                  ## If "non-response weight" checked, show picker selection
-                 observeEvent(input$non_response_weight_checkbox, {
+                 observeEvent(input$survey_weight_checkbox, {
                    
-                   if (input$non_response_weight_checkbox){
-                     output$non_response_weight_var <- renderUI(
-                       pickerInput(session$ns("non_response_weight_var"), label ="Select non-response weight",
-                                   choices=NULL,selected=NULL,multiple=FALSE,  options = pickerOptions(dropupAuto = F)))
+                   if (input$survey_weight_checkbox){
+                     output$survey_weight_var <- renderUI(
+                       ## If survey weights present, allow user to select from varaibles in data and indicate if these wights are non-response weights also
+                       div(
+                       pickerInput(session$ns("survey_weight_var"), label ="Select survey weight",
+                                   choices=names(isolate(data_upload_values$rawdata)), selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F)),
+                       checkboxInput(session$ns("non_response_weight_checkbox"), "Select if survey weights above compensates for non-response")
+                       )
+                       )
                    } else{
-                     output$non_response_weight_var <- NULL ## If checkbox unselceted, show nothing
+                     output$survey_weight_var <- NULL ## If checkbox unselceted, show nothing
                    }
                    })
                  
@@ -190,9 +223,9 @@ data_upload_server <- function(id, parent) {
                    if (input$clustering_checkbox){
                      output$clustering_var <- renderUI(
                        pickerInput(session$ns("clustering_var"), label ="Select a clustering variable",
-                                   choices=NULL,selected=NULL,multiple=FALSE,  options = pickerOptions(dropupAuto = F)))
+                                   choices=names(isolate(data_upload_values$rawdata)), selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F)))
                    } else{
-                     output$clustering_var <- NULL ## If checkbox unselceted, show nothing
+                     output$clustering_var <- NULL ## If checkbox unseleceted, show nothing
                    }
                  })
                  
@@ -200,11 +233,11 @@ data_upload_server <- function(id, parent) {
                  observeEvent(input$stratification_checkbox, {
                    
                    if (input$stratification_checkbox){
-                     output$stratification_vars <- renderUI(
+                     output$stratification_var <- renderUI(
                        pickerInput(session$ns("stratification_var"), label ="Select stratification variables",
-                                   choices=NULL,selected=NULL,multiple=TRUE,  options = pickerOptions(dropupAuto = F)))
+                                   choices=names(isolate(data_upload_values$rawdata)), selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F)))
                    } else{
-                     output$stratification_vars <- NULL ## If checkbox unselceted, show nothing
+                     output$stratification_var <- NULL ## If checkbox unselected, show nothing
                    }
                  })
                  
@@ -215,10 +248,17 @@ data_upload_server <- function(id, parent) {
                    
                    ## Reset any input errors and hide validation tab
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, hide_data = TRUE, parent = parent)
-                   data_upload_values$validation <- NULL ## Remove validation info
-                   updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
-                   output$no_data_warning <- NULL ## Remove "no data" warning
-                   
+                   ## Remove validation info
+                   data_upload_values$validation <- NULL
+                   ## Disable Next button
+                   shinyjs::disable("nextDU_btn")
+                   ## Remove "no data" warning
+                   output$no_data_warning <- NULL
+                   ## Reset "survey weights", "clustering" and stratification" checkboxes to null
+                   updateCheckboxInput(session, inputId = "survey_weight_checkbox", value = FALSE)
+                   updateCheckboxInput(session, inputId = "clustering_checkbox", value = FALSE)
+                   updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
+                
                    ## Load in data
                    ## Save potential error to check for running of code dependent on data upload
                    error_check <- NA
@@ -292,6 +332,11 @@ data_upload_server <- function(id, parent) {
                        updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
                        updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
                        updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
+                       
+                       updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
+                       updatePickerInput(session, "clustering_var", choices = names(isolate(data_upload_values$rawdata)))
+                       updatePickerInput(session, "stratification_var", choices = names(isolate(data_upload_values$rawdata)))
+
                      })
                    }
                  })
@@ -304,9 +349,16 @@ data_upload_server <- function(id, parent) {
                    
                    ## Reset any input errors and hide validate tab
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, parent = parent)
-                   data_upload_values$validation <- NULL ## Remove validation info
-                   updateActionButton(session = parent, NS(id,"validate_btn"), label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
-                   output$no_data_warning <- NULL ## Remove "no data" warning
+                   ## Remove validation info
+                   data_upload_values$validation <- NULL
+                   ## Disable Next button
+                   shinyjs::disable("nextDU_btn")
+                   ## Remove "no data" warning
+                   output$no_data_warning <- NULL 
+                   ## Reset "survey weights", "clustering" and stratification" checkboxes to null
+                   updateCheckboxInput(session, inputId = "survey_weight_checkbox", value = FALSE)
+                   updateCheckboxInput(session, inputId = "clustering_checkbox", value = FALSE)
+                   updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
                    
                    ## Save data source
                    data_upload_values$data_source <- "sample"
@@ -320,6 +372,10 @@ data_upload_server <- function(id, parent) {
                    updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "matchvars", selected=names(isolate(data_upload_values$rawdata))[-c(2:3)], choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "covars", choices = names(isolate(data_upload_values$rawdata)))
+                   
+                   updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
+                   updatePickerInput(session, "clustering_var", choices = names(isolate(data_upload_values$rawdata)))
+                   updatePickerInput(session, "stratification_var", choices = names(isolate(data_upload_values$rawdata)))
                  })
                  
                  ## Clear data when "Clear Data" button is pressed
@@ -327,7 +383,8 @@ data_upload_server <- function(id, parent) {
                    data_upload_values$rawdata <- NULL ## Remove data
                    reset_upload_page(reset_errors = TRUE, hide_data = TRUE, hide_validation = TRUE, parent = parent) ## Remove errors and hide data and validate tabs
                    data_upload_values$validation <- NULL ## Remove validation info
-                   updateActionButton(session, "validate_btn", label = "Validate Data", icon = NULL) ## Relabel "Next" button with "Validate"
+                   shinyjs::disable("nextDU_btn")
+                   
                    output$no_data_warning <- NULL ## Remove "no data" warning
                    
                    ## Clear input pickers
@@ -336,6 +393,10 @@ data_upload_server <- function(id, parent) {
                    updatePickerInput(session, "treatment", choices = character(0))
                    updatePickerInput(session, "matchvars", choices = character(0))
                    updatePickerInput(session, "covars", choices = character(0))
+                   
+                   updatePickerInput(session, "survey_weight_var", choices = character(0))
+                   updatePickerInput(session, "clustering_var", choices = character(0))
+                   updatePickerInput(session, "stratification_var", choices = character(0))
                  })
                  
                  # Data Validation ----
@@ -351,8 +412,8 @@ data_upload_server <- function(id, parent) {
                      
                      ## Check inputed variables. If there is an issue give informative error message, otherwise, continue to next page
                      ## First check if data has been uploaded
-                     if (!isTruthy(data_upload_values$rawdata)) { ## If there is no data, give informative error
-                       
+                     if (!isTruthy(data_upload_values$rawdata)) { 
+                       ## If there is no data, give informative error
                        output$no_data_warning <- renderUI(h5("Please upload some data first!", style = "color:red"))
                        
                      }else{
@@ -367,19 +428,25 @@ data_upload_server <- function(id, parent) {
                        showTab(inputId = NS(id,"Tab_data"), target = NS(id,"data_validation"), select = TRUE, session = parent)
 
                        ## Validate data
-                       data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, outcome = input$outcome, matchvars = input$matchvars, covars = input$covars)
+                       data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, outcome = input$outcome, 
+                                                                        treatment = input$treatment, matchvars = input$matchvars, 
+                                                                        covars = input$covars, survey_weight_var = input$survey_weight_var,
+                                                                        non_response_weight = input$non_response_weight_checkbox)
                        
                        ## Change "Validate" button to "Next" button
-                       updateActionButton(session, "validate_btn", label = "Next", icon = NULL)
+                       shinyjs::enable("nextDU_btn")
                        
                        ## Display warning under data/variable selection warning about reselection requiring revalidation/rerun of subsequent analysis
-                       data_upload_output$data_upload_rerun_message <- p("Note: Changing data/variable selection will require reruning validation and 
-                                                                         all subsequent analysis steps.")
+                       data_upload_output$data_upload_rerun_message <- p("Note: Changing data/variable selection will require reruning validation and all subsequent analysis steps.")
                      }
                      }}
                    else{ ## If validation is present, proceed to next page
-                     updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
+                     # updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
                    }
+                 })
+
+                 observeEvent(input$nextDU_btn, {
+                   updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
                  })
                  
                  # Show data and validation ----
@@ -399,7 +466,11 @@ data_upload_server <- function(id, parent) {
                                                      outcome = NULL,
                                                      treatment = NULL,
                                                      matchvars = NULL,
-                                                     covars = NULL)
+                                                     covars = NULL,
+                                                     survey_weight_var = NULL,
+                                                     non_response_weight_checkbox = NULL,
+                                                     cluster_var = NULL,
+                                                     stratification_var = NULL)
                  
                  observe({
                    data_upload_output$data <- data_upload_values$rawdata
@@ -408,6 +479,11 @@ data_upload_server <- function(id, parent) {
                    data_upload_output$treatment <- input$treatment
                    data_upload_output$matchvars <- input$matchvars
                    data_upload_output$covars <- input$covars
+                   
+                   data_upload_output$survey_weight_var <- input$survey_weight_var
+                   data_upload_output$non_response_weight <- input$non_response_weight_checkbox
+                   data_upload_output$cluster_var <- input$clustering_var
+                   data_upload_output$stratification_var <- input$stratification_var
                  })
                  
                  return(data_upload_output)
