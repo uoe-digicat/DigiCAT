@@ -1,6 +1,6 @@
 require(tidyverse)
 
-check_common_support <- function(estimation_model_object,...){ # double-check this
+check_support <- function(estimation_model_object,...){ # double-check this
   prs_df = data.frame(prop_score = predict(estimation_model_object$estimated_propensity_model, 
                                            type = "response"),
                        treatment = estimation_model_object$estimated_propensity_model$model[1])
