@@ -40,9 +40,7 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     extracted_balanced_data = extracted_balanced_data
     return(list(extracted_balanced_data, process = "weighting_iptw"))
     
-  } else if(class(psmodel_obj$propensity_model_class == "polr")){
-       restructured_data <- restructure_rejoin_nbp(...)
-     }
+  } 
   
 }
 
