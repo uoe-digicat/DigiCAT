@@ -1,5 +1,5 @@
 source("R/evaluate_imputations.R") # only runs for MI
-source("R/check_common_support.R") # only runs for CC currently - add in MI ?
+source("R/check_common_support.R") # only runs for CC currently - add in MI ? NOT POLR
 
 
 evaluate_propensity_stage <- function(estimation_model_object, evaluation_method, graph_display,
@@ -10,7 +10,7 @@ evaluate_propensity_stage <- function(estimation_model_object, evaluation_method
   #                                           evaluation_method, graph_display,...)
   # },
   # support = {
-  performance = check_common_support(estimation_model_object) # only for CC objects
+  performance = check_support(estimation_model_object) # only for CC objects
   # })
   return(performance)
 }

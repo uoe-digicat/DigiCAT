@@ -176,33 +176,15 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #### NBP testing - ignore ####
+data(mtcars)
+mtcars$gear <- as.factor(mtcars$gear)
 
-# abc <- estimation_stage(.data = forcc, missing_method = "complete", model_type = "poly",
-#                         treatment_variable = "c", matching_variable = c("a", "b", "d")) 
-
+abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type = "poly",
+                         treatment_variable = "gear", matching_variable = c("qsec", "hp", "disp")) 
+ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear", 
+                    matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
+                    missing_method = "complete")
 
 
 

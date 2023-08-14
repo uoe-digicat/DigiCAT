@@ -1,6 +1,6 @@
-assign_id_nbp <- function(distance_matrix, propensity_score, id_variable,...){
+assign_id_nbp <- function(distance_matrix, propensity_data, id_variable,...){
 
-  row.names(distance_matrix)<-propensity_score[[id_variable]]
+  row.names(matrixnbp) <- propensity_data$ID
   
   }
 

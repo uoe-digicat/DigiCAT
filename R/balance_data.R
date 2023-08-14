@@ -32,7 +32,7 @@ balance_data <- function(counterfactual_method, treatment_variable, matching_var
            balanced_data = balancing_cem(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
          },
          nbp = {
-           balanced_data = balancing_nbp(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
+           balanced_data = balancing_nbp(treatment_variable, PS_estimation_object, missing_method,...)
          },
          stop("Need a valid method to balance (psm, iptw, cem, nbp)")
   )
@@ -87,15 +87,17 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
   return(balanced_data)
 }
 
-# BELOW = TO DO
-balancing_nbp <- function(treatment_variable, matching_variable, PS_estimation_object, id_variable,...){ # to finish
-  
-  prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...) 
-  created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...) 
-  assigned_matrix <- assign_id_nbp(distance_matrix, propensity_score, id_variable,...) # depends on str
-  formatted_matrix <- distancematrix(assigned_matrix,...) 
-  performed_matching <- nonbimatch(formatted_matrix, threshold, precision, ...) 
 
+balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_method,...){ 
+  
+  propensity_scores <- PS_estimation_object[[2]]
+  propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
+  created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
+                                             treatment_variable, missing_method,...) 
+  formatted_matrix <- distancematrix(created_distance_matrix,...) 
+  performed_matching <- nonbimatch(formatted_matrix, ...) # threshold = 999999, precision = 7? 
+  balanced_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
+  
   return(balanced_data)
   
 }
