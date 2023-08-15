@@ -189,12 +189,11 @@ ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear",
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
                     missing_method = "complete")
 jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
-                              outcome_variable = "mpg", treatment_variable = "treatment_exposure",
+                              outcome_variable = "mpg", treatment_variable = "gear",
                               matching_variable = c("qsec", "hp", "disp"),
                               psmodel_obj = abc, missing_method = "complete")
 
-# for nbp, at outcome stage, treatment variable must be defaulted to the dose variable
-# add in restructure_rejoin_nbp to replace treatment_variable values with dose values
+
 
 
 
