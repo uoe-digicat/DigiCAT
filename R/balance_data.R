@@ -6,6 +6,8 @@ require(nbpMatching)
 source("R/prepare_dataset_nbp.R")
 source("R/make_matrix_nbp.R")
 source("R/assign_id_nbp.R")
+source("R/Restructure_nbp.R")
+
 
 
 balance_data <- function(counterfactual_method, treatment_variable, matching_variable, PS_estimation_object,

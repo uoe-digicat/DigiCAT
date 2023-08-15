@@ -64,6 +64,10 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
   model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
 
   }
+  else if (extracted_balanced_data$process == "cc_nbp"){
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]])
+    
+  }
   return(model_fit)
 }
 

@@ -176,7 +176,8 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
 
 
 
-#### NBP testing - ignore ####
+#### NBP testing ####
+# random data - ignore
 data(mtcars)
 mtcars$gear <- as.factor(mtcars$gear)
 
@@ -185,9 +186,12 @@ abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type 
 ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear", 
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
                     missing_method = "complete")
+jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
+                              outcome_variable = "mpg", treatment_variable = "dose",
+                              matching_variable = c("qsec", "hp", "disp"),
+                              psmodel_obj = abc, missing_method = "complete")
 
-
-
+# for nbp, at outcome stage, treatment variable must be defaulted to the dose variable
 
 
 
