@@ -18,7 +18,7 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
     mutate(treatment_variable = as.numeric(data_paired[[treatment_variable]])) %>%   
     group_by(pairID) %>%  #pairID is the ID for each pair
     mutate(first = max(treatment_variable) , #create dose variable
-           dose = factor(ifelse(treatment_variable == first, "high", "low"))) %>%
+           treatment_exposure = factor(ifelse(treatment_variable == first, "high", "low"))) %>%
     select(-c(group, treatment_variable)) %>%
     arrange(., pairID) %>%
     ungroup()

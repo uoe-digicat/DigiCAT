@@ -174,7 +174,9 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
                               weighting_variable = "weight")
 
 
-
+### I think something is off with the weighting calculation in extract_balanced_data
+# when svy object is re-incorporated
+# Look into
 
 #### NBP testing ####
 # random data - ignore
@@ -187,11 +189,12 @@ ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear",
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
                     missing_method = "complete")
 jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
-                              outcome_variable = "mpg", treatment_variable = "dose",
+                              outcome_variable = "mpg", treatment_variable = "treatment_exposure",
                               matching_variable = c("qsec", "hp", "disp"),
                               psmodel_obj = abc, missing_method = "complete")
 
 # for nbp, at outcome stage, treatment variable must be defaulted to the dose variable
+# add in restructure_rejoin_nbp to replace treatment_variable values with dose values
 
 
 

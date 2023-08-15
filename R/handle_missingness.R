@@ -15,13 +15,13 @@ handle_missingness <- function(.data, missing_method = NULL,
          
          mi = {
            
-           handled_missingness = mice(.data, m = 5, maxit = 20) # default options
-           # default to include interaction in substantive model?
+           handled_missingness = mice(.data, m = 5, maxit = 20,
+                                      method = "rf") # default options
            # allow user to alter m & maxit according to FMI & convergence
            # will not be congenial unless include interactions of substantive outcome model
-           # if cannot obtain congeniality -> switch to random forest imputation
-           # long-term goal = bootstrap MI approach for valid inf in uncongenial data
-           # if we can switch to ML/RF method we remove need to consider functional form of imp model
+           # cannot reliably obtain congeniality -> default is random forest imputation
+           # add condition - if weighting, using MI-bootstrap approach?
+           # switch to ML/RF method to remove need to consider functional form of imp model
          },
          
          weighting = {
