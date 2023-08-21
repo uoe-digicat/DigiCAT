@@ -3,10 +3,12 @@ outcome_model_ui <- function(id) {
   
   require(shinycssloaders)
   
-  ## Tab for choosing counterfactual analysis approach
+  ## Tab for choosing outcome model
   tabPanel(title = "",
            value = NS(id, 'tab'),
            br(),
+           
+           ## Navigation bar ----
            div(style="display: flex; align: center; width: '100%'; margin:auto",
                div(style="width: 12%; text-align: center;", h5("GET STARTED", style="color: white;")),
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
@@ -18,6 +20,8 @@ outcome_model_ui <- function(id) {
                div(style="width: 12%; text-align: center; height: 1px; background-color: white; margin:18px;"),
                div(style="width: 12%; text-align: center;", h5("OUTCOME", style="color: white; border-bottom: solid 2px white;"))
            ),
+           
+           ## Navigation ----
            div(align="center",
                actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
                actionButton(NS(id, 'run_outcome_model_btn'), 'Run', class = "default_button")
@@ -25,7 +29,7 @@ outcome_model_ui <- function(id) {
                ),
            br(),
            
-           ## matching method
+           ## Outcome model selection ----
            div(style = "display: flex;",
                div(style = "width: 49%;",
                    class = "text_blocks",
@@ -36,38 +40,58 @@ outcome_model_ui <- function(id) {
                    uiOutput(ns("outcome_model_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                    uiOutput(ns("outcome_model_description_method"))
                ),
+               
+               ## Outcome model output ----
                div(style = "width: 49%; margin-left: 2%;",
                    class = "text_blocks",
                    ## Output of selected outcome_model model
                    withSpinner(uiOutput(ns("outcome_model_output")))
                    )
+               ),
+           br(),
+           
+           ## Downloadable Output ----
+           div(align="center",
+               uiOutput(ns("download_options"))
                )
            )
 }
 
-outcome_model_server <- function(id, parent, treatment_variable, outcome_variable, matching_variables, approach, missingness, balancing_model, balancing_method, balancing_ratio, balancing_res, balancing_model_res, descriptions) {
+outcome_model_server <- function(id, parent, data_source, file_path, categorical_variables, treatment_variable, outcome_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, matching_method, matching_ratio, estimation_stage_res, balancing_stage_res, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
                  
+                 ## Navigation bar ----
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()), style="width: 200%; margin-left: -50%")})
                  output$prog_choiceCF <- renderUI({p(paste0("Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()), style="width: 200%; margin-left: -50%")})
                  
+                 ## If approach, missingness or balancing model changes, update what is displayed as balancing stage choices
                  observeEvent(c(approach(), missingness(), balancing_model()), {
                    
                    if (!is.null(approach())){
-
+                     ## If IPTW selected, display nothing
                      if (approach() == "iptw"){
                        output$prog_choiceBM <- NULL
                      }
                      else{
-                       output$prog_choiceBM <- renderUI({p(paste0("Balancing Method: ", balancing_method()), br(), paste0("Balancing Ratio: 1:", balancing_ratio()), style="width: 200%; margin-left: -50%")})
+                       ## If NBP or PSM selected, display matching method and ratio
+                       output$prog_choiceBM <- renderUI({p(paste0("Matching Method: ", matching_method()), br(), paste0("Matching Ratio: 1:", matching_ratio()), style="width: 200%; margin-left: -50%")})
                      }}
                    })
-
-                 ## Disable 'Next' button initially
-                 #shinyjs::disable("next_outcome_model_btn")
                  
+                 ## Define reactives ----
+                 ## Create reactive value for approach description
+                 outcome_model_values <- reactiveValues(
+                   description_method = descriptions$outcome_model,
+                   parameters_method = p(h4("Outcome Model Parameters:"),
+                                         p("Information on parameters in use.")),
+                   R_script = NULL,
+                   output = p(h4("Output:"),
+                              p("Once you have selected your outcome model, press'Run' to get results."))
+                 )
+
+                 ## Navigation ----
                  ## When "Prev is selected", show and move to new tab
                  observeEvent(input$prev_outcome_model_btn, {
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "balancing-tab")
@@ -83,16 +107,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                    updateTabsetPanel(session = parent, inputId = "main_tabs", selected = "tutorial")
                  })
                  
-                 ## Create reactive value for approach description
-                 outcome_model_values <- reactiveValues(
-                   description_method = descriptions$outcome_model,
-                   parameters_method = p(h4("Outcome Model Parameters:"),
-                                         p("Information on parameters in use.")),
-                   output = p(h4("Output:"),
-                              p("Once you have selected your outcome model, press'Run' to get results."))
-                   )
-                 
-                 ## Update matching method description and parameters based on choice of appraoch
+                 ## Update descriptions and rerun message when input changes ----
                  observeEvent(input$outcome_model_radio,{
                    
                    if(input$outcome_model_radio == "LR"){
@@ -108,7 +123,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                    
                    
                    ## If outcome model has already been run, give informative message about rerun and disable "Next" button to force rerun
-                   if (!is.null(outcome_model_values$results)){
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                         p(
@@ -121,7 +136,7 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                    }
                })
                  
-                 ## Run outcome model 
+                 ## Run outcome model ----
                  observeEvent(input$run_outcome_model_btn, {
                    
                    ## If no outcome model has been selected, give error message
@@ -138,14 +153,19 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                      ## Save potential error to check for running of code dependent on outcome model
                      error_check <- NA
                      error_check <- tryCatch(
-                       outcome_model_values$results <- outcome_analysis("unweighted", 
-                                                       y_var = outcome_variable(),
-                                                       t_var = treatment_variable(),
-                                                       m_vars = matching_variables(),
-                                                       balanced_data = balancing_res(),
-                                                       ids = NULL, weights = NULL, strata = NULL, fpc = NULL, 
-                                                       cf_method = approach(),
-                                                       psmod = balancing_model_res()),
+                       
+                       outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
+                         balanced_data = balancing_stage_res(),
+                         counterfactual_method = approach(),
+                         outcome_variable = outcome_variable(),
+                         treatment_variable = treatment_variable(),
+                         matching_variable = matching_variables(), 
+                         psmodel_obj = estimation_stage_res(),
+                         cluster_variable = cluster_var(),
+                         nonresponse_weights = survey_weight_var(),
+                         sampling_weights = survey_weight_var(),
+                         missing_method = missingness(),
+                         weighting_variable = survey_weight_var()),
                        
                        ## If outcome model does not run, return error message and enable run button 
                        error = function(cond) {
@@ -156,52 +176,100 @@ outcome_model_server <- function(id, parent, treatment_variable, outcome_variabl
                        })
                      
                      
-                     # Display output if no error in outcome model
-                     
+                     # Display output and show download button if no error in outcome model
                      if (all(!grepl("Error:", error_check))){
                        try({
                      ## Output estimate
                          outcome_model_values$output <- p(h4("Model Output"),
                                                   descriptions$estimate,
-                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$results[2,2], 4)))),
+                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[2,1], 5)))),
                                                   br(),
                                                   descriptions$standard_error,
-                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$results[2,3],3)))),
+                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[2,2], 5)))),
                                                   br(),
                                                   descriptions$p_value,
-                                                  strong(p(paste0("P-value: ", round(outcome_model_values$results[2,6], 3))))
+                                                  strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[2,4], 5))))
                                                     )
                          
                          ## Add message noting that parameter reselection will require rerun
                          outcome_model_values$model_rerun_message <- p("Note: Changing this parameter will require outcome model to be rerun")
-                         
-                         
-                         ## Enable 'Run' and 'Next' buttons
-                         #shinyjs::enable("next_outcome_model_btn")
+
+                         ## Enable 'Run' button
                          shinyjs::enable("run_outcome_model_btn")
+                         
+                         ## Generate R script
+                         
+                         outcome_model_values$R_script <- get_R_script(
+                           data_source = data_source(),
+                           file_path = file_path(),
+                           categorical_variables = categorical_variables(),
+                           outcome_variable = outcome_variable(),
+                           treatment_variable = treatment_variable(),
+                           matching_variables = matching_variables(),
+                           covariates = covariates(),
+                           weighting_variable = survey_weight_var(),
+                           cluster_variable = cluster_var(),
+                           stratification_variable = stratification_var(),
+                           CF_approach = approach(),
+                           missingness = missingness(),
+                           balancing_model = balancing_model(),
+                           matching_method = matching_method(),
+                           matching_ratio = matching_ratio(),
+                           outcome_model = input$outcome_model_radio)
+                         
+                         
+                         ## Add download script button
+                         output$download_options <- renderUI({
+                           downloadButton(session$ns("download_script"), "Download R Script", class = "default_button")
+                         })
                        })
                      }
                      }
                    })
                  
-                 
+                 ## Reset if outcome model input changes ----
                  ## Remove outcome model output and force rerun if previous steps have changed since previous run
-                 observeEvent(balancing_res(), {
+                 observeEvent(c(estimation_stage_res(), balancing_stage_res()), {
                    ## First check if outcome model has been run yet, if yes, print informative message in output
-                   if (!is.null(outcome_model_values$results)){
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                         p(
                                                           strong("It looks like the outcome model will have to be rerun, this is because some of the required inputs have been changed since the 
                        previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
                      
-                     ## Disable "Next" button to force a rerun before proceeding to next step
-                     #shinyjs::disable("next_outcome_model_btn")
+                     ## Remove download button
+                     output$download_options <- NULL
                      
                    }
                  })
                  
-                 ## Display information for choosing counterfactual approach, relevent parameters and model output
+                 ## Download output ----
+                 output$download_options <- renderUI({
+                   
+                   
+                   
+                 })
+                 
+                 ## Download script and analysis functions when download clicked
+                 output$download_script <- downloadHandler(
+
+                   filename = function() {
+                     paste("DigiCAT.R", sep = "")
+                   },
+                   content = function(file) {
+                     write.table(
+                       isolate(outcome_model_values$R_script),
+                       file, 
+                       quote = FALSE,
+                       row.names = FALSE, 
+                       col.names = FALSE)
+                   }
+                 )
+                   
+                 
+                 ## Pass output to UI ----
+                 ## Display information for choosing counterfactual approach, relevant parameters and model output
                  output$outcome_model_description_method <- renderUI(outcome_model_values$description_method)
                  output$outcome_model_missing_message <- renderUI(outcome_model_values$model_missing_message)
                  output$outcome_model_rerun_message <- renderUI(outcome_model_values$model_rerun_message)

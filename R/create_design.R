@@ -1,4 +1,5 @@
-require(survey)
+#' @import survey
+
 
 create_design <- function(.data, weighting_variable = NULL,
                           cluster_variable = NULL, strata_variable = NULL,

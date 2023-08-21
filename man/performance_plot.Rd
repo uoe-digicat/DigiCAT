@@ -7,7 +7,9 @@
 performance_plot(psmodel_obj, t_var, treattype = "binary")
 }
 \arguments{
-\item{psmodel_obj}{an object obtained from get_score(). this is required for matching and iptw methods, and is a list containing data, model, propensity score, and string indicating class of model. note the first 3 of these may be lists if multiple imputation has been used.#' @param t_var name of treatment variable in dataset (character string)}
+\item{psmodel_obj}{an object obtained from get_score(). this is required for matching and iptw methods, and is a list containing data, model, propensity score, and string indicating class of model. note the first 3 of these may be lists if multiple imputation has been used.#'}
+
+\item{t_var}{name of treatment variable in dataset (character string)}
 
 \item{treattype}{character string identifying what type of variable treatment is (binary, ordinal etc). only binary implemented thus far.}
 }

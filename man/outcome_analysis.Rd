@@ -15,6 +15,7 @@ outcome_analysis(
   strata = NULL,
   fpc = NULL,
   cf_method,
+  psmod,
   ...
 )
 }
