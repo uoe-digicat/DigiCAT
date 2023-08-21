@@ -1,5 +1,5 @@
 restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_variable,...){
-  
+  #add mi
   matched_data$pairID<-paste("p", 1:length(matched_data$Group1.ID), sep="") #add in 'pair ID' var
   matched_data<-tibble(matched_data) #tibble so that tidyverse can be leveraged
   matched_data_long<- tidyr::pivot_longer(matched_data,                   # long format

@@ -11,7 +11,7 @@ outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome
                                    missing_method,...){
   extracted_balanced_data <- extract_balanced_data(balanced_data, psmodel_obj, 
                                                    missing_method, weighting_variable,
-                                                   counterfactual_method,...) # note: CHANGE RENAME DOSE VAR FOR NBP
+                                                   counterfactual_method,...)
   fitted_model <- fit_outcome_model(balanced_data, extracted_balanced_data,outcome_variable, 
                                     treatment_variable, 
                                     matching_variable,...) 

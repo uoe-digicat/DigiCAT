@@ -42,6 +42,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
                                                 function(x) polr(f, data = x, Hess =T,...))
                                           
            } else if(missing_method == "complete"){
+             handled_missingness[[treatment_variable]] <- as.factor(handled_missingness[[treatment_variable]])
              estimated_propensity_model = MASS::polr(f, data = handled_missingness, 
                                                Hess = T, ...)
            }

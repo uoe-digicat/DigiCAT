@@ -45,10 +45,10 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
 abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "glm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_propensity_stage(abc, evaluation_method = "support")
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
@@ -181,7 +181,6 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
 #### NBP testing ####
 # random data - ignore
 data(mtcars)
-mtcars$gear <- as.factor(mtcars$gear)
 
 abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type = "poly",
                          treatment_variable = "gear", matching_variable = c("qsec", "hp", "disp")) 

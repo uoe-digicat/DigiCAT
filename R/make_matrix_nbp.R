@@ -1,5 +1,5 @@
 make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatment_variable, missing_method,...){
-  
+  # add mi
   if(missing_method == "complete"){
   eps = 1*10^-100 
   result = matrix(ncol = nrow(propensity_data), nrow = nrow(propensity_data))
