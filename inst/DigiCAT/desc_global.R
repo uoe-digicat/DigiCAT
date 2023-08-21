@@ -28,9 +28,9 @@ groups by matching treated individuals with similar untreated individuals based 
   
   ## Balancing
   
-  balancing_method = p(h5("Matching Method:"), p("In order to balance covariates between treatment groups, propensity score matching involves matching individuals based on their propensity scores, which represent their likelihood of being treated based on observed characteristics. The goal is to create a pseudo-randomized comparison between the treatment and control groups by matching individuals who have similar or close propensity scores.")),
+  matching_method = p(h5("Matching Method:"), p("In order to balance covariates between treatment groups, propensity score matching involves matching individuals based on their propensity scores, which represent their likelihood of being treated based on observed characteristics. The goal is to create a pseudo-randomized comparison between the treatment and control groups by matching individuals who have similar or close propensity scores.")),
   
-  balancing_ratio = p(h5("Matching Ratio:"), p("Matching ratios in propensity score matching refer to the number of control/untreated individuals that are matched to each treated individual. In DigiCAT, matching ratios can be specified to control the trade-off between achieving better balance between treatment groups and maintaining an adequate sample size.")),
+  matching_ratio = p(h5("Matching Ratio:"), p("Matching ratios in propensity score matching refer to the number of control/untreated individuals that are matched to each treated individual. In DigiCAT, matching ratios can be specified to control the trade-off between achieving better balance between treatment groups and maintaining an adequate sample size.")),
   
   nearest = p(h5("Matching Method: Nearest Neighbour (NN)"), p("Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated and control cases with similar propensity scores. In DigiCat, nearest neighbour greedy matching is implemented whereby the most similar treated and control cases are matched first. Then, from those left the remaining most similar treated and control cases are paired and so on and so forth until all viable matches have been made. See the nearest neighbour matching tutorial for more details.")),
   
