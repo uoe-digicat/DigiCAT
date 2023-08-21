@@ -90,8 +90,8 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                              uiOutput(session$ns("matching_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
                              uiOutput(session$ns("matching_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                              ## Description of selected balancing method and ratio
-                             uiOutput(session$ns("balancing_description_method")),
-                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
+                             uiOutput(session$ns("matching_method_description")),
+                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link_1"), "tutorial"), ".")
                          ),
                          br(),
                          div(style = "width: 100%",
@@ -104,14 +104,15 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                                           uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
                              uiOutput(session$ns("matching_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
                              uiOutput(session$ns("matching_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
-                             uiOutput(session$ns("balancing_description_ratio"))
+                             uiOutput(session$ns("matching_ratio_description")),
+                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link_2"), "tutorial"), ".")
                          )
                        )
                      })
                      
                      ## Reactive value for approach description
-                     balancing_values$description_method = descriptions$matching_method
-                     balancing_values$description_ratio = descriptions$matching_ratio
+                     balancing_values$matching_method_description = descriptions$matching_method
+                     balancing_values$matching_ratio_description = descriptions$matching_ratio
                      balancing_values$ratio =  NULL
                      balancing_values$output = p(h4("Output:"),
                      p("Once you have selected your matching method and ratio, press
@@ -131,8 +132,8 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                              uiOutput(session$ns("matching_method_missing_message"), style = "color: red;"), ## If no matching mehtod selected when "Run" pressed, give warning
                              uiOutput(session$ns("matching_method_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                              ## Description of selected balancing method and ratio
-                             uiOutput(session$ns("balancing_description_method")),
-                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link"), "tutorial"), ".")
+                             uiOutput(session$ns("matching_method_description")),
+                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link_1"), "tutorial"), ".")
                          ),
                          br(),
                          div(style = "width: 100%",
@@ -144,14 +145,15 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                              uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
                              uiOutput(session$ns("matching_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
                              uiOutput(session$ns("matching_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
-                             uiOutput(session$ns("balancing_description_ratio"))
+                             uiOutput(session$ns("matching_ratio_description")),
+                             p("For more information, visit our ", actionLink(session$ns("balancing_tab_tutorial_link_2"), "tutorial"), ".")
                          )
                        )
                      })
                      
                      ## Reactive value for approach description
-                     balancing_values$description_method = descriptions$matching_method
-                     balancing_values$description_ratio = descriptions$matching_ratio
+                     balancing_values$matching_method_description = descriptions$matching_method
+                     balancing_values$matching_ratio_description = descriptions$matching_method
                      balancing_values$ratio =  NULL
                      balancing_values$output = p(h4("Output:"),
                                                  p("Once you have selected your matching method and ratio, press
@@ -198,7 +200,11 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                  })
                  
                  ## If tutorial link clicked, go to tutorial page
-                 observeEvent(input$balancing_tab_tutorial_link, {
+                 observeEvent(input$balancing_tab_tutorial_link_1, {
+                   updateTabsetPanel(session = parent, inputId = 'main_tabs', selected = "tutorial")
+                 })
+                 
+                 observeEvent(input$balancing_tab_tutorial_link_2, {
                    updateTabsetPanel(session = parent, inputId = 'main_tabs', selected = "tutorial")
                  })
                  
@@ -216,7 +222,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                    }
                    
                    ## Remove missing parameter message if present
-                   balancing_values$method_missing_message <- NULL
+                   balancing_values$matching_method_missing_message <- NULL
 
                    ## Check if balancing has already been run, if so, output informative message, hide balancing results and force rerun
                    if (!is.null(balancing_values$balancing_stage_res)){
@@ -261,7 +267,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                        }
                    
                    ## Remove missing parameter message if present
-                   balancing_values$ratio_missing_message <- NULL
+                   balancing_values$matching_ratio_missing_message <- NULL
                  })
                  
                  ## If K in matching ratio is changes, update reactive value indicating K
@@ -292,13 +298,13 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                    
                    ## If matching approach selected but no balancing method, give error message
                    if(approach() == "psm" & is.null(input$method_radio)){
-                     balancing_values$method_missing_message <- p("Please select a matching method before proceeding", style = "color:red")
+                     balancing_values$matching_method_missing_message <- p("Please select a matching method before proceeding", style = "color:red")
                    }
                    
                    ## If matching approach selected but no balancing ratio, give error message
                    ## Slider counter used as slider input cannot be initiated with NULL - counter value of greater than 0 indicates slider input has been selected
                    if(approach() == "psm" & is.null(balancing_values$ratio)){
-                     balancing_values$ratio_missing_message <- p("Please select a matching ratio before proceeding", style = "color:red")
+                     balancing_values$matching_ratio_missing_message <- p("Please select a matching ratio before proceeding", style = "color:red")
                    }
                    ## If all required input present, carry out balancing
                    if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) ) {
@@ -389,8 +395,16 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                          # 
                          ## Get love plot
                          output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_stage_res))
+                         
                          ## Get balance table
-                         output$balance_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]]), rownames = TRUE, options = list(scrollX = TRUE))})
+                         balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]])
+                         ## Remove empty columns from balance table
+                         balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
+                         ## Round numbers in balance table to 4 decimals
+                         balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 4) else x))
+                         ## Output balance table
+                         output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
+
                          ## Get observation table
                          output$observations_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]]), rownames = TRUE, options = list(scrollX = TRUE))})
 
@@ -422,8 +436,8 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                          shinyjs::enable("next_balancing_btn")
                          
                          ## Add message noting that parameter reselection will require rerun
-                         balancing_values$method_rerun_message <- p("Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.")
-                         balancing_values$ratio_rerun_message <- p("Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.")
+                         balancing_values$matching_method_rerun_message <- p("Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.")
+                         balancing_values$matching_ratio_rerun_message <- p("Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.")
                        })
                      }
                      }
@@ -450,12 +464,12 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                  
                  ## Pass output to UI ----
                  
-                 output$balancing_description_method <- renderUI(balancing_values$description_method)
-                 output$matching_method_rerun_message <- renderUI(balancing_values$method_rerun_message)
-                 output$matching_method_missing_message <- renderUI(balancing_values$method_missing_message)
-                 output$balancing_description_ratio <- renderUI(balancing_values$description_ratio)
-                 output$matching_ratio_rerun_message <- renderUI(balancing_values$ratio_rerun_message)
-                 output$matching_ratio_missing_message <- renderUI(balancing_values$ratio_missing_message)
+                 output$matching_method_description<- renderUI(balancing_values$matching_method_description)
+                 output$matching_method_rerun_message <- renderUI(balancing_values$matching_method_rerun_message)
+                 output$matching_method_missing_message <- renderUI(balancing_values$matching_method_missing_message)
+                 output$matching_ratio_description <- renderUI(balancing_values$matching_ratio_description)
+                 output$matching_ratio_rerun_message <- renderUI(balancing_values$matching_ratio_rerun_message)
+                 output$matching_ratio_missing_message <- renderUI(balancing_values$matching_ratio_missing_message)
                  output$balancing_output <- renderUI(balancing_values$output)
                  
                  ## Return balancing output to server ----
