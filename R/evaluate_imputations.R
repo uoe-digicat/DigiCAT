@@ -1,4 +1,11 @@
-evaluate_imputations <- function(estimation_model_object, evaluation_method, graph_display,...){
+# todo - add residuals of imputation models
+# here or in handle_missingness() - if common error, e.g., cat data -> default to more robust eg pmm
+# if convergence = bad, advise to increase maxit and re-examine
+# % missingness calc to inform m as per v Hippel formula?
+# predmatrix = allows inspection of collinearity removals also
+
+evaluate_imputations <- function(estimation_model_object, evaluation_method, graph_display,
+                                 .data,...){
   switch(evaluation_method, 
          distributional_discrepancy = {
            evaluation = check_distributional_discrepancy(estimation_model_object, graph_display)
@@ -7,9 +14,29 @@ evaluate_imputations <- function(estimation_model_object, evaluation_method, gra
            evaluation = check_convergence(estimation_model_object)
          },
          eventslog = {
-           evaluation = estimation_model_object$loggedevents
+           evaluation = estimation_model_object$missingness_treated_dataset$loggedEvents
          },
-         stop("I need a valid method! (distributional discrepancy, convergence)")
+         inspect_matrix = { 
+           evaluation = estimation_model_object$missingness_treated_dataset$predictorMatrix
+         },
+         LittleMCARtest = {
+           evaluation = naniar::mcar_test(.data) # typically ran before MI - put in pre-handling function?
+           # null = MCAR; if p = low -> cannot assume MCAR
+         },
+         missing_pattern = {
+           evaluation = mice::md.pattern(.data) # typically ran before MI - put in pre-handling function?
+           # use to inform imp model; 1/blue = observed, 0/red = missing
+           # if want tabulation, set plot = FALSE, else TRUE by default
+           # primarily useful for data with small N(cols)
+         },
+         influx_outflux = {
+           evaluation = mice::flux(.data)
+         },
+         # residuals = { # TO DO
+         #   evaluation = 
+         # },
+         stop("I need a valid method! (distributional discrepancy, convergence,
+              logged events, matrix inspection, Little's MCAR test, missing pattern, flux)")
   )
   return(evaluation)
 }

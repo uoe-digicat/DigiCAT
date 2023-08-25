@@ -1,5 +1,7 @@
-# perhaps want to saved any logged events somewhere for diagnosis
-#' @import mice
+# function evaluate_imputations contains diagnostics post-imputation
+# and useful functions for pre-missing data handling (need to move to new fun)
+
+require(mice)
 
 handle_missingness <- function(.data, missing_method = NULL,
                                design_object = NULL,
@@ -13,15 +15,39 @@ handle_missingness <- function(.data, missing_method = NULL,
          
          mi = {
            
-           handled_missingness = mice(.data, m = 5, maxit = 20)
+           handled_missingness = mice(.data, m = 5, maxit = 20,
+                                      method = "rf") # default options
+           # allow user to alter m & maxit according to FMI & convergence
+           # will not be congenial unless include interactions of substantive outcome model
+           # cannot reliably obtain congeniality -> default is random forest imputation
+           # add condition - if weighting, using MI-bootstrap approach?
+           # switch to ML/RF method to remove need to consider functional form of imp model
          },
          
          weighting = {
            
-           handled_missingness = design_object
+           handled_missingness = design_object # currently treats non-response and sampling the same
          },
          stop("How should i deal with missingness? Should be one of 'mi', 'complete', 'weighting'")
   )
-  return(handled_missingness) # in case of weighting, add in return of data_design
+  return(handled_missingness) 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

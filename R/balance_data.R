@@ -3,9 +3,11 @@ require(MatchIt)
 require(MatchThem)
 require(nbpMatching)
 
-# source("R/prepare_dataset_nbp.R")
-# source("R/make_matrix_nbp.R")
-# source("R/assign_id_nbp.R")
+source("R/prepare_dataset_nbp.R")
+source("R/make_matrix_nbp.R")
+source("R/assign_id_nbp.R")
+source("R/Restructure_nbp.R")
+
 
 
 balance_data <- function(counterfactual_method, treatment_variable, matching_variable, PS_estimation_object,
@@ -32,7 +34,7 @@ balance_data <- function(counterfactual_method, treatment_variable, matching_var
            balanced_data = balancing_cem(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
          },
          nbp = {
-           balanced_data = balancing_nbp(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
+           balanced_data = balancing_nbp(treatment_variable, PS_estimation_object, missing_method,...)
          },
          stop("Need a valid method to balance (psm, iptw, cem, nbp)")
   )
@@ -68,7 +70,7 @@ balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_o
     
     
    } else if(missing_method=="complete"){
-    balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, distance = PS_estimation_object$propensity_score, ...)
+    balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, distance = PS_estimation_object$propensity_scores, ...)
     
    } else if(missing_method=="weighting"){
        balanced_data = matchit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
@@ -79,7 +81,7 @@ balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_o
   
 }
 
-balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_object, ...){
+balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_object, ...){ # ignore for now
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
 
   balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, method = "cem")
@@ -87,14 +89,18 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
   return(balanced_data)
 }
 
-balancing_nbp <- function(treatment_variable, matching_variable, PS_estimation_object, ...){ # to finish
-  
-  prepared_for_nbp <- prepare_dataset_nbp(propensity_score,...)
-  created_distance_matrix <- make_matrix_nbp(propensity_score, estimated_propensity_model, treatment_variable,...)
-  assigned_matrix <- assign_id_nbp(distance_matrix, id_variable, propensity_score, ...)
-  formatted_matrix <- distancematrix(assigned_matrix,...)
-  performed_matching <- nonbimatch(formatted_matrix, threshold, precision, ...)
 
+balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_method,...){ 
+  
+  propensity_scores <- PS_estimation_object[[2]]
+  propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
+  created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
+                                             treatment_variable, missing_method,...) 
+  formatted_matrix <- distancematrix(created_distance_matrix,...) 
+  performed_matching <- nonbimatch(formatted_matrix, ...) # threshold = 999999, precision = 7? 
+  matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
+  balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable,...)
+  
   return(balanced_data)
   
 }

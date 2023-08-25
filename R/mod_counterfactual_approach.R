@@ -68,7 +68,7 @@ CF_approach_ui <- function(id) {
   )
 }
 
-CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, survey_weight_var, non_response_weight, descriptions) {
+CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, survey_weight_var, non_response_weight_var, cluster_var, stratification_var, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -129,7 +129,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                  
                  ## If data/variable selection has changed since previous approach selection, add question asking if current approach is still
                  ## appropriate to approach description and reset page
-                 observeEvent(c(raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), survey_weight_var(), non_response_weight()), {
+                 observeEvent(c(raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), survey_weight_var(), non_response_weight_var(), cluster_var(), stratification_var()), {
                    
                    ## Remove missing input warnings
                    CF_approach_values$approach_missing_message <- NULL
@@ -149,7 +149,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      
                      output$approach_selection <- renderUI(radioButtons(NS(id, "CF_radio"), 
                                                                         label = h4("1. Choose a Counterfactual Approach:"), 
-                                                                        choices = list("Propensity Matching" = "psm",
+                                                                        choices = list("Propensity Matching (PSM)" = "psm",
                                                                                        "Inverse probability of treatment weighting (IPTW)" = "iptw"),
                                                                         selected = character(0)))
                      
@@ -160,6 +160,28 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                                                         label = h4("1. Choose a Counterfactual Approach:"), 
                                                                         choices = list("Non-bipartite Matching" = "nbp"),
                                                                         selected = character(0)))
+                     
+                     ## CC available as missingness (more to add later)
+                     output$missingness_selection <- renderUI(
+                       radioButtons(NS(id, "missingness_radio"), 
+                                    label = h4("2. Choose a Method of Dealing with Missingess:"),
+                                    choices = list(
+                                      #"Multiple Imputation" = "mi",
+                                      "Complete Case" = "complete"),
+                                    selected = character(0))
+                     )
+                     
+                     
+                     ## OLR available as balancing model
+                     output$balancing_model_selection <- renderUI(
+                       radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
+                                    choices = list(
+                                      "Ordinal Logistic Regression (OLR)" = "poly"),
+                                    selected = character(0))
+                     )
+                     
+                     
+                     
                    }
                    
                    ## If treatment variable detected as continuous, give warning message and disable other inputs
@@ -177,54 +199,21 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    }
                    
                    
-                   ## Check presents on non-response variable, update missingness and add initial balancing model message if treatment variable is non-continuous
-                   if (length(unique(na.omit(raw_data()[,treatment_variable()]))) < 6){
+                   ## Check presents on non-response variable, update missingness and add initial balancing model message if treatment variable is binary
+                   if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2){
                      
                      ## If non response weights provided include weighting as a missingness option
-                     if (!is.null(non_response_weight())){
-                       
-                       ## If no missingness in weights, add weighting
-                       if (!any(is.na(raw_data()[,survey_weight_var()])) & !is.null(survey_weight_var())){
+                     if (!is.null(non_response_weight_var())){
                          
-                         output$missingness_selection <- renderUI(
-                           radioButtons(NS(id, "missingness_radio"), 
-                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
-                                        choices = list(
-                                          "Multiple Imputation" = "mi",
-                                          "Weighting" = "weighting",
-                                          "Complete Case" = "complete"),
-                                        selected = character(0))
-                         )
-                       }
-                       ## If some missingness in weights, don't add weighting and note why
-                       if (any(is.na(raw_data()[,survey_weight_var()])) & !is.null(survey_weight_var())){
-                         output$missingness_selection <-renderUI(
-                           p(
-                             radioButtons(NS(id, "missingness_radio"), 
-                                          label = h4("2. Choose a Method of Dealing with Missingess:"),
-                                          choices = list(
-                                            "Multiple Imputation" = "mi",
-                                            "Complete Case" = "complete"),
-                                          selected = character(0)),
-                             br(),
-                             p("As missing data was detected in the non-response weights you provided, these cannot be used to handle missingness.
-                         Providing complete non-response weights will allow weighting to be carried out, otherwise, please select from the other
-                         missingness options available above.", style = "color: grey;")
-                           )
-                         )
-                       }
-                       
-                       ## If non-response weight provided at one point, but not anymore (not null), don't add weighting
-                       if (!non_response_weight() == TRUE){
-                         output$missingness_selection <-renderUI(
-                           radioButtons(NS(id, "missingness_radio"), 
-                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
-                                        choices = list(
-                                          "Multiple Imputation" = "mi",
-                                          "Complete Case" = "complete"),
-                                        selected = character(0))
-                         )
-                       }
+                       output$missingness_selection <- renderUI(
+                         radioButtons(NS(id, "missingness_radio"), 
+                                      label = h4("2. Choose a Method of Dealing with Missingess:"),
+                                      choices = list(
+                                        "Multiple Imputation" = "mi",
+                                        "Weighting" = "weighting",
+                                        "Complete Case" = "complete"),
+                                      selected = character(0))
+                       )
                      }
                      ## If no non response weight provided, don't add weighting
                      else{
@@ -254,15 +243,9 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      
                    }else{
                      
-                     ## If approach is NBP - only balancing model option in "OLR"
+                     ## If approach is NBP:
                      if (input$CF_radio == "nbp"){
-                       
-                       output$balancing_model_selection <- renderUI(
-                         radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
-                                      choices = list(
-                                        "Ordinal Logistic Regression (OLR)" = "orl"),
-                         selected = character(0))
-                       )
+                       ## Do nothing as options are already displayed
                      }
                      
                      ## If approach other than NBP selected, base balancing model choice off of missingness

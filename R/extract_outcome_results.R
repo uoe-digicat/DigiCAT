@@ -1,14 +1,20 @@
-extract_outcome_results <- function(fitted_model){
+extract_outcome_results <- function(fitted_model, missing_method,...){
   if("svyglm" %in% class(fitted_model)){
     extracted_outcome_results = summary(fitted_model)
     return(list(extracted_outcome_results, process = "weighting"))
     
-  } else if(class(fitted_model) == "lm"){
+  }else if("comparisons" %in% class(fitted_model) & missing_method == "complete"){
+    extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
+    return(list(extracted_outcome_results, process = "cc"))
+    
+  }
+  else if("mipo" %in% class(fitted_model) & missing_method == "mi"){
+    extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
+    return(list(extracted_outcome_results, process = "mi"))
+    
+  }else if("lm" %in% class(fitted_model) & missing_method == "complete"){
     extracted_outcome_results = summary(fitted_model)
     return(list(extracted_outcome_results, process = "cc"))
     
-  } else if(class(fitted_model) == "list"){
-    extracted_outcome_results = mice::pool(fitted_model) |> summary()
-   return(list(extracted_outcome_results, process = "mi"))
   }
 }

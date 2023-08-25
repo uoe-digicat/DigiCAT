@@ -55,7 +55,9 @@ server <- function(input, output, session) {
                                     matching_variables = reactive(data_upload_output$matchvars),
                                     covariates = reactive(data_upload_output$covars),
                                     survey_weight_var = reactive(data_upload_output$survey_weight_var),
-                                    non_response_weight = reactive(data_upload_output$non_response_weight),
+                                    non_response_weight_var = reactive(data_upload_output$non_response_weight_var),
+                                    cluster_var = reactive(data_upload_output$cluster_var),
+                                    stratification_var = reactive(data_upload_output$stratification_var),
                                     descriptions = desc_global)
   
   ####

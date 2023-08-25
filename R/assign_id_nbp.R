@@ -1,5 +1,7 @@
-assign_id_nbp <- function(){
+assign_id_nbp <- function(distance_matrix, propensity_data, id_variable,...){
+# add mi version
+  row.names(matrixnbp) <- propensity_data$ID
   
-  row.names(distance_matrix_nbp)<-propensity_score$id_variable
-  
-}
+  }
+
+
