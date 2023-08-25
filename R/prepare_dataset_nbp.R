@@ -4,8 +4,27 @@ prepare_dataset_nbp <- function(propensity_scores, treatment_variable, missing_m
     propensity_scores[[treatment_variable]] = as.numeric(as.character(propensity_scores[[treatment_variable]]))
     propensity_scores$ID <- seq_along(propensity_scores[,1])
   } 
-  #else if(missing_method == "mi"){
-   # add 
-  #}
+  else if(missing_method == "mi"){
+    propensity_scores <- lapply(propensity_scores, function(x) {x[, treatment_variable] <- as.numeric(as.character(x[, treatment_variable])) ; x}) 
+    
+  }
+  
   return(propensity_scores)
+  
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

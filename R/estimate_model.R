@@ -38,9 +38,26 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
          
          poly = {
            if(missing_method == "mi"){
-             estimated_propensity_model = lapply(complete(handled_missingness, "all"), 
-                                                function(x) polr(f, data = x, Hess =T,...))
-                                          
+             
+             estimated_propensity_model = lapply(complete(handled_missingness, "all"),
+                                                function(x) MASS::polr(f, data = x, Hess =T,...))
+                                
+             # comp <- complete(handled_missingness, "all", include = FALSE)          
+             # pollypslist <- data.frame()
+             # 
+             # for (i in 1:length(comp)){
+             #   
+             #   polly <- MASS::polr(f, data = comp[[i]],
+             #                       Hess=T) 
+             #   
+             #   res <- as.data.frame(cbind(comp[[i]], polly$model,polly$lp))
+             #   
+             #   res$impset <- i
+             #   
+             #   pollypslist <- rbind(pollypslist,res)
+             #   
+             # }
+             
            } else if(missing_method == "complete"){
              handled_missingness[[treatment_variable]] <- as.factor(handled_missingness[[treatment_variable]])
              estimated_propensity_model = MASS::polr(f, data = handled_missingness, 
