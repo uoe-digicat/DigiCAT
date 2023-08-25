@@ -19,8 +19,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   )
   
   ## Save variable to log error
-  error_check <- NULL
-  design_matrix_error <- NA
+  error_check <- NA
+  design_matrix_error <- NULL
   
   ## Create new variables to input varible names in desing matrix function - NULL will be input if varaible conatins missingness
   survey_weight_var_for_matrix <- NULL
@@ -212,11 +212,11 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     # Ensure at least one variable is present w/o missingness beforehand
     
     if (validation_log$survey_weight_no_missingness | validation_log$clustering_no_missingness | validation_log$stratification_no_missingness){
-      error_check <- tryCatch({
-      catch_output <- create_design(.data = data_Nas,
+      error_check <- tryCatch(
+      create_design(.data = data_Nas,
                     weighting_variable = survey_weight_var_for_matrix,
                     clustering_variable = clustering_var_for_matrix,
-                    strata_variable = stratification_var_for_matrix)},
+                    strata_variable = stratification_var_for_matrix),
       ## If error in creating design matrix, return error message
       error = function(cond) {
         ## Output error message
@@ -226,18 +226,12 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
 
       })
       
-      p("")
+      p(design_matrix_error)
       
       },
     
-    ## If error was detected, return this error
-    if (all(grepl("Error:", error_check))){
-      p(error_check)
-    },
-    
     ## If error in design matrix creation, log
-    if (!is.null(error_check)){
-      
+    if (all(grepl("Error:", error_check))){
       
       validation_log$no_design_matrix_error <- FALSE
       
@@ -258,9 +252,14 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     log = validation_log
   ))
 }
-  
 
 
 
 
 
+
+
+
+
+
+ 

@@ -5,52 +5,8 @@
 #' @param balanced_data 
 #' @param treatment_variable 
 #' @param missingness 
-#'
-#' @import dplyr
 #' @import cobalt
 #' @import ggplot2
- 
-
-# df <- data_frame(treatment = c(1,1,1,2,2,2,3,3,3,3,3,3,4))
-# df$outcome <- c(10,14,15,19,15,20,22,23,34,23,45,34,65)
-# df$var1 <- c(10,11,14,24,22,29,36,33,37,45,56,34,76)
-# df$var2 <- c(10,15,13,27,24,27,38,32,30,34,45,67,87)
-# df$var3 <- c(1:13)
-# 
-# 
-# N =500
-# A = matrix(runif(5^2)*2-1, ncol = 5)
-# Xmat = MASS::mvrnorm(N, mu=rnorm(5,0,3), Sigma = t(A)%*%A)
-# lp = apply(Xmat, 2, scale)%*%rnorm(5,0,2)
-# t = rbinom(N,c(1,2),plogis(lp))
-# y = base::cbind(Xmat,t) %*% c(rnorm(5,0,1),2) + rnorm(N,0,1)
-# df <- as.data.frame(base::cbind(Xmat, t, y))
-# names(df) <- c(letters[1:5], "t", "y")
-# 
-# 
-# 
-# abc <- estimation_stage(.data = df, 
-#                         missing_method = "complete", 
-#                         model_type = "poly",
-#                         treatment_variable = "t", 
-#                         matching_variable = c("a", "b", "c")) 
-# 
-# 
-# ghi <- balance_data(counterfactual_method = "nbp", 
-#                     treatment_variable = "t", 
-#                     matching_variable = c("a", "b", "c"), 
-#                     PS_estimation_object = abc,
-#                     missing_method = "complete")
-# 
-# 
-# estimation_model_object <- abc
-# balanced_data <- ghi
-# treatment_variable <- "t"
-# matching_variables <- c("a" , "b", "c")
-# missingness <- "complete"
-# 
-
-
 
 get_NBP_balancing_output <- function(estimation_model_object, balanced_data, treatment_variable, matching_variables, missingness){
   
@@ -104,8 +60,8 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   
   if(missingness == "complete"){
     
-    balance_table_matched <- balance_table %>% 
-      dplyr::rename(Matched = `Diff.Un`)
+    names(balance_table)[names(balance_table) %in% "Diff.Un"] <- "Matched"
+    balance_table_matched <- balance_table
     
     ## Get unmatched balance table
     balance_table_unmatched_ls <- bal.tab(as.data.frame(estimation_model_object$propensity_scores[,c(matching_variables)]), treat = as.factor(estimation_model_object$propensity_scores[[treatment_variable]]), distance = estimation_model_object$propensity_scores[["lp"]], which.treat = .all)
