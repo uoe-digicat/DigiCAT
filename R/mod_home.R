@@ -123,7 +123,7 @@ home_server <- function(id, parent) {
                        HTML("<center>"),
                        h4("Before you get started:"),
                        br(),
-                       tags$div("Have you read and agree to the terms of the", actionLink(NS(id,"TCs_link"), "DigiCAT Customer Agreement"), "?"),
+                       tags$div("Have you read and agree to the terms of the", actionLink(NS(id,"TCs_link"), "DigiCAT User Agreement"), "?"),
                        footer=tagList(
                          div(style = "text-align:center",
                              actionButton(NS(id,"Btn_dont_agree"), "No, I don't agree", style="color: white; background: #4f78dc"),
