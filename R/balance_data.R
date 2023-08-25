@@ -1,26 +1,23 @@
-require(WeightIt)
-require(MatchIt)
-require(MatchThem)
-require(nbpMatching)
 
-source("R/prepare_dataset_nbp.R")
-source("R/make_matrix_nbp.R")
-source("R/assign_id_nbp.R")
-source("R/Restructure_nbp.R")
-
+#' Function to balance datasets
+#'
+#' @param counterfactual_method 
+#' @param treatment_variable 
+#' @param matching_variable 
+#' @param PS_estimation_object 
+#' @param missing_method 
+#' @param eff 
+#' @param ... 
+#'
+#' @import nbpMatching
+#' @import WeightIt
+#' @import MatchIt
+#' @import MatchThem
 
 
 balance_data <- function(counterfactual_method, treatment_variable, matching_variable, PS_estimation_object,
                          missing_method,
                          eff, ...){
-  
-  # ## If no input has been selected, stop and give informative error
-  # if (is.null(ratio)){
-  #   stop("I need a matching ratio! Please specify with the slider above")
-  # }
-  # if (is.null(method)){
-  #   stop("I need a matching method! Please select from the matching methods above")
-  # }
   
   switch(counterfactual_method,
          

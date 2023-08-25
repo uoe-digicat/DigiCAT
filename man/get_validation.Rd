@@ -11,7 +11,9 @@ get_validation(
   matchvars,
   covars,
   survey_weight_var,
-  non_response_weight
+  non_response_weight,
+  clustering_var,
+  stratification_var
 )
 }
 \arguments{

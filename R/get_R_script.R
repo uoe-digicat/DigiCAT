@@ -1,3 +1,5 @@
+#' Function to produce downloadable R script
+
 #' @param data Dataframe
 #' @param data_source Source of data: "own", or "sample"
 #' @param file_path File path to data
