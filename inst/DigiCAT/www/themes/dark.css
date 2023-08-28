@@ -130,6 +130,13 @@ color: #f02094;
     background: #170344;
 }
 
+/* Tab panel features */
+.tab_panel_feature {
+  background: #8b98c1;
+  border-radius: 5px;
+  padding: 5px;
+}
+
 /* Text blocks */
 .text_blocks {
   color: #ffffff;
