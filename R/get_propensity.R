@@ -41,7 +41,10 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
                                                      estimated_propensity_model$lp))
            names(propensity_score)[names(propensity_score) == "estimated_propensity_model$lp"] <- "lp"
 
-           }
+           } else if(missing_method == "weighting"){
+            propensity_score = estimated_propensity_model$fitted.values 
+            # is this correct? Polr vs Svyolr difference in output - no lp?
+          }
          },
          stop("I need a valid model! (glm, gbm, rforest, poly)")
          
