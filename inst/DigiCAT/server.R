@@ -2,6 +2,7 @@
 
 server <- function(input, output, session) {
   
+  ## Source descriptions
   source(system.file("DigiCAT/desc_global.R", package = "DigiCAT"), local=TRUE)
   ####
   # App theme ----
@@ -42,7 +43,7 @@ server <- function(input, output, session) {
                                                   parent = session,
                                                   enableLocal = enable_local_data)
 
-  # Counterfactual Appraoch ----
+  # Counterfactual Approach ----
   ####
   
   
@@ -58,6 +59,7 @@ server <- function(input, output, session) {
                                     non_response_weight_var = reactive(data_upload_output$non_response_weight_var),
                                     cluster_var = reactive(data_upload_output$cluster_var),
                                     stratification_var = reactive(data_upload_output$stratification_var),
+                                    validation_log = reactive(data_upload_output$validation_log),
                                     descriptions = desc_global)
   
   ####
@@ -67,11 +69,13 @@ server <- function(input, output, session) {
   balancing_output <- DigiCAT:::balancing_server("balancing", 
                    parent = session,
                    raw_data = reactive(data_upload_output$data),
+                   categorical_variables = reactive(data_upload_output$categorical_vars),
                    outcome_variable = reactive(data_upload_output$outcome),
                    treatment_variable = reactive(data_upload_output$treatment),
                    matching_variables = reactive(data_upload_output$matchvars),
                    covariates = reactive(data_upload_output$covars),
                    survey_weight_var = reactive(data_upload_output$survey_weight_var),
+                   non_response_weight_var = reactive(data_upload_output$non_response_weight_var),
                    cluster_var = reactive(data_upload_output$cluster_var),
                    stratification_var = reactive(data_upload_output$stratification_var),
                    approach = reactive(CF_approach_output$CF_radio),

@@ -1,40 +1,47 @@
 
-#' Function to return observation table, love plot and balance table from NBP matching
+#' Function to return observation table, love plot and balance table from NBP matching.
 #'
 #' @param estimation_model_object 
 #' @param balanced_data 
 #' @param treatment_variable 
-#' @param missingness 
+#' @param missing_method 
 #' @import cobalt
 #' @import ggplot2
 
-get_NBP_balancing_output <- function(estimation_model_object, balanced_data, treatment_variable, matching_variables, missingness){
+get_NBP_balancing_output <- function(estimation_model_object, balanced_data, treatment_variable, matching_variables, missing_method){
   
   ## Observation Table ----
   
-  if(missingness == "complete"){
-    ## Factorize treatment variable
+  if(missing_method == "complete"){
+    ## Factorize treatment variable in both matched and unmatched datasets
     estimation_model_object$propensity_scores[[treatment_variable]] <- as.factor(estimation_model_object$propensity_scores[[treatment_variable]])
-    observation_table_1 <- as.data.frame(t(table(estimation_model_object$propensity_scores[[treatment_variable]])))
-    observation_table_2 <- as.data.frame(t(table(balanced_data[[treatment_variable]])))
+    balanced_data$treatment <- as.factor(balanced_data$treatment)
+    ## Count frequency of observations in each treatment group
+    observation_table_all <- as.data.frame(t(table(estimation_model_object$propensity_scores[[treatment_variable]]))) ## Original treatment groups before matching
+    observation_table_unmatched <- as.data.frame(t(table(balanced_data$treatment))) ## Original treatment groups after matching (unmathed subjects excluded)
+    observation_table_matched <- as.data.frame(t(table(balanced_data[[treatment_variable]]))) ## Treatment groups after matching
     
-    observation_table <- as.data.frame(data_frame("Observations (Group name: n) " = c(paste0(observation_table_1$Var2,": ", observation_table_1$Freq, collapse = ", "),
-                                                                                      paste0(str_to_title(observation_table_2$Var2),"-Exposure Group :", observation_table_2$Freq, collapse = ", "))))
+    ## Get difference between observation counts before and after matching in original treatment groups
+    observation_table_unmatched$Freq <- observation_table_all$Freq - observation_table_unmatched$Freq
     
-    row.names(observation_table) <- c("All(ESS)", "Matched(ESS)")
+    ## Combine observation tables
+    observation_table <- as.data.frame(data_frame("Observations (Group name: n) " = c(paste0(observation_table_all$Var2,": ", observation_table_all$Freq, collapse = ", "),
+                                                                                      paste0(str_to_title(observation_table_matched$Var2),"-Exposure Group :", observation_table_matched$Freq, collapse = ", "),
+                                                                                      paste0(observation_table_unmatched$Var2,": ", observation_table_unmatched$Freq, collapse = ", "))))
+    row.names(observation_table) <- c("All(ESS)", "Matched(ESS)", "Unmatched")
   }
   
   
-  if(missingness == "mi"){
+  if(missing_method == "mi"){
     
-    
-    
+    ## Get matching variable type, min, mean and max difference
+    ## Hopefully most of this can be done using bal.tab(), will wait to get format to NBP forat with MI
   }
   
   
   ## Balance Table ----
   
-  if(missingness == "complete"){
+  if(missing_method == "complete"){
     ## Get balance table
     balance_table <- bal.tab(balanced_data[,c(matching_variables)], treat = relevel(balanced_data[[treatment_variable]], ref = "low"), distance = balanced_data[["lp"]])
     balance_table <- as.data.frame(balance_table[[which(grepl("^Balance",names(balance_table)))]])
@@ -48,17 +55,17 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   }
   
   
-  if(missingness == "mi"){
+  if(missing_method == "mi"){
     
-    
-    
+    ## Get matching variable type, min, mean and max difference
+    ## Hopefully most of this can be done using bal.tab(), will wait to get format to NBP forat with MI
   }
   
   ## Love plot ----
   
   ## Create data frame containing unmatched and matched mean differences in all matching variables
   
-  if(missingness == "complete"){
+  if(missing_method == "complete"){
     
     names(balance_table)[names(balance_table) %in% "Diff.Un"] <- "Matched"
     balance_table_matched <- balance_table
@@ -103,7 +110,7 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   }
   
   
-  if(missingness == "mi"){
+  if(missing_method == "mi"){
     
     
     

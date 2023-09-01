@@ -1,4 +1,10 @@
-require(tidyverse)
+#' Function to display common support
+#'
+#' @param estimation_model_object 
+#' @param missing_method 
+#' @param ... 
+#' @import tidyverse
+#' @import mice
 
 check_support <- function(estimation_model_object, missing_method,...){ 
   if(missing_method == "complete"){
