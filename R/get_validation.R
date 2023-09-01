@@ -9,13 +9,18 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   
   ## Keep log of data validation
   validation_log <- list(
+    treatment_variable_error = FALSE,
     survey_weight_available = FALSE,
     clustering_available = FALSE,
     stratification_available = FALSE,
     survey_weight_no_missingness = FALSE,
+    non_response_weight_no_missingness = FALSE,
     clustering_no_missingness = FALSE,
     stratification_no_missingness = FALSE,
-    no_design_matrix_error = FALSE
+    no_design_matrix_error = FALSE,
+    some_missingness = FALSE,
+    no_missingness_but_non_response = FALSE,
+    no_missingness_no_non_response = FALSE
   )
   
   ## Save variable to log error
@@ -26,7 +31,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   survey_weight_var_for_matrix <- NULL
   clustering_var_for_matrix <- NULL
   stratification_var_for_matrix <- NULL
-  
+
   ## Remove rows with NAs
   data_Nas <- .data
   .data <- na.omit(.data)
@@ -48,15 +53,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## Print info on number of rows
     if((dim(.data)[1] > 10) & (dim(.data)[1] < 10000)){
       h5("Your data has an appropriate number of rows.", style = "color:green")
-    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider that data you are using.", style = "color:red")},  br(),
-    
-    ## Print warning if any variables contain letters
-    h4("Non-Numberic Data:"),
-    
-    ## Check all data is numeric
-    if(all(sapply(.data, is.numeric))){
-      h5("All of your uploaded data is numeric.", style = "color:green")
-    } else{h5("Looks like some of your data is non-numeric, this could mean it contains identifiable information and could violate ", actionLink("TCs_link", "DigiCAT Customer Agreement."))},  br(),
+    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.", style = "color:red")},  br(),
     
     ## Check outcome variable is continuous
     h4("Outcome Variable Type:"),
@@ -78,15 +75,22 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     
     ## Check treatment variable is binary/ordinal
     h4("Treatment Variable Type:"),
-    if(length(unique(.data[[treatment]])) == 2){
+    if(length(unique(.data[[treatment]])) == 2 & all(.data[[treatment]]%in% 0:1)){
       h5("You have selected ",treatment, " as your treatment variable. This has been detected as a binary variable and can be used in the 
       current counterfactual approaches offered by DigiCAT." , style = "color:green")
     }, 
+    if(length(unique(.data[[treatment]])) == 2 & !all(.data[[treatment]]%in% 0:1)){
+      validation_log$treatment_variable_error <- TRUE
+      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a binary variable but contains values other than 1 and 0,
+      meaning it cannot be used in the counterfactual analysis currently supported by DigiCAT. To proceed, please recode your treatment variable.", style = "color:red")
+    },
+
     if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
       h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
       current counterfactual approaches offered by DigiCAT." , style = "color:green")
     },
     if(length(unique(.data[[treatment]])) > 5){
+      validation_log$treatment_variable_error <- TRUE
       h5("You have selected ",treatment, " as your treatment variable. This has been detected as a continuous variable and cannot be used in the 
       current counterfactual approaches offered by DigiCAT. Please reselect or categorize your current treatment variable." , style = "color:red")
     },
@@ -102,8 +106,6 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       h5("It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). 
        Please consider removing one of each highly correlated variable pair:", paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red')
     },
-    
-    br(),
     
     ## Check selected survey weight variable for missingness
     if (!is.null(survey_weight_var)){
@@ -142,6 +144,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
 
       }
       else{
+        
+        validation_log$non_response_weight_no_missingness <- TRUE
         
         p(h4("Non-response Variable Missingness:"),
         h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response. No missingness has been detected in this variable."), 
@@ -243,6 +247,35 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       validation_log$no_design_matrix_error <- TRUE
       
       p("")
+    },
+    
+    ## Check for presence of missingness in uploaded data
+    ## If there is missingness
+    if (any(is.na(data_Nas[,c(treatment, outcome, matchvars, covars, survey_weight_var_for_matrix, clustering_var_for_matrix, stratification_var_for_matrix)]))){
+      
+      validation_log$some_missingness <- TRUE
+      
+      p(h4("Missing Data:"),
+        h5(paste0("Missing data had been detected in your inputted variables. Choices of dealing with missingness and further information are available in the next analysis step."), 
+           style = 'color:green'), br())
+    },
+    ## If there is no missingness but there is a non-response variable
+    if (!any(is.na(data_Nas[,c(treatment, outcome, matchvars, covars, survey_weight_var_for_matrix, clustering_var_for_matrix, stratification_var_for_matrix)])) & validation_log$non_response_weight_no_missingness){
+      
+      validation_log$no_missingness_but_non_response <- TRUE
+      
+      p(h4("Missing Data:"),
+        h5(paste0("No missing data had been detected in your inputted variables, however, as the survey weight in your data compensates for non-response, 'weighting' as a method of dealing with missingness in the next analysis step (currently only available for binary treatment variables)."),
+           style = 'color:green'), br())
+    },
+    ## If there is no missingness and no non-response variable
+    if (!any(is.na(data_Nas[,c(treatment, outcome, matchvars, covars, survey_weight_var_for_matrix, clustering_var_for_matrix, stratification_var_for_matrix)])) & !validation_log$non_response_weight_no_missingness){
+      
+      validation_log$no_missingness_no_non_response <- TRUE
+      
+      p(h4("Missing Data:"),
+        h5(paste0("No missing data had been detected in your inputted variables, complete case as a method of dealing with data missingness will be automitically applied to your data."),
+           style = 'color:green'), br())
     }
   )
   

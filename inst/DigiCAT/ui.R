@@ -36,7 +36,6 @@ ui <- fluidPage(
                        img(src = "logos/DigiCAT/logo.png", width = 300),
                        br(), br(),
                        menuItem("Analysis", tabName = "analysis", icon = icon("home")),
-                       menuItem("Tutorial", tabName = "tutorial", icon = icon("arrow-pointer")),
                        menuItem("Terms & Conditions", tabName = "TC", icon = icon("square-check")),
                        menuItem("About", tabName = "about", icon = icon("circle-info")),
                        checkboxInput("style", "Dark Mode"),
@@ -62,9 +61,8 @@ ui <- fluidPage(
         DigiCAT:::balancing_ui("balancing"), ## Load balancing tab
         DigiCAT:::outcome_model_ui("outcome_model") ## Load outcome model tab
       )),
-      DigiCAT:::tutorial_ui("methods"),
       tabItem(tabName = "TC", DigiCAT:::TCs_page),
-      tabItem(tabName = "about", ""))
+      tabItem(tabName = "about", DigiCAT:::about_page))
       )# end dashboardBody
   )
 )
