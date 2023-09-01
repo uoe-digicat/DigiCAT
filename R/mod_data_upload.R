@@ -404,7 +404,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                    updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13")])
                    updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(data_upload_values$rawdata)))
-                   updatePickerInput(session, "matchvars", selected=names(isolate(data_upload_values$rawdata))[-c(2:3)], choices = names(isolate(data_upload_values$rawdata)))
+                   updatePickerInput(session, "matchvars", selected=names(isolate(data_upload_values$rawdata))[-c(2:4)], choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "covars", choices = names(isolate(data_upload_values$rawdata)))
                    
                    updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
