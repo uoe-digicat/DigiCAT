@@ -26,7 +26,7 @@ DigiCAT is available as a downloadable R package that enables users to run the t
 
 ``` r
 install.packages("remotes")
-remotes::install_github("josiahpjking/DigiCAT")
+remotes::install_github("uoe-digicat/DigiCAT@develop")
 library(DigiCAT)
 ```
 
