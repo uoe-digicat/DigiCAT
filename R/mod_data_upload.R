@@ -159,7 +159,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                  })
                  if(enableLocal==FALSE){
                    output$local_disabled = renderUI({
-                     p("Please install DigiCAT locally to enable file upload. See ", a("https://github.com/josiahpjking/DigiCAT"))
+                     p("Please install DigiCAT locally to enable file upload. See ", a("https://github.com/uoe-digicat/DigiCAT"))
                    })
                  }
                  
