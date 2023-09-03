@@ -4,7 +4,6 @@ handled_missingness <- mice::mice(mtcars)
 
 ### to do
 ### add as.factor before model
-### loop over matching variables and alter format to enable multiple
 
 nbp_mi_quick <- function(handled_missingness, treatment_variable, outcome_variable,
                          matching_variable,...){
@@ -17,17 +16,12 @@ nbp_mi_quick <- function(handled_missingness, treatment_variable, outcome_variab
 
     treatment_values <- get(treatment_variable)
     treatment_values <- as.numeric(as.character(treatment_values))
+    
+    matching_values <- lapply(matching_variable, function(x) get(x))})} 
 
-    # matching_values <- list()
-    # for(i in matching_variable){
-    #   tmp <- get(i)
-    #   matching_values <- append(matching_values, tmp)
-    # }})}
+    outcome_values <- get(outcome_variable)
 
-outcome_values <- get(outcome_variable)
-matching_values <- get(matching_variable) # 1 matching variable only
-
-  dat_cols <- data.frame(treatment_values,
+    dat_cols <- data.frame(treatment_values,
                             matching_values,
                             outcome_values)
 

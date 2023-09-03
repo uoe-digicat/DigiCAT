@@ -42,15 +42,21 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
              # estimated_propensity_model = lapply(complete(handled_missingness, "all"),
              #                                    function(x) MASS::polr(f, data = x, Hess =T,...))
                                 
-             comp <- complete(handled_missingness, "all", include = FALSE)
+             comp <- mice::complete(handled_missingness, "long", include = TRUE)
+             comp[[treatment_variable]] <- as.factor(comp[[treatment_variable]])
+             handled_missingness <- as.mids(comp)
+             comp <- mice::complete(handled_missingness, "all", include = FALSE)
+
              estimated_propensity_model <- data.frame()
 
              for (i in 1:length(comp)){
 
-               polly <- MASS::polr(gear~disp+qsec, data = comp[[i]],
+               polly <- MASS::polr(f, data = comp[[i]],
                                    Hess=T)
 
-               res <- as.data.frame(cbind(comp[[i]], polly$model,polly$lp))
+               res <- as.data.frame(cbind(comp[[i]], 
+                                          polly$model,
+                                          polly$lp))
 
                res$impset <- i
 

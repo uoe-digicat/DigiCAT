@@ -91,20 +91,30 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
 balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_method,...){ 
   
   if(missing_method == "complete"){
+    
   propensity_scores <- PS_estimation_object[[2]]
   propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
   created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
                                              treatment_variable, missing_method,...) 
   formatted_matrix <- distancematrix(created_distance_matrix,...) 
-  performed_matching <- nonbimatch(formatted_matrix, ...) # threshold = 999999, precision = 7? 
+  performed_matching <- nonbimatch(formatted_matrix, threshold = 999999,
+                                   precision = 7,...) # threshold = 999999, precision = 7? 
   matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
   balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable,...)
+  } 
+  
+  else if(missing_method == "mi"){
+    propensity_scores <- PS_estimation_object[[2]]
+    propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
+    created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
+                                               treatment_variable, missing_method,...) 
+    formatted_matrix <- distancematrix(created_distance_matrix,...) 
+    performed_matching <- nonbimatch(formatted_matrix, threshold = 999999,
+                                     precision = 7,...) # threshold = 999999, precision = 7? 
+    matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
+    balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable,...)
   }
-  # if(missing_method == "mi){
-  #
-  #} else if(missing_method == "weighting"){
-  #
-  #}
+  
   return(balanced_data)
   
 }
