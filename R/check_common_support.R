@@ -36,8 +36,10 @@ check_support <- function(estimation_model_object, missing_method,...){
     prs_df = data.frame(prop_score = predict(estimation_model_object$estimated_propensity_model, 
                                              type = "response"),
                         treatment = estimation_model_object$estimated_propensity_model$model[1])
+    prs_df = prs_df[,-2]
+    names(prs_df)[1] <- "prop_score"
     names(prs_df)[2] <- "treatment"
-    
+
     labs <- paste("Actual treatment:", c("1", "0"))
     common_support_plot = prs_df %>%
       mutate(treatment = ifelse(treatment == 1, "1", "0")) %>%
