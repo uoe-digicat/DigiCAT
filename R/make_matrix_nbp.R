@@ -36,7 +36,7 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
   comp = complete(PS_estimation_object$missingness_treated_dataset, "all", include = FALSE)
   multiply_by <- length(comp)
   
-  distance_matrix_nbp = matrix(ncol = (nrow(PS_estimation_object[[1]][[1]])+1), nrow = (nrow(PS_estimation_object[[1]][[1]]))*multiply_by)) # OG prop data not stacked
+  distance_matrix_nbp = matrix(ncol = (nrow(PS_estimation_object[[1]][[1]])+1), nrow = (nrow(PS_estimation_object[[1]][[1]]))*multiply_by) # OG prop data not stacked
   
   for (i in 1:length(comp)) {
     
