@@ -123,6 +123,39 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
   mat4<- distance_matrix_nbp[97:128,]
   mat5<- distance_matrix_nbp[129:160,]
   
+  ### Splitting a large matrix ###
+  
+  # The below assumes that the number of rows in the matrix can be
+  
+  # divided by the number_of_rows_per_split with no remainder e.g.
+  
+  # a matrix with 20 rows would be split into 10 if the number_of_rows_per_split
+  
+  # is 2
+  
+  split_matrix_to_list <- function(matrix, number_of_rows_per_split) {
+    
+    number_of_splits <- nrow(matrix) / number_of_rows_per_split
+    
+    result <- list()
+    
+    for(i in 1:number_of_splits) {
+      
+      start <- (i - 1) * number_of_rows_per_split + 1
+      
+      end <- start + number_of_rows_per_split - 1
+
+      split <- matrix[start:end,]
+
+      result <- append(result, split)
+      
+    }
+    
+    result
+    
+  }
+  
+
   mat_split <- function(M, r, c){
     nr <- ceiling(nrow(M)/r)
     nc <- ceiling(ncol(M)/c)

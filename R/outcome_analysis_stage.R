@@ -1,8 +1,8 @@
 #source("R/get_model_formula.R")
-# source("R/extract_balanced_data.R")
-# source("R/fit_outcome_model.R")
-# source("R/extract_outcome_results.R")
-# source("R/standardise_outcome_format.R")
+source("R/extract_balanced_data.R")
+source("R/fit_outcome_model.R")
+source("R/extract_outcome_results.R")
+source("R/standardise_outcome_format.R")
 
 
 outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome_variable,
