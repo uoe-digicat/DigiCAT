@@ -60,32 +60,37 @@ desc_global <<- list(
   balancing_model = div(h5("Description:"), 
                         p("In order to balance our dataset, we must first calculate the probability each individual has of being in the treatment group, based on their observed 
                           characteristics, i.e., their propensity score. On this page, you will select a balancing model to use with your dataset to predict the likelihood of an 
-                          individual being treated. Different modelling approaches can be used for this step. Please see the ", a(id = "link","tutorial section on balancing models**", 
-                          href = "", target="_blank"), " if you would like more guidance on choosing a balancing model.")),
+                          individual being treated. Different modelling approaches can be used for this step.")),
   
   glm = p(h5("Logistic Regression:"),
           p("Logistic regression is a method of modelling the relations between a set of predictors (e.g., matching variables) and a binary outcome (such as whether or not someone is 
             in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual. See the ", 
-            a(id = "link","logistic regression section of our tutorials**", href = "", target="_blank"), " for more information.")),
+            a(id = "link","logistic regression section of our tutorials**", href = "https://uoe-digicat.github.io/04_cfmethod.html#propensity-score-specification-and-estimation", target="_blank"), " for more information.")),
   
   olr = p(h5("Ordinal logistic regression:"),
           p("For ordinal treatments an ordinal logistic regression model is used to estimate the propensity scores used for matching. It predicts treatment (as an ordinal variable with 
             different dosage levels) from the set of chosen matching variables.. See the ", 
-            a(id = "link","ordinal logistic regression section of our tutorials*", href = "https://uoe-digicat.github.io/04_cfmethod.html#non-bipartite-nbp-methods", target="_blank"), " for more information.")),
+            a(id = "link","'non-bipartite (NBP) methods' section of our tutorials", href = "https://uoe-digicat.github.io/04_cfmethod.html#non-bipartite-nbp-methods", target="_blank"), " for more information.")),
   
   ## Balancing----
+  
+  IPTW = p(h5("Weighting Method"),
+           p("In IPTW, the propensity scores estimated based on the set of matching variables are transformed to provide weights to be used in the outcome model.
+              All the data are used (unlike in some methods where some cases might not achieve a match and be discarded). In DigiCAT the ATE is estimated which 
+             means that the weights used essentially down-weight treated cases with a high propensity score and up-weight control cases with a low propensity 
+             score. This ‘re-balances’ the treatment and control groups to make them more similar. See our tutorial section on IPTW."), 
   
   matching_method = p(h5("Matching Method:"), p("In order to balance covariates between treatment groups, propensity score matching involves matching 
                                                 individuals based on their propensity scores, which represent their likelihood of being treated based on observed characteristics. 
                                                 The goal is to create a pseudo-randomized comparison between the treatment and control groups by matching individuals who have similar 
                                                 or close propensity scores. See our ", 
-                                                a(id = "link","tutorial section on matching methods*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detailed guidance on choosing an appropriate matching method.")),
+                                                a(id = "link","tutorial section on propensity score matching", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detailed guidance on choosing an appropriate matching method.")),
   
   matching_ratio = p(h5("Matching Ratio:"), 
                      p("Matching ratios in propensity score matching refer to the number of control/untreated individuals that are matched to each treated 
                        individual. In DigiCAT, matching ratios can be specified to control the trade-off between achieving better balance between treatment 
                        groups and maintaining a larger sample size. See our ", 
-                       a(id = "link","tutorial section on matching ratios*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detailed guidance on choosing an appropriate matching ratio.")),
+                       a(id = "link","tutorial section on propensity score matching", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detailed guidance on choosing an appropriate matching ratio.")),
   
   nearest = p(h5("Nearest Neighbour (NN):"),
   p("Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated and control cases with similar propensity scores. In DigiCat, nearest neighbour greedy matching 
@@ -94,7 +99,7 @@ desc_global <<- list(
   
   optimal_binary = p(h5("Optimal:"),
   p("You've chosen optimal matching. This method matches treated and untreated cases in a way that minimises the average propensity score difference within the match pairs in the sample.
-                See the ", a(id = "link","optimal matching tutorial section*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detail.")),
+                See the ", a(id = "link","optimal matching tutorial section", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detail.")),
   
   optimal_ordinal = p(h5("Matching Method: Optimal"), 
                      p("NBP uses a version of optimal matching to pair up cases who experienced different dosages of the treatment variable (e.g., high versus medium; medium versus low). 
@@ -104,7 +109,7 @@ desc_global <<- list(
   
   one_to_one_binary = p(h5("1:1:"),
   p("1:1 is the most commonly used matching ratio. In 1:1 matching, we match one unit belonging to the intervention group with one unit belonging to the control group that has the closest propensity score. 
-                   See our ",a(id = "link","tutorial section on 1:1 matching*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more information.")),
+                   See our ",a(id = "link","tutorial section on 'Matching on the propensity score'", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more information.")),
   
   one_to_one_ordinal = p(h5("Matching Ratio: 1:1"), 
                         p("In NBP, 1:1 matching is used, meaning that each case is matched with one other case with a different treatment dosage.")),
