@@ -41,7 +41,7 @@ DigiCAT::run_DigiCAT(enableLocal = TRUE)
 
 ## DigiCAT Tutorial
 
-To learn more about counterfactual analysis and the DigiCAT tool, please visit [our tutorial](https://uoe-digicat.github.io). Here you will find a comprehenise guide to the counterfactual analysis provided in out digital tool.
+To learn more about counterfactual analysis and the DigiCAT tool, please visit [our tutorial](https://uoe-digicat.github.io). Here you will find a comprehensive guide to the counterfactual analysis provided in our digital tool.
 
 ## Contact:
 
