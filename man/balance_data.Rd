@@ -2,7 +2,7 @@
 % Please edit documentation in R/balance_data.R
 \name{balance_data}
 \alias{balance_data}
-\title{Function to balance datasets}
+\title{Counterfactual analysis balancing}
 \usage{
 balance_data(
   counterfactual_method,
@@ -29,6 +29,28 @@ balance_data(
 
 \item{...}{}
 }
+\value{
+Balanced dataset
+}
 \description{
-Function to balance datasets
+This function balances datasets for counterfactual analysis in DigiCAT.
+}
+\examples{
+estimates <- estimation_stage(
+.data = DigiCAT::zp_eg,
+missing_method = "complete",
+model_type = "glm",
+treatment_variable = "Reading_age15",
+matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
+weighting_variable = NULL,
+cluster_variable = NULL,
+strata_variable = NULL
+)
+
+balance_data(counterfactual_method = "psm",
+treatment_variable = "Reading_age15",
+matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
+PS_estimation_object = estimates,
+missing_method = "complete",
+)
 }

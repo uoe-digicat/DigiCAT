@@ -131,7 +131,7 @@ data_upload_ui <- function(id) {
                                                           h5(strong("Maximum file size:"), "5MB"),
                                                           h5(strong("Number of rows:")," 10-10,000"),
                                                           h5(strong("Number of columns:")," 2-100"),
-                                                          h5(strong("Variable type:"), " All data must be numeric, categorical data should be coded as index variables"),
+                                                          h5(strong("Variable type:"), " All data must be numeric. Binary variables should be coded as 1s and 0s and categorical data should be coded as index variables"),
                                                           h5(strong("Outcome Variable:"), " Outcome variable must be continuous"),
                                                           h5(strong("Missing data:"), "Missing values should be coded as 'NA'"),
                                                           br(), h4(strong("Required actions:")),
@@ -141,7 +141,7 @@ data_upload_ui <- function(id) {
                                                           h5(strong("4. Process to counterfactual approach")),
                                                           br(), h4(strong("Input requirements:")),
                                                           h5(strong("Required input:"), "Data, categorical variables, outcome, treatment, matching variables*"),
-                                                          p("*See the ", a("tutorials", href="https://uoe-digicat.github.io/#overview-of-tutorials", target="_blank")," for guidance in choosing matching variables"))
+                                                          p("*See the ",  a(id = "link","tutorials", href="https://uoe-digicat.github.io/#overview-of-tutorials", target="_blank")," for guidance in choosing matching variables"))
                                              ),
                                              tabPanel(title = "Data", value = NS(id,"raw_data"), br(), withSpinner(DT::dataTableOutput(ns("contents")))),
                                              tabPanel(title = "Validation", value = NS(id,"data_validation"), br(), div(style="width:auto;height:570px;overflow-y: scroll;",
@@ -159,7 +159,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                  })
                  if(enableLocal==FALSE){
                    output$local_disabled = renderUI({
-                     p("Please install DigiCAT locally to enable file upload. See ", a("https://github.com/uoe-digicat/DigiCAT"))
+                     p("Please install DigiCAT locally to enable file upload. See ",  a(id = "link", "the DigiCAT github page.", href = "https://github.com/uoe-digicat/DigiCAT"))
                    })
                  }
                  
@@ -502,14 +502,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                          } else{ ## otherwise, overwrite with stratification variable name to be output
                            data_upload_values$survey_weight <- input$stratification_var
                          }
-                         
-                         ## If survey design does not contain missing values and informs non-response, pass variable name to for output as non-respose variable (this happens even if design matrix cannot be build in validation)
-                         if(data_upload_values$validation$log$survey_weight_no_missingness == TRUE & input$non_response_weight_checkbox == TRUE){
-                           data_upload_values$non_response_weight_var <- input$survey_weight_var
-                         } else{
-                           data_upload_values$non_response_weight_var <- NULL
-                         }
-                         
+
                          ## If validation did not catch any fatal errors, enable "Next" button
                          if (data_upload_values$validation$log$treatment_variable_error == FALSE){
                           shinyjs::enable("nextDU_btn")
@@ -546,13 +539,12 @@ data_upload_server <- function(id, parent, enableLocal) {
                                                       matchvars = NULL,
                                                       covars = NULL,
                                                       survey_weight_var = NULL,
-                                                      non_response_weight = NULL,
                                                       cluster_var = NULL,
                                                       stratification_var = NULL,
                                                       validation_log = NULL)
                  
                  observe({
-                   data_upload_output$data <- data_upload_values$rawdata[,unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$non_response_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
+                   data_upload_output$data <- data_upload_values$rawdata[,unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- input$file1$datapath
                    data_upload_output$categorical_vars <- data_upload_values$categorical_vars
@@ -562,7 +554,6 @@ data_upload_server <- function(id, parent, enableLocal) {
                    data_upload_output$covars <- input$covars
                    
                    data_upload_output$survey_weight_var <- data_upload_values$survey_weight_var
-                   data_upload_output$non_response_weight_var <- data_upload_values$non_response_weight_var
                    data_upload_output$cluster_var <- data_upload_values$clustering_var
                    data_upload_output$stratification_var <- data_upload_values$stratification_var
                    data_upload_output$validation_log <- data_upload_values$validation$log

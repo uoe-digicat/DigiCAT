@@ -18,9 +18,10 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     clustering_no_missingness = FALSE,
     stratification_no_missingness = FALSE,
     no_design_matrix_error = FALSE,
-    some_missingness = FALSE,
-    no_missingness_but_non_response = FALSE,
-    no_missingness_no_non_response = FALSE
+    some_missingness_no_non_response = FALSE,
+    some_missingness_but_non_response = FALSE,
+    no_missingness_no_non_response = FALSE,
+    no_missingness_but_non_response = FALSE
   )
   
   ## Save variable to log error
@@ -100,11 +101,11 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     h4("Multicollinearity Between Variables:"),
     
     if (nrow(high_cor) == 0){
-      h5("None of the selected matching variables or covariates appear to be strongly correlated (Pearson correaltion > -0.9 or < 0.9).", style = "color:green")
+      p(h5("None of the selected matching variables or covariates appear to be strongly correlated (Pearson correaltion > -0.9 or < 0.9).", style = "color:green"),br())
     } else{
       
-      h5("It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). 
-       Please consider removing one of each highly correlated variable pair:", paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red')
+      p(h5("It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). 
+       Please consider removing one of each highly correlated variable pair:", paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red'), br())
     },
     
     ## Check selected survey weight variable for missingness
@@ -226,7 +227,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         ## Output error message
         design_matrix_error <- p(h4("Design Matrix Creation:"),
           p(paste0("Design matrix cannot be created with the provided input and will not be used in counterfactual analysis.
-                   Error: ", conditionMessage(cond)) , style = "color:red"))
+                   Error: ", conditionMessage(cond)) , style = "color:red"), br())
 
       })
       
@@ -253,11 +254,23 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## If there is missingness
     if (any(is.na(data_Nas[,c(treatment, outcome, matchvars, covars, survey_weight_var_for_matrix, clustering_var_for_matrix, stratification_var_for_matrix)]))){
       
-      validation_log$some_missingness <- TRUE
-      
       p(h4("Missing Data:"),
         h5(paste0("Missing data had been detected in your inputted variables. Choices of dealing with missingness and further information are available in the next analysis step."), 
            style = 'color:green'), br())
+      
+      ## Log if there is missingness with or without non-reponse weight
+      if (validation_log$non_response_weight_no_missingness){
+        
+        validation_log$some_missingness_but_non_response <- TRUE
+        p("")
+        
+      }else{
+        
+        validation_log$some_missingness_no_non_response <- TRUE
+        p("")
+        
+      }
+      
     },
     ## If there is no missingness but there is a non-response variable
     if (!any(is.na(data_Nas[,c(treatment, outcome, matchvars, covars, survey_weight_var_for_matrix, clustering_var_for_matrix, stratification_var_for_matrix)])) & validation_log$non_response_weight_no_missingness){
@@ -276,6 +289,18 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       p(h4("Missing Data:"),
         h5(paste0("No missing data had been detected in your inputted variables, complete case as a method of dealing with data missingness will be automitically applied to your data."),
            style = 'color:green'), br())
+    },
+    
+    
+    
+    ## If error in design matrix creation, overwrite missingness so weighting as a method of dealing with missingness cannot be used
+    if (all(grepl("Error:", error_check))){
+      
+      validation_log$no_missingness_but_non_response <- FALSE
+      validation_log$some_missingness_but_non_response <- FALSE
+      
+      p("")
+      
     }
   )
   

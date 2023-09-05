@@ -18,6 +18,9 @@ library(DigiCAT)
 # favicon (icon in browser tab)
 HTML('<link rel="icon" type="www/favicon.ico" href="www/favicon.ico"/>')
 
+## Source descriptions
+source(system.file("DigiCAT/desc_global.R", package = "DigiCAT"), local=TRUE)
+
 ui <- fluidPage(
   title = "DigiCAT",
   tags$head(tags$link(rel="shortcut icon", href="favicon.ico")),
@@ -57,7 +60,7 @@ ui <- fluidPage(
         id = "methods-tabs",
         DigiCAT:::home_ui("home"),  ## Load home tab
         DigiCAT:::data_upload_ui("data_upload"),  ## Load home tab
-        DigiCAT:::CF_approach_ui("CF_approach"), ## Load CF approach tab
+        DigiCAT:::CF_approach_ui("CF_approach", descriptions = desc_global), ## Load CF approach tab
         DigiCAT:::balancing_ui("balancing"), ## Load balancing tab
         DigiCAT:::outcome_model_ui("outcome_model") ## Load outcome model tab
       )),
