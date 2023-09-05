@@ -170,7 +170,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            div(style = "width: 100%;",
                                class = "text_blocks",
                                div(
-                                 "Balancing options/extra info for weighting go here"
+                                 descriptions$IPTW_balancing
                                )
                            )
                        )
