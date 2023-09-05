@@ -96,7 +96,7 @@ tbody {
 }
 .tabbable > .nav > li[class=active] > a {
   background-color: white;
-  color: #1784ff;
+  color: #4169e1;
 }
       
 /* Home page font */  
@@ -174,7 +174,7 @@ tbody {
 
 /* hyperlink colour */
 #link {
-  color: #1784ff;
+  color: #4169e1;
 }
 
 /* hide outline of navbar for balancing output */
