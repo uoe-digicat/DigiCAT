@@ -1,6 +1,7 @@
 # Digital Counterfactual Analysis Tool: DigiCAT
-
-![](inst/DigiCAT/www/logos/DigiCAT/digicat6b.png)
+<p align="center">
+  <img src="inst/DigiCAT/www/logos/DigiCAT/digicat6b.png" />
+</p>
 
 ### **Counterfactual Analysis:**
 
@@ -26,20 +27,29 @@ DigiCAT is available as a downloadable R package that enables users to run the t
 
 ``` r
 install.packages("remotes")
-remotes::install_github("uoe-digicat/DigiCAT@develop")
+remotes::install_github("uoe-digicat/DigiCAT")
 library(DigiCAT)
 ```
 
 #### 2. Run DigiCAT locally
 
-Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or a browser.
+Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or a browser. Launching the tool locally with 'enableLocal = TRUE' enables the upload local data for counterfactual analysis.
 
 ``` r
-DigiCAT::run_DigiCAT()
+DigiCAT::run_DigiCAT(enableLocal = TRUE)
 ```
+
+## DigiCAT Tutorial
+
+To learn more about counterfactual analysis and the DigiCAT tool, please visit [our tutorial](https://uoe-digicat.github.io). Here you will find a comprehenise guide to the counterfactual analysis provided in out digital tool.
 
 ## Contact:
 
-Please get in touch with any questions/feedback you have
+If you have any questions or feedback, we could love to hear from you!
 
 Email: [uoe_digicat-group\@uoe.onmicrosoft.com](mailto:uoe_digicat-group@uoe.onmicrosoft.com)
+
+## Code Structure
+
+
+
