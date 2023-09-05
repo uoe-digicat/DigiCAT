@@ -1,5 +1,7 @@
 
-#' Function to balance datasets
+#' Counterfactual analysis balancing
+#' 
+#' This function balances datasets for counterfactual analysis in DigiCAT. 
 #'
 #' @param counterfactual_method 
 #' @param treatment_variable 
@@ -13,6 +15,28 @@
 #' @import WeightIt
 #' @import MatchIt
 #' @import MatchThem
+#' 
+#' @return Balanced dataset
+#' @export
+#'
+#' @examples
+#' estimates <- estimation_stage(
+#' .data = DigiCAT::zp_eg,
+#' missing_method = "complete",
+#' model_type = "glm",
+#' treatment_variable = "Reading_age15",
+#' matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
+#' weighting_variable = NULL,
+#' cluster_variable = NULL,
+#' strata_variable = NULL
+#' )
+#' 
+#' balance_data(counterfactual_method = "psm",
+#' treatment_variable = "Reading_age15",
+#' matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
+#' PS_estimation_object = estimates,
+#' missing_method = "complete",
+#' )
 
 
 balance_data <- function(counterfactual_method, treatment_variable, matching_variable, PS_estimation_object,

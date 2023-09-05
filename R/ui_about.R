@@ -9,20 +9,20 @@ about_page <-
                    h3("About the DigiCAT Team:"),
                    h5("DigiCAT was developed to help make counterfactual analysis more accessible and through providing an easy-to-use tool and accessible 
              tutorial materials. It was developed as part of the Wellcome Trust Mental Health Data Prize by a multi-disciplinary team of researchers 
-             at the University of Edinburgh. The tool development team includes", a("Aja Murray", href = "https://www.ed.ac.uk/profile/aja-murray", target = "_blank"),
-                      ", ", a("Josiah King", href = "https://www.ed.ac.uk/profile/josiah-pj-king", target = "_blank"), ", Helen Wright and Hannah Casey with lived 
-             experience input leads ", a("Marie Allitt", href = "https://www.ed.ac.uk/profile/dr-marie-allitt", target = "_blank")," and ", 
-                      a("Ingrid Obsuth", href = "https://www.ed.ac.uk/profile/ingrid-obsuth", target = "_blank")," and user input leads ", 
-                      a("Dan Mirman",href = "https://www.ed.ac.uk/profile/dr-daniel-mirman", target = "_blank")," and ", 
-                      a("Patrick Errington.", href = "https://www.ed.ac.uk/profile/dr-patrick-errington", target = "_blank")),
+             at the University of Edinburgh. The tool development team includes",  a(id = "link","Aja Murray", href = "https://www.ed.ac.uk/profile/aja-murray", target = "_blank"),
+                      ", ",  a(id = "link","Josiah King", href = "https://www.ed.ac.uk/profile/josiah-pj-king", target = "_blank"), ", Helen Wright and Hannah Casey with lived 
+             experience input leads ",  a(id = "link","Marie Allitt", href = "https://www.ed.ac.uk/profile/dr-marie-allitt", target = "_blank")," and ", 
+                       a(id = "link","Ingrid Obsuth", href = "https://www.ed.ac.uk/profile/ingrid-obsuth", target = "_blank")," and user input leads ", 
+                       a(id = "link","Dan Mirman",href = "https://www.ed.ac.uk/profile/dr-daniel-mirman", target = "_blank")," and ", 
+                       a(id = "link","Patrick Errington.", href = "https://www.ed.ac.uk/profile/dr-patrick-errington", target = "_blank")),
                ),
                div(class = "text_blocks",
                    style = "width: 49%; margin-left: 2%",
                    h3("Get in touch:"),
                    br(),
-                   h5("Email us:", a(href='mailto:uoe_digicat-group@uoe.onmicrosoft.com', "uoe_digicat-group@uoe.onmicrosoft.com")),
+                   h5("Email us:",  a(id = "link",href='mailto:uoe_digicat-group@uoe.onmicrosoft.com', "uoe_digicat-group@uoe.onmicrosoft.com")),
                    br(),
-                   h5("Open an issue on ", a(href='https://github.com/uoe-digicat/DigiCAT/issues', "the DigiCAT GitHub page", target = "_blank"))
+                   h5("Open an issue on ",  a(id = "link",href='https://github.com/uoe-digicat/DigiCAT/issues', "the DigiCAT GitHub page", target = "_blank"))
            )
     )),
     

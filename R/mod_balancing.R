@@ -51,7 +51,7 @@ balancing_ui <- function(id) {
   )
 }
 
-balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, non_response_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, descriptions) {
+balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -429,7 +429,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
 
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
-                           tabsetPanel(id = NS(id, "balancing_output_plots"),
+                           tabsetPanel(id = "well_panel",
                                        ## Don't include common support graph as output if appraoch is NBP
                                        if(approach() != "nbp"){
                                        tabPanel(title = "Common Support Graph",
@@ -476,7 +476,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  ## Reset if balancing inputs have changed ----
                  
                  # Remove balancing output and force rerun if previous steps have changed since previous run
-                 observeEvent(c(approach(), missingness(), balancing_model(), raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), survey_weight_var(), non_response_weight_var(), cluster_var(), stratification_var()), {
+                 observeEvent(c(approach(), missingness(), balancing_model(), raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), survey_weight_var(), cluster_var(), stratification_var()), {
                    ## First check if balancing has been run yet, if yes, print informative message and force rerun
                    if (!is.null(balancing_values$balancing_stage_res)){
 

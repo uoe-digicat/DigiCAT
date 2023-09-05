@@ -7,7 +7,7 @@ desc_global <<- list(
   observe counterfactual outcomes, we compare groups who differ in their treatment. However, in observational settings where random allocation into 
   different treatments is not possible, researchers may employ methods that such as 'matching' or 'weighting' of participants to ensure that the 
   different treatment groups being compared are 'balanced' with respect to other characteristics. For further guidance on choosing an approach see 
-  the ", a("‘choosing a counterfactual analysis approach’", href = "https://uoe-digicat.github.io/03_choosecf.html",  target="_blank")," section of the tutorials.")), 
+  the ", a(id = "link","‘choosing a counterfactual analysis approach’", href = "https://uoe-digicat.github.io/03_choosecf.html",  target="_blank")," section of the tutorials.")), 
   
   cfapproach_temp = p(p("Please click on the approach you would like to take. We will give you more information about each approach as you select them.")),
 
@@ -15,14 +15,14 @@ desc_global <<- list(
   p("You've chosen propensity matching. This approach involves creating balanced comparison groups by matching treated individuals with similar untreated individuals 
     based on their propensity scores (probability of someone having a specific treatment based on a set of ‘matching variables’). This aims to ensure that the groups 
     are comparable in terms of potential confounding variables. The treatment effect is then estimated by comparing outcomes between the matched groups. See the ",
-    a("‘propensity matching’", href = "https://uoe-digicat.github.io/04_cfmethod.html#propensity-score-matching",  target="_blank"), "section of the 
+    a(id = "link","‘propensity matching’", href = "https://uoe-digicat.github.io/04_cfmethod.html#propensity-score-matching",  target="_blank"), "section of the 
     tutorials for more information.")),
   
   iptw = p(h5("Inverse probability of treatment weighting (IPTW):"),
   p("You’ve chosen IPTW. IPTW aims to rebalance treated and untreated individuals using a weighted regression approach. It first estimates propensity scores 
   (probability of someone having a specific treatment based on a set of ‘matching variables’. It then transforms these into weights that are used in a regression 
     model to up-weight (i.e., give more importance to) untreated and treated cases that are similar in terms of their propensity scores and down-weight cases that 
-    are very different. This helps to rebalance the treated and untreated groups. See the ",a("‘IPTW’", href = "https://uoe-digicat.github.io/04_cfmethod.html#iptw", 
+    are very different. This helps to rebalance the treated and untreated groups. See the ",a(id = "link","‘IPTW’", href = "https://uoe-digicat.github.io/04_cfmethod.html#iptw", 
     target="_blank"), "section of the tutorials for more information.")),
   
   cfapproach_ordinal = p(h5("Description:"), 
@@ -30,12 +30,12 @@ desc_global <<- list(
                            approach is non-bipartite propensity matching (NBP). NBP finds pairs of people who differ in their treatment dosage but who have 
                            similar treatment propensities based on their matching variables and compares their outcome variable levels. As the treatment is ordinal, 
                            this might involve matching and comparing people with for example, low with medium treatment doses and medium with high doses. Please 
-                           see the ", a("'NBP'", href = "https://uoe-digicat.github.io/04_cfmethod.html#nbp", target="_blank"), " section of the tutorials for more information.")
+                           see the ", a(id = "link","'NBP'", href = "https://uoe-digicat.github.io/04_cfmethod.html#nbp", target="_blank"), " section of the tutorials for more information.")
                          ),
   
   missingness = p(h5("Description:"),p("Missing data can reduce statistical power and introduce bias when it is related to the variables under study. In order to minimise 
                                        the impact of missingness in our data, DigiCAT offers several approaches to handle missing values. For more information on missingness, 
-                                       see the ", a("‘missing data’", href = "https://uoe-digicat.github.io/05_missing.html", target="_blank")," section of the tutorials.")),
+                                       see the ", a(id = "link","‘missing data’", href = "https://uoe-digicat.github.io/05_missing.html", target="_blank")," section of the tutorials.")),
   
   mi = p(h5("Multiple Imputation:"),
   p("The fundamental idea behind multiple imputation is to create several (M) completed datasets by predicting what the missing values would have been if we could observe them. 
@@ -43,35 +43,35 @@ desc_global <<- list(
   errors to take account of the uncertainty due to the fact that some of the data are predicted rather than observed. DigiCAT imputes 5 complete datasets, conducts the analysis 
   in each and then combines the results across them.", br(),
   "However, don’t forget that this statistical method relies on assumptions, which can be difficult to test. If these assumptions are violated, your inferences may be invalid. 
-  Please see our ", a("tutorial pages on multiple imputation (LINK NEEDED)", href = "", target="_blank"), " for a detailed discussion. Multiple imputation assumes ‘missingness 
+  Please see our ", a(id = "link","tutorial pages on multiple imputation", href = "https://uoe-digicat.github.io/05_missing.html#multiple-imputation", target="_blank"), " for a detailed discussion. Multiple imputation assumes ‘missingness 
   at random’ (MAR) meaning that the missingness depends on the data you have available in your model but not on the unobserved values of the outcome variable.")),
   
   weighting = p(h5("Non-response weights:"),
                 p("Non-response weighting deals with missingness by up-weighting cases that have a low probability of being observed in the sample and down-weighting variables 
                   that have a high probability of being observed in the sample. This is done using a weighted regression approach. These weights are often supplied with datasets 
-                  and are selected at the ‘data upload’ stage of DigiCAT. Please see our ", a("‘non-response weighting’ tutorial section (LINK NEEDED)", href = "", target="_blank")," for more information.")),
+                  and are selected at the ‘data upload’ stage of DigiCAT. Please see our ", a(id = "link","‘non-response weighting’ tutorial section", href = "https://uoe-digicat.github.io/05_missing.html#non-response-weighting", target="_blank")," for more information.")),
   
   completecase = p(h5("Complete Cases:"),
                    p("Complete case analysis (CCA) (also sometimes known as ‘listwise deletion’), will only analyse the completely observed cases. This analysis will allow valid 
                      inferences of your data if the missing data are missing completely at random (MCAR), because the observed values will be a random sample of the complete dataset. 
                      If the data are missing at random (MAR) which means that the missingness can be predicted from the data available or missing not at random (MNAR), the inferences 
-                     may be invalid. Please see our ", a("tutorial pages (LINK NEEDED)", href = "", target="_blank"), " for a detailed discussion of complete case analysis.")),
+                     may be invalid. Please see our ", a(id = "link","tutorial pages", href = "https://uoe-digicat.github.io/05_missing.html#complete-case-analysis", target="_blank"), " for a detailed discussion of complete case analysis.")),
   
   balancing_model = div(h5("Description:"), 
                         p("In order to balance our dataset, we must first calculate the probability each individual has of being in the treatment group, based on their observed 
                           characteristics, i.e., their propensity score. On this page, you will select a balancing model to use with your dataset to predict the likelihood of an 
-                          individual being treated. Different modelling approaches can be used for this step. Please see the ", a("tutorial section on balancing models (LINK NEEDED)", 
+                          individual being treated. Different modelling approaches can be used for this step. Please see the ", a(id = "link","tutorial section on balancing models**", 
                           href = "", target="_blank"), " if you would like more guidance on choosing a balancing model.")),
   
   glm = p(h5("Logistic Regression:"),
           p("Logistic regression is a method of modelling the relations between a set of predictors (e.g., matching variables) and a binary outcome (such as whether or not someone is 
             in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual. See the ", 
-            a("logistic regression section of our tutorials (LINK NEEDED)", href = "", target="_blank"), " for more information.")),
+            a(id = "link","logistic regression section of our tutorials**", href = "", target="_blank"), " for more information.")),
   
   olr = p(h5("Ordinal logistic regression:"),
           p("For ordinal treatments an ordinal logistic regression model is used to estimate the propensity scores used for matching. It predicts treatment (as an ordinal variable with 
             different dosage levels) from the set of chosen matching variables.. See the ", 
-            a("ordinal logistic regression section of our tutorials (LINK NEEDED)", href = "", target="_blank"), " for more information.")),
+            a(id = "link","ordinal logistic regression section of our tutorials*", href = "https://uoe-digicat.github.io/04_cfmethod.html#non-bipartite-nbp-methods", target="_blank"), " for more information.")),
   
   ## Balancing----
   
@@ -79,32 +79,32 @@ desc_global <<- list(
                                                 individuals based on their propensity scores, which represent their likelihood of being treated based on observed characteristics. 
                                                 The goal is to create a pseudo-randomized comparison between the treatment and control groups by matching individuals who have similar 
                                                 or close propensity scores. See our ", 
-                                                a("tutorial section on matching methods (LINK NEEDED)", href = "", target="_blank")," for more detailed guidance on choosing an appropriate matching method.")),
+                                                a(id = "link","tutorial section on matching methods*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detailed guidance on choosing an appropriate matching method.")),
   
   matching_ratio = p(h5("Matching Ratio:"), 
                      p("Matching ratios in propensity score matching refer to the number of control/untreated individuals that are matched to each treated 
                        individual. In DigiCAT, matching ratios can be specified to control the trade-off between achieving better balance between treatment 
                        groups and maintaining a larger sample size. See our ", 
-                       a("tutorial section on matching ratios (LINK NEEDED)", href = "", target="_blank")," for more detailed guidance on choosing an appropriate matching ratio.")),
+                       a(id = "link","tutorial section on matching ratios*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detailed guidance on choosing an appropriate matching ratio.")),
   
   nearest = p(h5("Nearest Neighbour (NN):"),
   p("Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated and control cases with similar propensity scores. In DigiCat, nearest neighbour greedy matching 
               is implemented whereby the most similar treated and control cases are matched first. Then, from those left the remaining most similar treated and control cases are paired and so on and so
-              forth until all viable matches have been made. See the ", a("nearest neighbour matching tutorial (LINK NEEDED)", href = "", target="_blank")," for more details.")),
+              forth until all viable matches have been made. See the ", a(id = "link","nearest neighbour matching tutorial*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more details.")),
   
   optimal_binary = p(h5("Optimal:"),
   p("You've chosen optimal matching. This method matches treated and untreated cases in a way that minimises the average propensity score difference within the match pairs in the sample.
-                See the ", a("optimal matching tutorial section (LINK NEEDED)", href = "", target="_blank")," for more detail.")),
+                See the ", a(id = "link","optimal matching tutorial section*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more detail.")),
   
   optimal_ordinal = p(h5("Matching Method: Optimal"), 
                      p("NBP uses a version of optimal matching to pair up cases who experienced different dosages of the treatment variable (e.g., high versus medium; medium versus low). 
                      Optimal matching is based on finding matches to minimise the overall propensity score differences between matched cases. The algorithm in DigiCAT also disallows 
                      matches of pairs that are too dis-similar to help ensure that there is good balance between the groups after matching.
-                     See the ", a("NBP section of the tutorials (LINK NEEDED)", href = "https://uoe-digicat.github.io/03_choosecf.html#nbp", target="_blank")," for more detail.")),
+                     See the ", a(id = "link","NBP section of the tutorials", href = "https://uoe-digicat.github.io/03_choosecf.html#nbp", target="_blank")," for more detail.")),
   
   one_to_one_binary = p(h5("1:1:"),
   p("1:1 is the most commonly used matching ratio. In 1:1 matching, we match one unit belonging to the intervention group with one unit belonging to the control group that has the closest propensity score. 
-                   See our ",a("tutorial section on 1:1 matching (LINK NEEDED)", href = "", target="_blank")," for more information.")),
+                   See our ",a(id = "link","tutorial section on 1:1 matching*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more information.")),
   
   one_to_one_ordinal = p(h5("Matching Ratio: 1:1"), 
                         p("In NBP, 1:1 matching is used, meaning that each case is matched with one other case with a different treatment dosage.")),
