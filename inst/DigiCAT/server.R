@@ -2,17 +2,19 @@
 
 server <- function(input, output, session) {
   
+  ## Source descriptions
+  source(system.file("DigiCAT/desc_global.R", package = "DigiCAT"), local=TRUE)
   ####
   # App theme ----
   ####
-output$style <- renderUI({
-  if (!is.null(input$style)){
-    if (input$style) {
-      includeCSS("./www/themes/dark.css")
-    } else {
-      includeCSS("./www/themes/light.css")
-    }}
-  })
+  output$style <- renderUI({
+    if (!is.null(input$style)){
+      if (input$style) {
+        includeCSS("./www/themes/dark.css")
+      } else {
+        includeCSS("./www/themes/light.css")
+      }}
+    })
   
   ####
   # TCs page ----
@@ -37,64 +39,72 @@ output$style <- renderUI({
   # Data upload ----
   ####
 
-  data_upload_res <- DigiCAT:::data_upload_server("data_upload",
-                     parent = session)
+  data_upload_output <- DigiCAT:::data_upload_server("data_upload",
+                                                  parent = session,
+                                                  enableLocal = enable_local_data)
 
-  # Counterfactual Appraoch ----
+  # Counterfactual Approach ----
   ####
   
   
-  CF_approach <- DigiCAT:::CF_approach_server("CF_approach",
+  CF_approach_output <- DigiCAT:::CF_approach_server("CF_approach",
                                     parent = session,
-                                    raw_data = reactive(data_upload_res$data),
-                                    categorical_variables = reactive(data_upload_res$categorical_vars),
-                                    outcome_variable = reactive(data_upload_res$outcome),
-                                    treatment_variable = reactive(data_upload_res$treatment),
-                                    matching_variables = reactive(data_upload_res$matchvars),
-                                    covariates = reactive(data_upload_res$covars))
-  
-  ####
-  # Balancing model ----
-  ####
-  
-  balancing_model_res <- DigiCAT:::balancing_model_server("balancing_model", 
-                         parent = session,
-                         raw_data = reactive(data_upload_res$data),
-                         approach = CF_approach,
-                         outcome_variable = reactive(data_upload_res$outcome),
-                         treatment_variable = reactive(data_upload_res$treatment),
-                         matching_variables = reactive(data_upload_res$matchvars),
-                         covariates = reactive(data_upload_res$covars))
+                                    raw_data = reactive(data_upload_output$data),
+                                    categorical_variables = reactive(data_upload_output$categorical_vars),
+                                    outcome_variable = reactive(data_upload_output$outcome),
+                                    treatment_variable = reactive(data_upload_output$treatment),
+                                    matching_variables = reactive(data_upload_output$matchvars),
+                                    covariates = reactive(data_upload_output$covars),
+                                    survey_weight_var = reactive(data_upload_output$survey_weight_var),
+                                    cluster_var = reactive(data_upload_output$cluster_var),
+                                    stratification_var = reactive(data_upload_output$stratification_var),
+                                    validation_log = reactive(data_upload_output$validation_log),
+                                    descriptions = desc_global)
   
   ####
   # Balancing ----
   ####
   
-  balancing_res <- DigiCAT:::balancing_server("balancing", 
+  balancing_output <- DigiCAT:::balancing_server("balancing", 
                    parent = session,
-                   treatment_variable = reactive(data_upload_res$treatment),
-                   matching_variables = reactive(data_upload_res$matchvars),
-                   approach = CF_approach,
-                   balancing_model_results = reactive(balancing_model_res$results))
+                   raw_data = reactive(data_upload_output$data),
+                   categorical_variables = reactive(data_upload_output$categorical_vars),
+                   outcome_variable = reactive(data_upload_output$outcome),
+                   treatment_variable = reactive(data_upload_output$treatment),
+                   matching_variables = reactive(data_upload_output$matchvars),
+                   covariates = reactive(data_upload_output$covars),
+                   survey_weight_var = reactive(data_upload_output$survey_weight_var),
+                   cluster_var = reactive(data_upload_output$cluster_var),
+                   stratification_var = reactive(data_upload_output$stratification_var),
+                   approach = reactive(CF_approach_output$CF_radio),
+                   missingness = reactive(CF_approach_output$missingness),
+                   balancing_model = reactive(CF_approach_output$balancing_model),
+                   descriptions = desc_global)
   
   ####
   # Outcome Model ----
   ####
   
-  DigiCAT:::outcome_model_server("outcome_model",  
+  outcome_output <- DigiCAT:::outcome_model_server("outcome_model",  
                        parent = session,
-                       treatment_variable = reactive(data_upload_res$treatment),
-                       outcome_variable = reactive(data_upload_res$outcome),
-                       matching_variables = reactive(data_upload_res$matchvars),
-                       approach = CF_approach,
-                       balancing_results = balancing_res)
-  
-  ####
-  # Get Results ----
-  ####
-  
-  DigiCAT:::get_results_server("get_results",
-                     parent = session)
+                       data_source = reactive(data_upload_output$data_source),
+                       file_path = reactive(data_upload_output$file_path),
+                       categorical_variables = reactive(data_upload_output$categorical_vars),
+                       treatment_variable = reactive(data_upload_output$treatment),
+                       outcome_variable = reactive(data_upload_output$outcome),
+                       matching_variables = reactive(data_upload_output$matchvars),
+                       covariates = reactive(data_upload_output$covars),
+                       survey_weight_var = reactive(data_upload_output$survey_weight_var),
+                       cluster_var = reactive(data_upload_output$cluster_var),
+                       stratification_var = reactive(data_upload_output$stratification_var),
+                       approach = reactive(CF_approach_output$CF_radio),
+                       missingness = reactive(CF_approach_output$missingness),
+                       balancing_model = reactive(CF_approach_output$balancing_model),
+                       matching_method = reactive(balancing_output$method_radio),
+                       matching_ratio = reactive(balancing_output$ratio_radio),
+                       estimation_stage_res = reactive(balancing_output$estimation_stage_res),
+                       balancing_stage_res = reactive(balancing_output$balancing_stage_res),
+                       descriptions = desc_global)
 
 }
 
