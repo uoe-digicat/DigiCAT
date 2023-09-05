@@ -65,7 +65,7 @@ desc_global <<- list(
   glm = p(h5("Logistic Regression:"),
           p("Logistic regression is a method of modelling the relations between a set of predictors (e.g., matching variables) and a binary outcome (such as whether or not someone is 
             in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual. See the ", 
-            a(id = "link","logistic regression section of our tutorials**", href = "https://uoe-digicat.github.io/04_cfmethod.html#propensity-score-specification-and-estimation", target="_blank"), " for more information.")),
+            a(id = "link","logistic regression section of our tutorials", href = "https://uoe-digicat.github.io/04_cfmethod.html#propensity-score-specification-and-estimation", target="_blank"), " for more information.")),
   
   olr = p(h5("Ordinal logistic regression:"),
           p("For ordinal treatments an ordinal logistic regression model is used to estimate the propensity scores used for matching. It predicts treatment (as an ordinal variable with 
@@ -74,11 +74,13 @@ desc_global <<- list(
   
   ## Balancing----
   
-  IPTW = p(h5("Weighting Method"),
+  IPTW_balancing = p(h5("Weighting Method"),
            p("In IPTW, the propensity scores estimated based on the set of matching variables are transformed to provide weights to be used in the outcome model.
               All the data are used (unlike in some methods where some cases might not achieve a match and be discarded). In DigiCAT the ATE is estimated which 
              means that the weights used essentially down-weight treated cases with a high propensity score and up-weight control cases with a low propensity 
-             score. This ‘re-balances’ the treatment and control groups to make them more similar. See our tutorial section on IPTW."), 
+             score. This ‘re-balances’ the treatment and control groups to make them more similar. See the ",
+             a(id = "link","‘IPTW’", href = "https://uoe-digicat.github.io/04_cfmethod.html#iptw", 
+               target="_blank"), "section of the tutorials for more information.")),
   
   matching_method = p(h5("Matching Method:"), p("In order to balance covariates between treatment groups, propensity score matching involves matching 
                                                 individuals based on their propensity scores, which represent their likelihood of being treated based on observed characteristics. 
@@ -95,7 +97,7 @@ desc_global <<- list(
   nearest = p(h5("Nearest Neighbour (NN):"),
   p("Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated and control cases with similar propensity scores. In DigiCat, nearest neighbour greedy matching 
               is implemented whereby the most similar treated and control cases are matched first. Then, from those left the remaining most similar treated and control cases are paired and so on and so
-              forth until all viable matches have been made. See the ", a(id = "link","nearest neighbour matching tutorial*", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more details.")),
+              forth until all viable matches have been made. See the ", a(id = "link","nearest neighbour matching tutorial", href = "https://uoe-digicat.github.io/04_cfmethod.html#matching-on-the-propensity-score", target="_blank")," for more details.")),
   
   optimal_binary = p(h5("Optimal:"),
   p("You've chosen optimal matching. This method matches treated and untreated cases in a way that minimises the average propensity score difference within the match pairs in the sample.
@@ -150,8 +152,11 @@ desc_global <<- list(
   
   estimate = p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, interventions, or treatments on mental health outcomes."),
   
-  standard_error = p("The standard error is a statistical measure that quantifies the variability or uncertainty associated with the estimate. It provides a measure of how much the estimate is likely to vary from the true population value."),
+  standard_error = p("The standard error is a statistical measure that quantifies the variability or uncertainty associated with the estimate. It provides a measure of how much the estimate 
+                     is likely to vary from the true population value."),
   
-  p_value = p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect or relationship in the data.")                  
+  p_value = p("In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test statistic as extreme or more extreme than the one observed, assuming 
+              that the null hypothesis is true. Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is rejected in favour of an alternative 
+              hypothesis, implying that there is a statistically significant effect or relationship in the data.")                  
                     
 )
