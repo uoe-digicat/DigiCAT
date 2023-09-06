@@ -1,7 +1,11 @@
-# function evaluate_imputations contains diagnostics post-imputation
-# and useful functions for pre-missing data handling (need to move to new fun)
-
-require(mice)
+#' Function to handle missingness in datasets
+#'
+#' @param .data 
+#' @param missing_method 
+#' @param design_object 
+#' @param ... 
+#'
+#' @import mice
 
 handle_missingness <- function(.data, missing_method = NULL,
                                design_object = NULL,

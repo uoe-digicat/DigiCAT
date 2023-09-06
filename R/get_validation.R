@@ -5,7 +5,27 @@
 #' @param outcome Name of outcome variable.
 #' @param matchvars Name of matching variables.
 #' @param NRW_var Name of non-response weight variable.
-get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight){
+get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight, clustering_var, stratification_var){
+  
+  ## Keep log of data validation
+  validation_log <- list(
+    survey_weight_available = FALSE,
+    clustering_available = FALSE,
+    stratification_available = FALSE,
+    survey_weight_no_missingness = FALSE,
+    clustering_no_missingness = FALSE,
+    stratification_no_missingness = FALSE,
+    no_design_matrix_error = FALSE
+  )
+  
+  ## Save variable to log error
+  error_check <- NA
+  design_matrix_error <- NULL
+  
+  ## Create new variables to input varible names in desing matrix function - NULL will be input if varaible conatins missingness
+  survey_weight_var_for_matrix <- NULL
+  clustering_var_for_matrix <- NULL
+  stratification_var_for_matrix <- NULL
   
   ## Remove rows with NAs
   data_Nas <- .data
@@ -16,7 +36,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   w <- which(abs(cor_dat)>0.80 & row(cor_dat)<col(cor_dat), arr.ind=TRUE)
   high_cor <- matrix(colnames(cor_dat)[w],ncol=2)
   
-  p(
+  print_validation <- p(
     h4("Data Dimensions:"),
     h5("Data contains ", dim(.data)[2], " columns and ", dim(.data)[1], " rows."),
     
@@ -81,7 +101,35 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       
       h5("It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). 
        Please consider removing one of each highly correlated variable pair:", paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red')
-    }, br(),
+    },
+    
+    br(),
+    
+    ## Check selected survey weight variable for missingness
+    if (!is.null(survey_weight_var)){
+      
+      validation_log$survey_weight_available <- TRUE
+      
+      ## If missingness detected, give warning
+      if (any(is.na(data_Nas[[survey_weight_var]]))){
+
+        p(h4("Survey Weight Variable Missingness:"),
+          h5(paste0("You have selected ", survey_weight_var, " as your survey weight.
+                  As this includes missing data it will not be used in counterfactual analysis."), 
+             style = 'color:red'), br())
+        
+      }
+      else{
+        
+        survey_weight_var_for_matrix <- survey_weight_var
+        
+        validation_log$survey_weight_no_missingness <- TRUE
+        
+        p(h4("Survey Weight Variable Missingness:"),
+          h5(paste0("You have selected ", survey_weight_var, " as your survey weight. No missingness has been detected in this variable."), 
+             style = 'color:green'), br())
+      }
+    },
 
     ## Check selected non-response weight variable has no missingness
     if (!is.null(survey_weight_var) & isTruthy(non_response_weight)){
@@ -90,21 +138,119 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         p(h4("Non-response Variable Missingness:"),
         h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response.
                   As this includes missing data it won't be used as a weight when accounting for missingness"), 
-           style = 'color:red'))
+           style = 'color:red'), br())
 
       }
       else{
         
         p(h4("Non-response Variable Missingness:"),
         h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response. No missingness has been detected in this variable."), 
-           style = 'color:green'))
+           style = 'color:green'), br())
 
       }
     },
     
-    br(),
-    br()
+    
+    ## Check selected clustering variable for missingness
+    if (!is.null(clustering_var)){
+      
+      validation_log$clustering_available <- TRUE
+      
+      ## If missingness detected, give warning
+      if (any(is.na(data_Nas[[clustering_var]]))){
+        
+        p(h4("Clustering Variable Missingness:"),
+          h5(paste0("You have selected ", clustering_var, " as your clustering variable.
+                  As this includes missing data it will not be used in counterfactual analysis."), 
+             style = 'color:red'), br())
+        
+      }
+      else{
+        
+        clustering_var_for_matrix <- clustering_var
+        
+        validation_log$clustering_no_missingness <- TRUE
+        
+        p(h4("Clustering Variable Missingness:"),
+          h5(paste0("You have selected ", clustering_var, " as your clustering variable. No missingness has been detected in this variable."), 
+             style = 'color:green'), br())
+
+        
+      }
+    },
+    
+    
+    ## Check selected stratification variable for missingness
+    if (!is.null(stratification_var)){
+      
+      validation_log$stratification_available <- TRUE
+      
+      ## If missingness detected, give warning
+      if (any(is.na(data_Nas[[stratification_var]]))){
+
+        p(h4("Stratification Variable Missingness:"),
+          h5(paste0("You have selected ", stratification_var, " as your stratification variable.
+                  As this includes missing data it will not be used in counterfactual analysis."), 
+             style = 'color:red'), br())
+        
+      }
+      else{
+        
+        stratification_var_for_matrix <- stratification_var
+        
+        validation_log$clustering_no_missingness <- TRUE
+        
+        p(h4("Stratification Variable Missingness:"),
+          h5(paste0("You have selected ", stratification_var, " as your stratification variable. No missingness has been detected in this variable."), 
+             style = 'color:green'), br())
+        
+      }
+    },
+    
+    
+    # Check if design matrix can be created with inputted survey design weights, clustering and stratification variable
+    # Ensure at least one variable is present w/o missingness beforehand
+    
+    if (validation_log$survey_weight_no_missingness | validation_log$clustering_no_missingness | validation_log$stratification_no_missingness){
+      error_check <- tryCatch(
+      create_design(.data = data_Nas,
+                    weighting_variable = survey_weight_var_for_matrix,
+                    clustering_variable = clustering_var_for_matrix,
+                    strata_variable = stratification_var_for_matrix),
+      ## If error in creating design matrix, return error message
+      error = function(cond) {
+        ## Output error message
+        design_matrix_error <- p(h4("Design Matrix Creation:"),
+          p(paste0("Design matrix cannot be created with the provided input and will not be used in counterfactual analysis.
+                   Error: ", conditionMessage(cond)) , style = "color:red"))
+
+      })
+      
+      p(design_matrix_error)
+      
+      },
+    
+    ## If error in design matrix creation, log
+    if (all(grepl("Error:", error_check))){
+      
+      validation_log$no_design_matrix_error <- FALSE
+      
+      p("")
+      
+    }
+    else{
+      
+      validation_log$no_design_matrix_error <- TRUE
+      
+      p("")
+    }
   )
+  
+  ## Return validation output and log
+  return(list(
+    print = print_validation,
+    log = validation_log
+  ))
 }
 
 
