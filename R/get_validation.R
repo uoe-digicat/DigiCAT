@@ -261,6 +261,9 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       p(h4("Missing Data:"),
         h5(paste0("Missing data had been detected in your inputted variables. Choices of dealing with missingness and further information are available in the next analysis step."), 
            style = 'color:green'), br())
+    }, ## If statements cannot be combined for some reason - prevents message from printing
+    
+    if (any(is.na(data_Nas[,c(treatment, outcome, matchvars, covars, survey_weight_var_for_matrix, clustering_var_for_matrix, stratification_var_for_matrix)]))){
       
       ## Log if there is missingness with or without non-reponse weight
       if (validation_log$non_response_weight_no_missingness){
