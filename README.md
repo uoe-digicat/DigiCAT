@@ -3,15 +3,15 @@
   <img src="inst/DigiCAT/www/logos/DigiCAT/digicat6b.png" />
 </p>
 
-### **Counterfactual Analysis:**
+### **Counterfactual Analysis**
 
 The aim of counterfactual analysis is to estimate the causal effects of interventions or treatments, by comparing what actually happened (observed outcomes) with what would have happened if a different action had been taken (counterfactual outcomes). In observational settings, where random allocation into different treatments is not possible, researchers often employ methods involving 'propensity scores' (the estimated probability of receiving the treatment/intervention, based on a set of observed covariates). These propensity scores can then be used in an analysis to balance the characteristics of treatment vs non-treated groups, reducing bias and enabling a more accurate estimation of the causal effect of receiving the treatment.
 
-### Our App:
+### Our App
 
 With the DigiCAT app, you can upload your own data and leverage propensity score methods to conduct counterfactual analyses, gaining insights into the causal effects of specific interventions or treatments. The primary objective of the DigiCAT app is to provide researchers, regardless of their statistical background, with a user-friendly platform that removes barriers and enables them to utilize these methods effectively.
 
-## Getting Started:
+## Getting Started
 
 Currently, DigiCAT is available as an Shiny app, both online and as a downloadable R package.
 
@@ -63,7 +63,7 @@ Contains the names of functions exported by the DigiCAT package and imported pac
 
 This folder contains all R scripts (.R files) that will be sourced when the DigiCAT package is installed.
 
-#### **Main counterfactual analysis scripts:**
+#### **Main counterfactual analysis scripts**
 
 -   **propensity_estimation_stage.R**: Contains the function 'estimation_stage()' which calculates the propensity score (or likelihood of belonging to the treatment group) for each individual in the sample data, based on the matching variables provided.
 
@@ -71,7 +71,7 @@ This folder contains all R scripts (.R files) that will be sourced when the Digi
 
 -   **outcome_analysis_stage.R**: Contains the function ''outcome_analysis_stage()' which runs the outcome model for counterfactual analysis in DigiCAT.
 
-#### **mod\_\* files**: 
+#### **mod\_\* files**
 
 Modules for each analysis page: Get Started (mod_home.R), Data Upload (mod_data_upload.R), Approach (mod_counterfactual_approach.R), Balancing (mod_balancing.R) and Outcome (mod_outcome_model.R).
 
