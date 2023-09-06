@@ -43,9 +43,9 @@ DigiCAT::run_DigiCAT(enableLocal = TRUE)
 
 To learn more about counterfactual analysis and the DigiCAT tool, please visit [our tutorial](https://uoe-digicat.github.io). Here you will find a comprehensive guide to the counterfactual analysis provided in our digital tool.
 
-## Contact:
+## Contact
 
-If you have any questions or feedback, we could love to hear from you!
+If you have any questions or feedback, please get in touch!
 
 Email: [uoe_digicat-group\@uoe.onmicrosoft.com](mailto:uoe_digicat-group@uoe.onmicrosoft.com)
 
@@ -67,13 +67,13 @@ This folder contains all R scripts (.R files) that will be sourced when the Digi
 
 -   **propensity_estimation_stage.R**: Contains the function 'estimation_stage()' which calculates the propensity score (or likelihood of belonging to the treatment group) for each individual in the sample data, based on the matching variables provided.
 
--   **balance_data.R**: Contains the function 'balance_data()' which balances datasets for counterfactual analysis in DigiCAT.
+-   **balance_data.R**: Contains the function 'balance_data()' which balances datasets for counterfactual analysis in DigiCAT..
 
 -   **outcome_analysis_stage.R**: Contains the function ''outcome_analysis_stage()' which runs the outcome model for counterfactual analysis in DigiCAT.
 
 #### **mod\_\* files**: 
 
-Modules for each analysis page: Get Started (mod_home.R), Data Upload (mod_data_upload.R), Approach (mod_counterfactual_approach.R), Balancing (mod_balancing.R) and Outcome (mod_outcome_model.R)
+Modules for each analysis page: Get Started (mod_home.R), Data Upload (mod_data_upload.R), Approach (mod_counterfactual_approach.R), Balancing (mod_balancing.R) and Outcome (mod_outcome_model.R).
 
 ### data/ directory
 
