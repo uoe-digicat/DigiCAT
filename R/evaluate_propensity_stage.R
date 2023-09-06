@@ -10,7 +10,7 @@ evaluate_propensity_stage <- function(estimation_model_object, evaluation_method
   #                                           evaluation_method, graph_display,...)
   # },
   # support = {
-  performance = check_support(estimation_model_object) # only for CC objects
+  performance = check_support(estimation_model_object, ...) # only for CC objects
   # })
   return(performance)
 }
