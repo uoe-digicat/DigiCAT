@@ -30,7 +30,7 @@ evaluate_imputations(abc, "convergence") # include guidance line as output maybe
 evaluate_imputations(abc, "eventslog") # depending on logged events, recommend altering parameters xyz accordingly
 evaluate_imputations(abc, "inspect_matrix")
 
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "mi")
 mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
@@ -45,10 +45,10 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
 abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "glm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_propensity_stage(abc, evaluation_method = "support")
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
@@ -100,7 +100,7 @@ df2 = mice::ampute(d,
                    prop = 0.15)
 data_to_use <- df2$amp
 
-#mi
+
 abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2"),
                         weighting_variable = "SW") 
@@ -117,19 +117,6 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm"
                               psmodel_obj = abc,
                               missing_method = "weighting",
                               weighting_variable = "SW")
-
-#cc
-abc <- estimation_stage(.data = data_to_use, missing_method = "complete", model_type = "glm",
-                        treatment_variable = "A", matching_variable = c("X1", "X2")) 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
-                    matching_variable = c("X1", "X2"), PS_estimation_object = abc,
-                    missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
-                              outcome_variable = "Y_C",
-                              treatment_variable = "A", 
-                              matching_variable = c("X1", "X2"), 
-                              psmodel_obj = abc,
-                              missing_method = "complete")
 
 # testing weights with example sets 
 
