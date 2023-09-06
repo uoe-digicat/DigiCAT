@@ -4,7 +4,11 @@
 #' @param treatment Name of treatment variable.
 #' @param outcome Name of outcome variable.
 #' @param matchvars Name of matching variables.
-#' @param NRW_var Name of non-response weight variable.
+#' @param covars Name of covariates.
+#' @param survey_weight_var Name of survey weight variable.
+#' @param non_response_weight Is there a non-response weight variable?
+#' @param clustering_var Name of clustering variable.
+#' @param stratification_var Name of stratification variable.
 get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight, clustering_var, stratification_var){
   
   ## Keep log of data validation

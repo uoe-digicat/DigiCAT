@@ -3,7 +3,6 @@ initial_data_check <- function(df){
   
   ## Make list to store function output
   initial_data_check_ls <- list(some_nonnumeric = NULL,
-                                impossible_value = NULL,
                                 small_rows = NULL,
                                 small_cols = NULL)
   
@@ -12,7 +11,7 @@ initial_data_check <- function(df){
     initial_data_check_ls$some_nonnumeric <- FALSE
   }else{initial_data_check_ls$some_nonnumeric <- TRUE}
   
-  ## Check dimensions of dataframe
+  ## Check dimensions of dataframe (must greater than 2 columns and 10 rows)
   if (nrow(df) < 10){
     initial_data_check_ls$small_rows <- TRUE
   }else{initial_data_check_ls$small_rows <- FALSE}
