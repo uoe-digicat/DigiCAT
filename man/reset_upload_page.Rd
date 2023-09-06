@@ -12,11 +12,11 @@ reset_upload_page(
 )
 }
 \arguments{
-\item{reset_errors}{Do you want to reset error messages? Deafult is FALSE}
+\item{reset_errors}{Do you want to reset error messages? Default is FALSE}
 
-\item{hide_data}{Do you want to hide the data tab? Deafult is FALSE}
+\item{hide_data}{Do you want to hide the data tab? Default is FALSE}
 
-\item{hide_validation}{Do you want to hide the data tab? Deafult is FALSE}
+\item{hide_validation}{Do you want to hide the data tab? Default is FALSE}
 }
 \description{
 Functions that resets data upload page

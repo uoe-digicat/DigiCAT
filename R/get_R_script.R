@@ -1,3 +1,5 @@
+#' Function to produce downloadable R script
+
 #' @param data Dataframe
 #' @param data_source Source of data: "own", or "sample"
 #' @param file_path File path to data
@@ -136,6 +138,21 @@ get_R_script <- function(
                              ")"
                              )
     }
+  
+  if (CF_approach == "nbp"){
+    
+    balancing_code <- paste0("\n",
+                             "\n", 
+                             "## Balance datasets using NBP\n\n",
+                             "balancing_results <- DigiCAT:::balance_data(\n",
+                             "  treatment_variable = t_var,\n",
+                             "  matching_variable = m_vars,\n",
+                             "  counterfactual_method = '", CF_approach, "',\n",
+                             "  missing_method = '", missingness,"',\n",
+                             "  PS_estimation_object = PS_estimation_results\n",
+                             ")"
+    )
+  }
   
 
   

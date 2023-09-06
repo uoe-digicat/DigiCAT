@@ -297,20 +297,24 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                  observeEvent(input$run_balancing_btn, {
                    
                    ## If matching approach selected but no balancing method, give error message
-                   if(approach() == "psm" & is.null(input$method_radio)){
+                   if((approach() == "psm" & is.null(input$method_radio)) | (approach() == "nbp" & is.null(input$method_radio))){
                      balancing_values$matching_method_missing_message <- p("Please select a matching method before proceeding", style = "color:red")
                    }
                    
                    ## If matching approach selected but no balancing ratio, give error message
                    ## Slider counter used as slider input cannot be initiated with NULL - counter value of greater than 0 indicates slider input has been selected
-                   if(approach() == "psm" & is.null(balancing_values$ratio)){
+                   if((approach() == "psm" & is.null(balancing_values$ratio)) | (approach() == "nbp" & is.null(balancing_values$ratio))){
                      balancing_values$matching_ratio_missing_message <- p("Please select a matching ratio before proceeding", style = "color:red")
                    }
                    ## If all required input present, carry out balancing
-                   if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) ) {
+                   if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) | ((approach() == "nbp" & !is.null(input$method_radio) & !is.null(balancing_values$ratio)))  ) {
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
+                     
+                     ## Remove balancing output
+                     balancing_values$estimation_stage_res <- NULL
+                     balancing_values$balancing_stage_res <- NULL
   
                      ## Remove general output message
                      balancing_values$output  <- NULL
@@ -319,7 +323,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                      output$AUC <- NULL
                      output$love_plot  <- NULL
                      output$balance_table <- NULL
-                     output$observations_table <- NULL
+                     output$observation_table <- NULL
 
                      ## Save potential error to check for running of code dependent on balancing model
                      error_check <- NA
@@ -351,7 +355,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
 
                        }
 
-                       if (approach() == "iptw"){
+                       if (approach() == "iptw" | approach() == "nbp"){
 
                          balancing_values$balancing_stage_res <- balance_data(
                            counterfactual_method = approach(),
@@ -360,7 +364,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                            PS_estimation_object = balancing_values$estimation_stage_res,
                            missing_method = missingness())
 
-                         }
+                       }
                        },
                      
                      ## If balancing does not run, return error message and enable run button 
@@ -376,49 +380,72 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                      if (all(!grepl("Error:", error_check))){
                        try({
                          
-                         ## Get AUC
-                         output$AUC <- renderUI(p(
-                           h4("The Receiver Operating Characteristic (ROC) curve:"),
-                           renderPlot(performance_plot(psmodel_obj = balancing_values$estimation_stage_res,
-                                                       t_var = treatment_variable(),
-                                                       treattype = "binary")),
-                           p("The Receiver Operating Characteristic (ROC) curve is a plotting method used to assess
-                                                       the performance of a binary classifier (such as a probit regression model) across
-                                                       various discrimination thresholds. The curve plots the true positive rate (sensitivity)
-                                                       against the false positive rate (1 - specificity) at different threshold values.
-                                                       Examining the shape and steepness of the curve shows the classifier's ability
-                                                       to distinguish between the two outcomes. The Area Under the Curve (AUC) summarizes
-                                                       the overall performance, taking values between 0.5 and 1, with higher values indicating better
-                                                       discrimination. A value of 0.5 suggests the classifier performs no better than random guessing,
-                                                       and the corresponding curve would be a diagonal line from bottom-left to top-right.")
-                         ))
-                         # 
+                         if(approach() == "psm" | approach() == "iptw"){
+                         # Get AUC
+                         output$common_support <- renderUI(p(
+                           h4("Common Support Graph:"),
+                           renderPlot(evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support")),
+                           p("Info about common support graph.")
+                           ))
+                         #
                          ## Get love plot
                          output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_stage_res))
-                         
                          ## Get balance table
                          balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]])
                          ## Remove empty columns from balance table
                          balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
                          ## Round numbers in balance table to 4 decimals
+                         names_temp <- row.names(balance_table)
                          balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 4) else x))
+                         row.names(balance_table) <- names_temp
                          ## Output balance table
                          output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
 
                          ## Get observation table
-                         output$observations_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]]), rownames = TRUE, options = list(scrollX = TRUE))})
+                         output$observation_table <- DT::renderDataTable({DT::datatable(as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]]), rownames = TRUE, options = list(scrollX = TRUE))})
 
+                         }
+                         
+                         
+                         if(approach() == "nbp"){
+                           # Get common support graph
+                           output$common_support <- renderUI(p(
+                             h4("Common Support Graph:"),
+                             p("Coming soon"),
+                             p("Info about common support graph.")
+                           ))
+                           
+                           ## Get observation table, balancing table and love plot
+                           balancing_values$NBP_balancing_output <- get_NBP_balancing_output(
+                            estimation_model_object = balancing_values$estimation_stage_res,
+                            balanced_data = balancing_values$balancing_stage_res,
+                            treatment_variable = treatment_variable(),
+                            matching_variables = matching_variables(),
+                            missingness = missingness())
+                           
+                           ## Get love plot
+                           output$love_plot <- renderPlot(balancing_values$NBP_balancing_output$love_plot)
+                           ## Get balance table
+                           output$balance_table  <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$balance_table), rownames = TRUE, options = list(scrollX = TRUE))})
+                           ## Get observation table
+                           output$observation_table <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$observation_table), rownames = TRUE, options = list(scrollX = TRUE))})
+                           
+                         }
+                         
+                         
+                         
+                         
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
                            tabsetPanel(id = NS(id, "balancing_output_plots"),
-                                     tabPanel(title = "Receiver Operating Characteristic (ROC) curve",
-                                              value = NS(id, 'ROC_tab'),
+                                     tabPanel(title = "Common Support Graph",
+                                              value = NS(id, 'common_support_graph_tab'),
                                               br(),
-                                              withSpinner(uiOutput(session$ns("AUC")))),
+                                              withSpinner(uiOutput(session$ns("common_support")))),
                                      tabPanel(title = "Observation Table",
-                                              value = NS(id, 'observations_table_tab'),
+                                              value = NS(id, 'observation_table_tab'),
                                               br(),
-                                              withSpinner(DT::dataTableOutput(session$ns("observations_table")))),
+                                              withSpinner(DT::dataTableOutput(session$ns("observation_table")))),
                                      tabPanel(title = "Love Plot",
                                               value = NS(id, 'love_plot_tab'),
                                               br(),

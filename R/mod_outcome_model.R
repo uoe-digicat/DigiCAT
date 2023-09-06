@@ -152,20 +152,36 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                      
                      ## Save potential error to check for running of code dependent on outcome model
                      error_check <- NA
-                     error_check <- tryCatch(
+                     error_check <- tryCatch({
                        
-                       outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
-                         balanced_data = balancing_stage_res(),
-                         counterfactual_method = approach(),
-                         outcome_variable = outcome_variable(),
-                         treatment_variable = treatment_variable(),
-                         matching_variable = matching_variables(), 
-                         psmodel_obj = estimation_stage_res(),
-                         cluster_variable = cluster_var(),
-                         nonresponse_weights = survey_weight_var(),
-                         sampling_weights = survey_weight_var(),
-                         missing_method = missingness(),
-                         weighting_variable = survey_weight_var()),
+                       if(approach() == "psm" | approach() == "iptw"){
+                         outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
+                           balanced_data = balancing_stage_res(),
+                           counterfactual_method = approach(),
+                           outcome_variable = outcome_variable(),
+                           treatment_variable = treatment_variable(),
+                           matching_variable = matching_variables(), 
+                           psmodel_obj = estimation_stage_res(),
+                           cluster_variable = cluster_var(),
+                           nonresponse_weights = survey_weight_var(),
+                           sampling_weights = survey_weight_var(),
+                           missing_method = missingness(),
+                           weighting_variable = survey_weight_var())
+                       }
+                       
+                       if(approach() == "nbp"){
+                         outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
+                           balanced_data = balancing_stage_res(), 
+                           counterfactual_method = approach(),
+                           outcome_variable = outcome_variable(),
+                           treatment_variable = treatment_variable(),
+                           matching_variable = matching_variables(), 
+                           psmodel_obj = estimation_stage_res(),
+                           missing_method = missingness())
+                         
+                         
+                       }
+                       },
                        
                        ## If outcome model does not run, return error message and enable run button 
                        error = function(cond) {
@@ -180,16 +196,34 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                      if (all(!grepl("Error:", error_check))){
                        try({
                      ## Output estimate
+                         
+                         if(approach() == "psm" | approach() == "iptw"){
                          outcome_model_values$output <- p(h4("Model Output"),
                                                   descriptions$estimate,
-                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[2,1], 5)))),
+                                                  strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[1,1], 4)))),
                                                   br(),
                                                   descriptions$standard_error,
-                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[2,2], 5)))),
+                                                  strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[1,2], 4)))),
                                                   br(),
                                                   descriptions$p_value,
-                                                  strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[2,4], 5))))
-                                                    )
+                                                  strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[1,3], 4)))),
+                                                  br(),
+                                                  strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4))))
+                                                  )
+                         }
+                         
+                         if(approach() == "nbp"){
+                           outcome_model_values$output <- p(h4("Model Output"),
+                                                            descriptions$estimate,
+                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[2,1], 4)))),
+                                                            br(),
+                                                            descriptions$standard_error,
+                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[2,2], 4)))),
+                                                            br(),
+                                                            descriptions$p_value,
+                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[2,4], 4))))
+                           )
+                         }
                          
                          ## Add message noting that parameter reselection will require rerun
                          outcome_model_values$model_rerun_message <- p("Note: Changing this parameter will require outcome model to be rerun")

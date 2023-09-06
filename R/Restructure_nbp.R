@@ -25,6 +25,7 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
     arrange(., pairID) %>%
     ungroup()
   
+  dose_paired_data[["treatment"]] = dose_paired_data[[treatment_variable]]
   dose_paired_data[[treatment_variable]] = dose_paired_data$treatment_exposure
   
   dose_paired_data <- dose_paired_data %>%
