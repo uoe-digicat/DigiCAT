@@ -49,7 +49,49 @@ If you have any questions or feedback, we could love to hear from you!
 
 Email: [uoe_digicat-group\@uoe.onmicrosoft.com](mailto:uoe_digicat-group@uoe.onmicrosoft.com)
 
-## Code Structure
+## Package Structure
+
+### DESCRIPTION file
+
+Contains overall metadata about the DigiCAT package, such as package dependencies.
+
+### NAMESPACE file
+
+Contains the names of functions exported by the DigiCAT package and imported packages.
+
+### R/ directory
+
+This folder contains all R scripts (.R files) that will be sourced when the DigiCAT package is installed.
+
+#### **Main counterfactual analysis scripts:**
+
+-   **propensity_estimation_stage.R**: Contains the function 'estimation_stage()' which calculates the propensity score (or likelihood of belonging to the treatment group) for each individual in the sample data, based on the matching variables provided.
+
+-   **balance_data.R**: Contains the function 'balance_data()' which balances datasets for counterfactual analysis in DigiCAT.
+
+-   **outcome_analysis_stage.R**: Contains the function ''outcome_analysis_stage()' which runs the outcome model for counterfactual analysis in DigiCAT.
+
+#### **mod\_\* files**: 
+
+Modules for each analysis page: Get Started (mod_home.R), Data Upload (mod_data_upload.R), Approach (mod_counterfactual_approach.R), Balancing (mod_balancing.R) and Outcome (mod_outcome_model.R)
+
+### data/ directory
+
+This folder contains the sample dataset 'zp_eg'. Visit [our tutorial](https://uoe-digicat.github.io/02_howto_digicat.html#example-dataset) to find out more about this dataset.
+
+### inst/DigiCAT directory
+
+Contains
+
+-   **ui.R file**: User interface of tool
+-   **server.R file**: R session that accepts input from the UI, runs code and returns output to the UI for display
+-   **global.R**: Contains global objects. This file is executed once when tool is initiated.
+-   **desc_global.R file**: Descriptions of counterfactual analysis terms to populate tool
+-   **www/ directory**: Contains images and style sheets rendered in the tool
+
+### man/ directory
+
+This folder contains documentation for the functions exported from the DigiCAT package.
 
 
 
