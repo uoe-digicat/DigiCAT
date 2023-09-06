@@ -18,7 +18,7 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     
   } else if(missing_method =="weighting" & "matchit" %in% class(balanced_data)){
     extracted_balanced_data = match.data(balanced_data)
-    extracted_balanced_design = svydesign(ids=~1, weights = (extracted_balanced_data[[weighting_variable]]*extracted_balanced_data$weights), 
+    extracted_balanced_design = svydesign(ids=~subclass, weights = (extracted_balanced_data[[weighting_variable]]*extracted_balanced_data$weights), 
                                                   data = extracted_balanced_data)
     extracted_balanced_data = extracted_balanced_design
     return(list(extracted_balanced_data, process = "weighting_psm"))
