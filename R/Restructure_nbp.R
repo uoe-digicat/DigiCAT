@@ -1,9 +1,11 @@
-restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_variable,...){
+library(tidyverse, quietly = T)
+
+restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_variable, missing_method,...){
   if(missing_method == "complete"){
   matched_data$pairID<-paste("p", 1:length(matched_data$Group1.ID), sep="") #add in 'pair ID' var
   matched_data<-tibble(matched_data) #tibble so that tidyverse can be leveraged
   matched_data_long<- tidyr::pivot_longer(matched_data,                   # long format
-                                                cols = c(Group1.ID, Group2.ID),
+                                                cols = c(Group1.ID, Group2.ID), #### will need to change accordingly
                                                 names_to = "group", 
                                                 values_to = "ID")
   
@@ -30,14 +32,14 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
   } 
   else if(missing_method == "mi"){
 
-    matched_data <- lapply(matched_data, function(x) paste("p", 1:length(x$Group1.ID), sep = "")) ### SORT OUT
+    matched_data <- lapply(matched_data, function(x) paste("p", 1:length(x$Group1.ID), sep = "")) 
     matched_data<- lapply(matched_data, function(x) dplyr::tibble(x)) #tibble so that tidyverse can be leveraged
     matched_data_long <- lapply(matched_data, function(x) tidyr::pivot_longer(x,                   # long format
                                             cols = c(Group1.ID, Group2.ID),
                                             names_to = "group", 
                                             values_to = "ID"))
     
-    propensity_scores$ID <- seq_along(propensity_scores[,1]) # needs to be for each set only - repeat every 32 times
+    propensity_scores$ID <- seq_along(propensity_scores[,1]) # needs to be for each set only - repeat every nrow(data) times
     propensity_data$ID <- as.integer(propensity_data$ID) ### add
     matched_data_long$ID <- lapply(matched_data_long, function(x) as.integer(x$ID)) ### sort out to be added to each set
     # chameleon = NA ?

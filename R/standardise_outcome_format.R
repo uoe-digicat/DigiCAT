@@ -28,6 +28,7 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
   else if(extracted_outcome_results$process == "cc" & counterfactual_method == "nbp"){
     results_dataframe = as.data.frame(extracted_outcome_results[[1]][[4]])
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "T statistic", "P-value")
+    results_dataframe <- results_dataframe[c(1,2),]
     return(results_dataframe)
   }
 }

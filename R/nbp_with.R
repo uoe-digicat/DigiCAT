@@ -17,7 +17,7 @@ nbp_mi_quick <- function(handled_missingness, treatment_variable, outcome_variab
     treatment_values <- get(treatment_variable)
     treatment_values <- as.numeric(as.character(treatment_values))
     
-    matching_values <- lapply(matching_variable, function(x) get(x))})} 
+    #matching_values <- lapply(matching_variable, function(x) get(x))})} 
 
     outcome_values <- get(outcome_variable)
 

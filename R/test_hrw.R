@@ -140,38 +140,18 @@ abc <- estimation_stage(.data = nhanes, missing_method = "weighting", model_type
                         treatment_variable = "HI_CHOL", matching_variable = "race", 
                         weighting_variable = "WTMEC2YR", cluster_variable = "SDMVPSU",
                         strata_variable = "SDMVSTRA") 
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "HI_CHOL", 
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "HI_CHOL", 
                     matching_variable = c("race"), PS_estimation_object = abc,
                     missing_method = "weighting")
 
 ## TO DO - edit design object in extract_balanced_data
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
                               outcome_variable = "RIAGENDR",
                               treatment_variable = "HI_CHOL", 
                               matching_variable = "race", 
                               psmodel_obj = abc,
                               missing_method = "weighting",
                               weighting_variable = "WTMEC2YR")
-
-# nb: model/variable choice makes no sense due to variable types
-# but used as an example to add cluster/strata/weights etc
-data(fpc)
-abc <- estimation_stage(.data = fpc, missing_method = "weighting", model_type = "glm",
-                        treatment_variable = "nh", matching_variable = "x", 
-                        weighting_variable = "weight", cluster_variable = "psuid", # check variations of design vars allowed
-                        strata_variable = "stratid") 
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "nh", 
-                    matching_variable = "x", PS_estimation_object = abc,
-                    missing_method = "weighting")
-
-## TO DO - edit design object in extract_balanced_data
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
-                              outcome_variable = "Nh",
-                              treatment_variable = "nh", 
-                              matching_variable = "x", 
-                              psmodel_obj = abc,
-                              missing_method = "weighting",
-                              weighting_variable = "weight")
 
 
 ### I think something is off with the weighting calculation in extract_balanced_data
@@ -181,8 +161,7 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
 #### NBP testing ####
 # random data - ignore
 data(mtcars)
-mtcars$gear <- as.factor(mtcars$gear)
-abc <- estimation_stage(.data = mtcars, missing_method = "mi", model_type = "poly",
+abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type = "poly",
                          treatment_variable = "gear", matching_variable = c("qsec", "hp", "disp")) 
 ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear", 
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,

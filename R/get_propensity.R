@@ -38,7 +38,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
            propensity_score = as.data.frame(cbind(handled_missingness, 
                                                   #estimated_propensity_model$model, don't think this is needed
                                                      estimated_propensity_model$lp))
-           names(propensity_score)[names(propensity_score) == "estimated_propensity_model$lp"] <- "lp"
+           names(propensity_score)[names(propensity_score) == "polly$lp"] <- "lp"
 
            } else if(missing_method == "weighting"){
             propensity_score = estimated_propensity_model$fitted.values 
