@@ -238,7 +238,12 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                                                   descriptions$p_value,
                                                   strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[1,3], 4)))),
                                                   br(),
-                                                  strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4))))
+                                                  if (missingness() == "complete"){
+                                                    strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4))))
+                                                  }
+                                                  else{
+                                                    strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4))))
+                                                  }
                                                   )
                          }
                          
