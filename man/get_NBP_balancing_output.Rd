@@ -2,14 +2,14 @@
 % Please edit documentation in R/get_NBP_balancing_output.R
 \name{get_NBP_balancing_output}
 \alias{get_NBP_balancing_output}
-\title{Function to return observation table, love plot and balance table from NBP matching.}
+\title{Function to return observation table, love plot and balance table from NBP matching}
 \usage{
 get_NBP_balancing_output(
   estimation_model_object,
   balanced_data,
   treatment_variable,
   matching_variables,
-  missing_method
+  missingness
 )
 }
 \arguments{
@@ -19,8 +19,8 @@ get_NBP_balancing_output(
 
 \item{treatment_variable}{}
 
-\item{missing_method}{}
+\item{missingness}{}
 }
 \description{
-Function to return observation table, love plot and balance table from NBP matching.
+Function to return observation table, love plot and balance table from NBP matching
 }

@@ -34,18 +34,11 @@ outcome_model_ui <- function(id) {
                div(style = "width: 49%;",
                    class = "text_blocks",
                    radioButtons(NS(id, "outcome_model_radio"), label = h4("Choose an Outcome Model:"),
-                                choices = list(
-                                  "Linear Regression (Outcome ~ Treatment * Matching Variables)" = "linear_regression_w_mvars_interactions",
-                                  "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "linear_regression_w_mvars",
-                                  "Linear Regression (Outcome ~ Treatment)" = "linear_regression_wo_mvars"),
-                                selected = character(0),
-                                width = "200%"),
+                                choices = c("Linear Regression" = "LR"),
+                                selected = character(0)),
                    uiOutput(ns("outcome_model_missing_message"), style = "color: red;"), ## If no model selected when "Run" pressed, give warning
                    uiOutput(ns("outcome_model_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
-                   br(),
-                   uiOutput(ns("outcome_model_description_method")),
-                   br(),
-                   uiOutput(ns("outcome_model_description_method_selected"))
+                   uiOutput(ns("outcome_model_description_method"))
                ),
                
                ## Outcome model output ----
@@ -91,7 +84,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                  ## Create reactive value for approach description
                  outcome_model_values <- reactiveValues(
                    description_method = descriptions$outcome_model,
-                   description_method_selected = NULL,
+                   parameters_method = p(h4("Outcome Model Parameters:"),
+                                         p("Information on parameters in use.")),
                    R_script = NULL,
                    output = p(h4("Output:"),
                               p("Once you have selected your outcome model, press'Run' to get results."))
@@ -108,49 +102,24 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "get_results-tab")
                  })
                  
-                 
-                 ## Update choice of outcome model when approach is changed
-                 observeEvent(approach(),{
-                   
-                   ## If NBP selected, remove choice with interaction
-                   if(approach() == "nbp"){
-                     updateRadioButtons(session, 
-                                        inputId = "outcome_model_radio", 
-                                        choices = list(
-                                          "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "linear_regression_w_mvars",
-                                          "Linear Regression (Outcome ~ Treatment)" = "linear_regression_wo_mvars"),
-                                        selected = character(0))
-                   }
-                   ## Give choice with interaction for other approaches
-                   if(approach() == "psm" | approach() == "iptw"){
-                     updateRadioButtons(session, 
-                                        inputId = "outcome_model_radio", 
-                                        choices = list(
-                                          "Linear Regression (Outcome ~ Treatment * Matching Variables)" = "linear_regression_w_mvars_interactions",
-                                          "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "linear_regression_w_mvars",
-                                          "Linear Regression (Outcome ~ Treatment)" = "linear_regression_wo_mvars"),
-                                        selected = character(0))
-                   }
+                 ## If tutorial link clicked, go to tutorial page
+                 observeEvent(input$outcome_model_tab_tutorial_link, {
+                   updateTabsetPanel(session = parent, inputId = "main_tabs", selected = "tutorial")
                  })
                  
                  ## Update descriptions and rerun message when input changes ----
                  observeEvent(input$outcome_model_radio,{
                    
-                   if(input$outcome_model_radio == "linear_regression_w_mvars_interactions"){
-                     outcome_model_values$description_method_selected <- descriptions$linear_regression_w_mvars_interactions
-                   }
-                   
-                   if(input$outcome_model_radio == "linear_regression_w_mvars"){
-                     outcome_model_values$description_method_selected <- descriptions$linear_regression_w_mvars
-                   }
-                   
-                   if(input$outcome_model_radio == "linear_regression_wo_mvars"){
-                     outcome_model_values$description_method_selected <- descriptions$linear_regression_wo_mvars
-                   }
+                   if(input$outcome_model_radio == "LR"){
+                     outcome_model_values$description_method <- descriptions$linear_regression
                      
-                   ## Remove missing parameter message if present
-                   outcome_model_values$model_missing_message  <- NULL
-        
+                     outcome_model_values$parameters_method <- p(h4("Outcome Model Parameters: Linear Regression"),
+                                                           br(),
+                                                           p("Information on parameters in use."))
+                     
+                     ## Remove missing parameter message is present
+                     outcome_model_values$model_missing_message  <- NULL
+                   }
                    
                    
                    ## If outcome model has already been run, give informative message about rerun and disable "Next" button to force rerun
@@ -161,10 +130,11 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                                                           strong("It looks like the outcome model will have to be rerun, this is because some of the required inputs have been changed since the 
                      previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
                      
+                     ## Disable "Next" button to force a rerun before proceeding to next step
+                     #shinyjs::disable("next_outcome_model_btn")
+                     
                    }
                })
-                 
-
                  
                  ## Run outcome model ----
                  observeEvent(input$run_outcome_model_btn, {
@@ -238,12 +208,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                                                   descriptions$p_value,
                                                   strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[1,3], 4)))),
                                                   br(),
-                                                  if (missingness() == "complete"){
-                                                    strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4))))
-                                                  }
-                                                  else{
-                                                    strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4))))
-                                                  }
+                                                  strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4))))
                                                   )
                          }
                          
@@ -315,7 +280,9 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                  
                  ## Download output ----
                  output$download_options <- renderUI({
-
+                   
+                   
+                   
                  })
                  
                  ## Download script and analysis functions when download clicked
@@ -338,7 +305,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                  ## Pass output to UI ----
                  ## Display information for choosing counterfactual approach, relevant parameters and model output
                  output$outcome_model_description_method <- renderUI(outcome_model_values$description_method)
-                 output$outcome_model_description_method_selected <- renderUI(outcome_model_values$description_method_selected)
                  output$outcome_model_missing_message <- renderUI(outcome_model_values$model_missing_message)
                  output$outcome_model_rerun_message <- renderUI(outcome_model_values$model_rerun_message)
                  output$outcome_model_parameters_method <- renderUI(outcome_model_values$parameters_method)

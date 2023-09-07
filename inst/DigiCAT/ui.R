@@ -18,9 +18,6 @@ library(DigiCAT)
 # favicon (icon in browser tab)
 HTML('<link rel="icon" type="www/favicon.ico" href="www/favicon.ico"/>')
 
-## Source descriptions
-source(system.file("DigiCAT/desc_global.R", package = "DigiCAT"), local=TRUE)
-
 ui <- fluidPage(
   title = "DigiCAT",
   tags$head(tags$link(rel="shortcut icon", href="favicon.ico")),
@@ -39,6 +36,7 @@ ui <- fluidPage(
                        img(src = "logos/DigiCAT/logo.png", width = 300),
                        br(), br(),
                        menuItem("Analysis", tabName = "analysis", icon = icon("home")),
+                       menuItem("Tutorial", tabName = "tutorial", icon = icon("arrow-pointer")),
                        menuItem("Terms & Conditions", tabName = "TC", icon = icon("square-check")),
                        menuItem("About", tabName = "about", icon = icon("circle-info")),
                        checkboxInput("style", "Dark Mode"),
@@ -60,12 +58,13 @@ ui <- fluidPage(
         id = "methods-tabs",
         DigiCAT:::home_ui("home"),  ## Load home tab
         DigiCAT:::data_upload_ui("data_upload"),  ## Load home tab
-        DigiCAT:::CF_approach_ui("CF_approach", descriptions = desc_global), ## Load CF approach tab
+        DigiCAT:::CF_approach_ui("CF_approach"), ## Load CF approach tab
         DigiCAT:::balancing_ui("balancing"), ## Load balancing tab
         DigiCAT:::outcome_model_ui("outcome_model") ## Load outcome model tab
       )),
+      DigiCAT:::tutorial_ui("methods"),
       tabItem(tabName = "TC", DigiCAT:::TCs_page),
-      tabItem(tabName = "about", DigiCAT:::about_page))
+      tabItem(tabName = "about", ""))
       )# end dashboardBody
   )
 )

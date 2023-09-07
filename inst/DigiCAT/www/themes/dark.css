@@ -13,7 +13,7 @@
 /* active selected tab in the sidebarmenu */
 .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
 background-color: transparent;
-color: #73d7f4;
+color: #ffffff;
 }
 
 /* other links in the sidebarmenu */
@@ -25,7 +25,7 @@ color: #ffffff;
 /* other links in the sidebarmenu when hovered */
 .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
   background-color: transparent;
-  color: #73d7f4;
+  color: #f02094;
 }
 
 /* toggle button color  */
@@ -37,13 +37,13 @@ color: #ffffff;
 /* toggle button when hovered  */
 .skin-blue .main-header .navbar .sidebar-toggle:hover{
 background-color: transparent;
-color: #73d7f4;
+color: #f02094;
 }
 
 /* border of active/hovered tab  */
 .skin-blue .sidebar-menu > li.active > a,
 .skin-blue .sidebar-menu > li:hover > a {
-  border-left-color: #73d7f4;
+  border-left-color: #f02094;
 }
 
 /* sidebar background  */
@@ -75,29 +75,8 @@ color: #73d7f4;
   margin-bottom: 0px;
   background-color: #170344 !important;
   border-bottom-width: 30px ;
-  border-bottom-color: #8ecdff;
+  border-bottom-color: #76b9f5;
   color: #ffffff;
-}
-
-/* Datatable output format */
-.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
-  color: #ffffff;
-}
-thead {
-  color: #ffffff;
-}
-tbody {
-  color: #ffffff;
-}
-
-/* Tabpanel*/
-.tabbable > .nav > li > a {
-  background-color: #170344;
-  color:white;
-}
-.tabbable > .nav > li[class=active] > a {
-  background-color: #170344;
-  color: #8ecdff;
 }
 
       
@@ -109,7 +88,7 @@ tbody {
 
 /* data uplaod page font */  
 #dataupload {
-  color: #8ecdff;
+  color: #76b9f5;
   text-align: left;
 }
 
@@ -142,7 +121,6 @@ tbody {
 #well_panel {
   background-color: #170344;
   color: #ffffff;
-  font-size: 14px;
 }
 
 
@@ -154,7 +132,7 @@ tbody {
 
 /* Tab panel features */
 .tab_panel_feature {
-  background: #3E497A;
+  background: #8b98c1;
   border-radius: 5px;
   padding: 5px;
 }
@@ -163,19 +141,12 @@ tbody {
 .text_blocks {
   color: #ffffff;
   background: #170344; 
-  text-align: left;
-  padding: 15px; 
   border-radius: 5px;
 }
 
 /* hide analysis tabs */
 #methods-tabs { 
   display: none; 
-}
-
-/* hyperlink colour */
-#link {
-  color: #8ecdff;
 }
 
 /* hide outline of navbar for balancing output */

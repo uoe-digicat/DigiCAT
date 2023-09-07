@@ -86,17 +86,12 @@ get_R_script <- function(
     variable_input_code <- paste0(variable_input_code, "stratification_var <- ", "'", stratification_variable, "'\n")
   }
   
-  ## Reduce dataframe to inputted variables ----
-  
-  reduce_data_code <- paste0("\n","\n", "## Load in data (own)\n", "df <- df[,unique(c(t_var, y_var, m_vars, covars, weighting_var, cluster_var, stratification_var))]")
-  
   ## Propensity score estimation ----
   
   PS_score_estimation_code <- paste0(
     "\n",
     "\n", 
     "## Estimate propensity scores\n",
-    "## For more information on propensity score estimation, run '?DigiCAT::estimation_stage()'\n",
     "PS_estimation_results <- DigiCAT:::estimation_stage(\n",
     "  .data = df,\n",
     "  treatment_variable = t_var,\n",
@@ -117,7 +112,6 @@ get_R_script <- function(
     balancing_code <- paste0("\n",
                              "\n", 
                              "## Balance datasets using propensity score matching\n",
-                             "## For more information on balancing, run '?DigiCAT::balance_data()'\n",
                              "balancing_results <- DigiCAT:::balance_data(\n",
                              "  treatment_variable = t_var,\n",
                              "  matching_variable = m_vars,\n",
@@ -134,8 +128,7 @@ get_R_script <- function(
     
     balancing_code <- paste0("\n",
                              "\n", 
-                             "## Balance datasets using IPTW\n",
-                             "## For more information on balancing, run '?DigiCAT::balance_data()'\n",
+                             "## Balance datasets using IPTW\n\n",
                              "balancing_results <- DigiCAT:::balance_data(\n",
                              "  treatment_variable = t_var,\n",
                              "  matching_variable = m_vars,\n",
@@ -150,8 +143,7 @@ get_R_script <- function(
     
     balancing_code <- paste0("\n",
                              "\n", 
-                             "## Balance datasets using NBP\n",
-                             "## For more information on balancing, run '?DigiCAT::balance_data()'\n",
+                             "## Balance datasets using NBP\n\n",
                              "balancing_results <- DigiCAT:::balance_data(\n",
                              "  treatment_variable = t_var,\n",
                              "  matching_variable = m_vars,\n",
@@ -166,51 +158,28 @@ get_R_script <- function(
   
   ## Outcome model ----
   
-  if (CF_approach == "psm" | CF_approach == "iptw"){
-  
-    outcome_model_code <- paste0(
-      "\n",
-      "\n", 
-      "## Run outcome model \n",
-      "## For more information on the outcome model, run '?DigiCAT::outcome_analysis_stage()'\n",
-      "outcome_model_results <- DigiCAT:::outcome_analysis_stage(\n",
-      "  balanced_data = balancing_results,\n",
-      "  outcome_variable = y_var,\n",
-      "  treatment_variable = t_var,\n",
-      "  matching_variable = m_vars,\n",
-      "  sampling_weights = weighting_var,\n",
-      "  nonresponse_weights = weighting_var,\n",
-      "  weighting_variable = weighting_var,\n",
-      "  cluster_variable = cluster_var,\n",
-      "  strata_variable = stratification_var,\n",
-      "  counterfactual_method = '", CF_approach, "',\n",
-      "  missing_method = '", missingness,"',\n",
-      "  psmodel_obj = PS_estimation_results\n",
-      ")"
-    )
-  }
-  
-  if (CF_approach == "nbp"){
-    
-    outcome_model_code <- paste0(
-      "\n",
-      "\n", 
-      "## Run outcome model \n",
-      "## For more information on the outcome model, run '?DigiCAT::outcome_analysis_stage()'\n",
-      "outcome_model_results <- DigiCAT:::outcome_analysis_stage(\n",
-      "  balanced_data = balancing_results,\n",
-      "  outcome_variable = y_var,\n",
-      "  treatment_variable = t_var,\n",
-      "  matching_variable = m_vars,\n",
-      "  counterfactual_method = '", CF_approach, "',\n",
-      "  missing_method = '", missingness,"',\n",
-      "  psmodel_obj = PS_estimation_results\n",
-      ")"
-    )
-  }
+  outcome_model_code <- paste0(
+    "\n",
+    "\n", 
+    "## Run outcome model \n",
+    "outcome_model_results <- DigiCAT:::outcome_analysis_stage(\n",
+    "  balanced_data = balancing_results,\n",
+    "  outcome_variable = y_var,\n",
+    "  treatment_variable = t_var,\n",
+    "  matching_variable = m_vars,\n",
+    "  sampling_weights = weighting_var,\n",
+    "  nonresponse_weights = weighting_var,\n",
+    "  weighting_variable = weighting_var,\n",
+    "  cluster_variable = cluster_var,\n",
+    "  strata_variable = stratification_var,\n",
+    "  counterfactual_method = '", CF_approach, "',\n",
+    "  missing_method = '", missingness,"',\n",
+    "  psmodel_obj = PS_estimation_results\n",
+    ")"
+  )
   
   ## Create R script ----
-  r_script <- c(library_code, data_source_code, variable_input_code, reduce_data_code, PS_score_estimation_code, 
+  r_script <- c(library_code, data_source_code, variable_input_code, PS_score_estimation_code, 
                 balancing_code, outcome_model_code)
   noquote(capture.output(cat(r_script)))
   

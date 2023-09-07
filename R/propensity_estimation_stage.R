@@ -1,34 +1,7 @@
-
-#' Propensity score estimation
-#' 
-#' This function calculates the propensity score (or likelihood of belonging to the treatment group) 
-#' for each individual in the sample data, based on the matching variables provided.
-#' 
-#'
-#' @param .data 
-#' @param missing_method 
-#' @param model_type 
-#' @param treatment_variable 
-#' @param matching_variable 
-#' @param weighting_variable 
-#' @param cluster_variable 
-#' @param strata_variable 
-#' @param ... 
-#'
-#' @return Estimation model object
-#' @export
-#'
-#' @examples 
-#' estimation_stage(
-#' .data = DigiCAT::zp_eg,
-#' missing_method = "complete",
-#' model_type = "glm",
-#' treatment_variable = "Reading_age15",
-#' matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
-#' weighting_variable = NULL,
-#' cluster_variable = NULL,
-#' strata_variable = NULL
-#' )
+source("R/create_design.R")
+source("R/handle_missingness.R")
+source("R/estimate_model.R")
+source("R/get_propensity.R")
 
 estimation_stage <- function(.data, missing_method, model_type, 
                              treatment_variable, matching_variable,

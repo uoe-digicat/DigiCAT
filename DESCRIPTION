@@ -18,7 +18,6 @@ Imports:
     marginaleffects,
     mice,
     moments,
-    ranger,
     shinyFeedback,
     survey,
     shiny,
@@ -36,8 +35,7 @@ Imports:
     tidyverse,
     nbpMatching
 Remotes:
-    couthcommander/nbpMatching,
-    imbs-hl/ranger
+    couthcommander/nbpMatching
 Depends: 
     R (>= 2.10)
 LazyData: true

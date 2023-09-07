@@ -13,7 +13,7 @@
 /* active selected tab in the sidebarmenu */
 .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
 background-color: transparent;
-color: #C01976;
+color: #f02094;
 }
 
 /* other links in the sidebarmenu */
@@ -25,7 +25,7 @@ color: #170344;
 /* other links in the sidebarmenu when hovered */
 .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
   background-color: transparent;
-  color: #C01976;
+  color: #f02094;
 }
 
 /* toggle button color  */
@@ -37,13 +37,13 @@ color: #170344;
 /* toggle button when hovered  */
 .skin-blue .main-header .navbar .sidebar-toggle:hover{
 background-color: transparent;
-color: #C01976;
+color: #f02094;
 }
 
 /* border of active/hovered tab  */
 .skin-blue .sidebar-menu > li.active > a,
 .skin-blue .sidebar-menu > li:hover > a {
-  border-left-color: #C01976;
+  border-left-color: #f02094;
 }
 
 /* sidebar background  */
@@ -68,6 +68,7 @@ color: #C01976;
   color: #ffffff;
 }
 
+
 /* Match colour of navigation bar to background and add bottom border*/
 .navbar-static-top {
   position: relative;
@@ -76,27 +77,6 @@ color: #C01976;
   border-bottom-width: 30px ;
   border-bottom-color: #76b9f5;
   color: #ffffff;
-}
-
-/* Datatable output format */
-.dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_processing, .dataTables_wrapper .dataTables_paginate {
-  color: #170344;
-}
-thead {
-  color: #170344;
-}
-tbody {
-  color: #170344;
-}
-
-/* Tabpanel*/
-.tabbable > .nav > li > a {
-  background-color: white;
-  color:#170344;
-}
-.tabbable > .nav > li[class=active] > a {
-  background-color: white;
-  color: #4169e1;
 }
       
 /* Home page font */  
@@ -140,7 +120,6 @@ tbody {
 #well_panel {
   background-color: #ffffff;
   color: #170344;
-  font-size: 14px;
 }
 
 
@@ -161,7 +140,6 @@ tbody {
 .text_blocks {
   color: #170344;
   background: #ffffff; 
-  text-align: left;
   padding: 15px; 
   border-radius: 5px;
 }
@@ -172,14 +150,17 @@ tbody {
   display: none; 
 }
 
-/* hyperlink colour */
-#link {
-  color: #4169e1;
-}
-
 /* hide outline of navbar for balancing output */
 .nav-tabs {
   border-color: transparent;
+}
+
+/* change colour of buttons */
+.progress_button {
+  background-color: #ebfdc2;
+  color: #170344;
+  border-color: #7aad06;
+
 }
 
 /* change colour of buttons */
