@@ -104,13 +104,13 @@ data_to_use <- df2$amp
 abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2"),
                         weighting_variable = "SW") 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "A", 
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
                     missing_method = "weighting")
 
 ## TO DO - edit design object in extract_balanced_data
 
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", # outcome format needs changing for weighting approach
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", # outcome format needs changing for weighting approach
                               outcome_variable = "Y_C",
                               treatment_variable = "A", 
                               matching_variable = c("X1", "X2"), 
