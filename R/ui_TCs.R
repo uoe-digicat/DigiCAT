@@ -6,7 +6,7 @@ TCs_page <-
       h3("Terms and Conditions for DigiCAT App Usage (Non-Anonymized Data Restrictions)"),
       br(),
       h4("Purpose and Data Restrictions:"),
-       br(),
+      br(),
       h5("Users must not upload non-anonymized data and must adhere to the relevant all applicable end user and legal restrictions in using 
                 their own data with DigiCAT. Note that a version of DigiCAT that can be used on a local computer is available. User must not upload 
                 content that violates laws, infringes intellectual property rights, or is harmful."),
@@ -28,5 +28,5 @@ TCs_page <-
       br(),
       div(style = "text-align:center",
           actionButton('Btn_agree_TCs', 'I agree, get started'))
-
+      
   )

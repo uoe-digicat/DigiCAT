@@ -34,18 +34,18 @@ balancing_ui <- function(id) {
            
            ## Balancing choice selection ----
            
-             div(style = "display: flex;",
+           div(style = "display: flex;",
                ## Load balancing options and descriptions based on CF approach chosen
                div(style = "width: 49%;",
-                 uiOutput(ns("balancing_options"))
-                 ),
+                   uiOutput(ns("balancing_options"))
+               ),
                
                ## Balancing output ----
                
                div(style = "width: 49%; margin-left: 2%; border-color: transparent",
                    class = "text_blocks",
                    withSpinner(uiOutput(ns("balancing_output"))),
-                 )
+               )
            )
            
   )
@@ -57,7 +57,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                function(input, output, session) {
                  
                  ## Navigation bar ----
-
+                 
                  output$prog_choiceDU <- renderUI({p(paste0("Outcome: ", outcome_variable()),br(),paste0("Treatment: ", treatment_variable()), style="width: 200%; margin-left: -50%")})
                  output$prog_choiceCF <- renderUI({p(paste0("Approach: ", approach()),br(),paste0("Missingness: ", missingness()),br(),paste0("Model: ", balancing_model()), style="width: 200%; margin-left: -50%")})
                  
@@ -98,12 +98,12 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          br(),
                          div(style = "width: 100%",
                              class = "text_blocks",
-                               radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Ratio:"),
+                             radioButtons(session$ns("ratio_radio"), label = h4("Choose a Matching Ratio:"),
                                           choices = c(
                                             "1:1" = "one_to_one",
                                             "1:k" = "one_to_k"),
                                           selected = character(0)),
-                                          uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
+                             uiOutput(session$ns("ratio_slider_output")), ## Only show ration slider if 1:K is selected
                              uiOutput(session$ns("matching_ratio_missing_message"), style = "color: red;"), ## If no matching ratio selected when "Run" pressed, give warning
                              uiOutput(session$ns("matching_ratio_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                              br(),
@@ -119,7 +119,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$matching_ratio_description = NULL
                      balancing_values$ratio =  NULL
                      balancing_values$output = p(h4("Output:"),
-                     p("Once you have selected your matching method and ratio, press
+                                                 p("Once you have selected your matching method and ratio, press
                        'Run' to get output."))
                    }
                    
@@ -162,30 +162,30 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$output = p(h4("Output:"),
                                                  p("Press 'Run' to get balancing output."))
                    }
-
+                   
                    if (approach() == "iptw"){
                      
                      output$balancing_options <- renderUI({
                        div(
-                           div(style = "width: 100%;",
-                               class = "text_blocks",
-                               div(
-                                 descriptions$IPTW_balancing
-                               )
-                           )
+                         div(style = "width: 100%;",
+                             class = "text_blocks",
+                             div(
+                               descriptions$IPTW_balancing
+                             )
+                         )
                        )
                      })
                      
                      ## Create reactive value for approach description
                      balancing_values$matching_method_description = p(h4("Description:"),
-                                                           p("Info about balancing with weighting"))
+                                                                      p("Info about balancing with weighting"))
                      balancing_values$matching_ratio_description = NULL ##no ratio for weighting
                      balancing_values$output = p(h4("Output:"),
-                                  p("Once you have selected your matching method, press
+                                                 p("Once you have selected your matching method, press
                                 'Run' to get output."))
                    }
                  })
-
+                 
                  
                  ## Disable 'Next' button initially
                  shinyjs::disable("next_balancing_btn")
@@ -201,7 +201,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  observeEvent(input$next_balancing_btn, {
                    updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "outcome_model-tab")
                  })
-
+                 
                  ## Update descriptions and rerun message when input changes ----
                  
                  ## Update matching method description based on choice of approach
@@ -217,17 +217,17 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    
                    ## Remove missing parameter message if present
                    balancing_values$matching_method_missing_message <- NULL
-
+                   
                    ## Check if balancing has already been run, if so, output informative message, hide balancing results and force rerun
                    if (!is.null(balancing_values$balancing_stage_res)){
                      ## Replace balancing output with explanation of why output has been deleted
                      balancing_values$output <- p(h4("Output:"),
-                                                p(
-                                                  strong("It looks like balancing will have to be rerun, this is because some of the required inputs have been changed since the 
+                                                  p(
+                                                    strong("It looks like balancing will have to be rerun, this is because some of the required inputs have been changed since the 
                          previous run.")," Once you have selected your matching method and ratio, press
                          'Run' to get output."))
                      
-
+                     
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
                    }
@@ -237,28 +237,28 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  observeEvent(input$ratio_radio,{
                    
                    if (input$ratio_radio == "one_to_one"){
-                   
-                       balancing_values$matching_ratio_description <- descriptions$one_to_one_binary
-
-                      ## Update matching ratio to "1"
-                       balancing_values$ratio <- 1
-                       
-                       ## Remove ratio slider if present
-                        output$ratio_slider_output <- NULL
-                     }
                      
-                     if(input$ratio_radio == "one_to_k"){
-                       balancing_values$matching_ratio_description <- descriptions$one_to_K
-                       
-                       ## Add slider input for user to pick K in 1:k
-                       output$ratio_slider_output <- renderUI(
+                     balancing_values$matching_ratio_description <- descriptions$one_to_one_binary
+                     
+                     ## Update matching ratio to "1"
+                     balancing_values$ratio <- 1
+                     
+                     ## Remove ratio slider if present
+                     output$ratio_slider_output <- NULL
+                   }
+                   
+                   if(input$ratio_radio == "one_to_k"){
+                     balancing_values$matching_ratio_description <- descriptions$one_to_K
+                     
+                     ## Add slider input for user to pick K in 1:k
+                     output$ratio_slider_output <- renderUI(
                        sliderInput(session$ns("ratio_slider"), label = h4("Choose 'k':"),
-                                     min = 2, max = 10, value = 2)
-                       )
-                       
-                       ## Initiate "K" as 2
-                       balancing_values$ratio <- 2
-                       }
+                                   min = 2, max = 10, value = 2)
+                     )
+                     
+                     ## Initiate "K" as 2
+                     balancing_values$ratio <- 2
+                   }
                    
                    ## Remove missing parameter message if present
                    balancing_values$matching_ratio_missing_message <- NULL
@@ -309,7 +309,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      ## Remove balancing output
                      balancing_values$estimation_stage_res <- NULL
                      balancing_values$balancing_stage_res <- NULL
-  
+                     
                      ## Remove general output message
                      balancing_values$output  <- NULL
                      
@@ -318,7 +318,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      output$love_plot  <- NULL
                      output$balance_table <- NULL
                      output$observation_table <- NULL
-
+                     
                      ## Save potential error to check for running of code dependent on balancing model
                      error_check <- NA
                      error_check <- tryCatch({
@@ -333,8 +333,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          weighting_variable = survey_weight_var(),
                          cluster_variable = cluster_var(),
                          strata_variable = stratification_var()
-                         )
-
+                       )
+                       
                        ## Balance dataset
                        if (approach() == "psm"){
                          
@@ -346,20 +346,20 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            missing_method = missingness(),
                            ratio = balancing_values$ratio,
                            method = input$method_radio)
-
+                         
                        }
-
+                       
                        if (approach() == "iptw" | approach() == "nbp"){
-
+                         
                          balancing_values$balancing_stage_res <- balance_data(
                            counterfactual_method = approach(),
                            treatment_variable = treatment_variable(),
                            matching_variable = matching_variables(),
                            PS_estimation_object = balancing_values$estimation_stage_res,
                            missing_method = missingness())
-
+                         
                        }
-                       },
+                     },
                      
                      ## If balancing does not run, return error message and enable run button 
                      error = function(cond) {
@@ -368,42 +368,42 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        ## Output error message
                        balancing_values$output <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
                      })
-  
+                     
                      
                      ## Output balance plots and tables if no error in balancing
                      if (all(!grepl("Error:", error_check))){
                        try({
                          
                          if(approach() == "psm" | approach() == "iptw"){
-                         # Get AUC
-                         output$common_support <- renderUI(p(
-                           h4("Common Support Graph:"),
-                           renderPlot(evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())),
-                          descriptions$common_support_graph
+                           # Get AUC
+                           output$common_support <- renderUI(p(
+                             h4("Common Support Graph:"),
+                             renderPlot(evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())),
+                             descriptions$common_support_graph
                            ))
-                         #
-                         ## Get love plot
-                         output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_stage_res))
-                         ## Get balance table
-                         balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]])
-                         ## Remove empty columns from balance table
-                         balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
-                         ## Round numbers in balance table to 4 decimals
-                         names_temp <- row.names(balance_table)
-                         balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 3) else x))
-                         row.names(balance_table) <- names_temp
-                         ## Output balance table
-                         output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
-
-                         ## Get observation table
-                         observation_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]])
-                         ## Round numbers in observation table to 4 decimals
-                         names_temp <- row.names(observation_table)
-                         observation_table <- data.frame(lapply(observation_table,function(x) if(is.numeric(x)) round(x, 3) else x))
-                         row.names(observation_table) <- names_temp
-                         ## Output observation table
-                         output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
-
+                           #
+                           ## Get love plot
+                           output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_stage_res))
+                           ## Get balance table
+                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]])
+                           ## Remove empty columns from balance table
+                           balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
+                           ## Round numbers in balance table to 4 decimals
+                           names_temp <- row.names(balance_table)
+                           balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 3) else x))
+                           row.names(balance_table) <- names_temp
+                           ## Output balance table
+                           output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
+                           
+                           ## Get observation table
+                           observation_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]])
+                           ## Round numbers in observation table to 4 decimals
+                           names_temp <- row.names(observation_table)
+                           observation_table <- data.frame(lapply(observation_table,function(x) if(is.numeric(x)) round(x, 3) else x))
+                           row.names(observation_table) <- names_temp
+                           ## Output observation table
+                           output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
+                           
                          }
                          
                          
@@ -411,11 +411,11 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            
                            ## Get observation table, balancing table and love plot
                            balancing_values$NBP_balancing_output <- get_NBP_balancing_output(
-                            estimation_model_object = balancing_values$estimation_stage_res,
-                            balanced_data = balancing_values$balancing_stage_res,
-                            treatment_variable = treatment_variable(),
-                            matching_variables = matching_variables(),
-                            missing_method = missingness())
+                             estimation_model_object = balancing_values$estimation_stage_res,
+                             balanced_data = balancing_values$balancing_stage_res,
+                             treatment_variable = treatment_variable(),
+                             matching_variables = matching_variables(),
+                             missing_method = missingness())
                            
                            ## Get love plot
                            output$love_plot <- renderPlot(balancing_values$NBP_balancing_output$love_plot)
@@ -425,42 +425,42 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            output$observation_table <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$observation_table), rownames = TRUE, options = list(scrollX = TRUE))})
                            
                          }
-
-
+                         
+                         
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
                            tabsetPanel(id = "well_panel",
                                        ## Don't include common support graph as output if appraoch is NBP
                                        if(approach() != "nbp"){
-                                       tabPanel(title = "Common Support Graph",
-                                                value = NS(id, 'common_support_graph_tab'),
-                                                br(),
-                                                withSpinner(uiOutput(session$ns("common_support"))))
+                                         tabPanel(title = "Common Support Graph",
+                                                  value = NS(id, 'common_support_graph_tab'),
+                                                  br(),
+                                                  withSpinner(uiOutput(session$ns("common_support"))))
                                        },
-                                     tabPanel(title = "Observation Table",
-                                              value = NS(id, 'observation_table_tab'),
-                                              br(),
-                                              withSpinner(DT::dataTableOutput(session$ns("observation_table"))),
-                                              p("ESS = effective sample size")),
-                                     tabPanel(title = "Love Plot",
-                                              value = NS(id, 'love_plot_tab'),
-                                              br(),
-                                              withSpinner(plotOutput(session$ns("love_plot"))),
-                                              if(missingness() == "mi"){
-                                                p("Dots indicate standardised mean differences in matching variables before and after adjusting.
+                                       tabPanel(title = "Observation Table",
+                                                value = NS(id, 'observation_table_tab'),
+                                                br(),
+                                                withSpinner(DT::dataTableOutput(session$ns("observation_table"))),
+                                                p("ESS = effective sample size")),
+                                       tabPanel(title = "Love Plot",
+                                                value = NS(id, 'love_plot_tab'),
+                                                br(),
+                                                withSpinner(plotOutput(session$ns("love_plot"))),
+                                                if(missingness() == "mi"){
+                                                  p("Dots indicate standardised mean differences in matching variables before and after adjusting.
                                                   Bars represent the range across imputations.")
-                                              },
-                                              if(missingness() == "complete"){
-                                                p("Dots indicate standardised mean differences in matching variables before and after adjusting.")
-                                              }
-                                     ),
-                                     tabPanel(title = "Balance Table",
-                                              value = NS(id, 'balance_table_tab'),
-                                              br(),
-                                              withSpinner(DT::dataTableOutput(session$ns("balance_table")))
-                                     ))
+                                                },
+                                                if(missingness() == "complete"){
+                                                  p("Dots indicate standardised mean differences in matching variables before and after adjusting.")
+                                                }
+                                       ),
+                                       tabPanel(title = "Balance Table",
+                                                value = NS(id, 'balance_table_tab'),
+                                                br(),
+                                                withSpinner(DT::dataTableOutput(session$ns("balance_table")))
+                                       ))
                          )
-        
+                         
                          ## Enable 'Run' and 'Next' buttons
                          shinyjs::enable("run_balancing_btn")
                          shinyjs::enable("next_balancing_btn")
@@ -470,7 +470,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          balancing_values$matching_ratio_rerun_message <- p("Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.")
                        })
                      }
-                     }
+                   }
                  })
                  
                  ## Reset if balancing inputs have changed ----
@@ -479,16 +479,16 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  observeEvent(c(approach(), missingness(), balancing_model(), raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), survey_weight_var(), cluster_var(), stratification_var()), {
                    ## First check if balancing has been run yet, if yes, print informative message and force rerun
                    if (!is.null(balancing_values$balancing_stage_res)){
-
+                     
                      ## Replace balancing model output with explanation of why output has been deleted
                      balancing_values$output <- p(h4("Output:"),
                                                   strong("It looks like balancing will have to be rerun, this is because some of the required inputs have been changed since the
                        previous run.")," Once you have selected your matching method and ratio, press
                        'Run' to get output.")
-
+                     
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
-
+                     
                    }
                  })
                  

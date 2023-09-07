@@ -29,8 +29,8 @@ home_ui <- function(id) {
            div(style = "display: flex;",
                div(style = "width: 21%; text-align: left;",
                    class = "text_blocks",
-               h4("1. Data Upload:", style = "text-align: left;"),
-               p("Upload your own data or use our sample data. More infromation on data requirements and validation will be available on the
+                   h4("1. Data Upload:", style = "text-align: left;"),
+                   p("Upload your own data or use our sample data. More infromation on data requirements and validation will be available on the
                  data upload page.")),
                div(style = "width: 5%;position: relative; top: 50%; transform: translateY(40%);",
                    HTML('<center><img src="graphics/chevron_home_page.png" width="25"></center>')),
@@ -84,8 +84,8 @@ home_ui <- function(id) {
                                regardless of their statistical background, with a user-friendly platform that removes barriers and enables them 
                                to utilize these methods effectively. Please visit our ", a(id = "link", "tutorial", href = "https://uoe-digicat.github.io/#overview-of-tutorials"),
                                " for more info on using DigiCAT."))
-                        )
-                    ),
+                    )
+             ),
              
              column(12,
                     br(),
@@ -97,7 +97,7 @@ home_ui <- function(id) {
                            continue to welcome feedback from users at:", a(id = "link",href='mailto:uoe_digicat-group@uoe.onmicrosoft.com', "uoe_digicat-group@uoe.onmicrosoft.com"), "It was designed with FAIR principles 
                            in mind and you can find all code for the tool ", a(id = "link",href='https://github.com/uoe-digicat/DigiCAT', "here."))))
            ))
-
+  
 }
 
 home_server <- function(id, parent) {

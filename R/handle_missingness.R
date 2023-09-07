@@ -6,7 +6,6 @@
 #' @param ... 
 #'
 #' @import mice
-#' @import ranger
 
 handle_missingness <- function(.data, missing_method = NULL,
                                design_object = NULL,

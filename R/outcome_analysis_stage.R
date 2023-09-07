@@ -16,6 +16,7 @@
 #' @param ... 
 #'
 #' @return Estimated effect of treatment on outcome
+#' @import marginaleffects
 #' @export
 #'
 #' @examples
@@ -47,6 +48,7 @@
 #' matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
 #' psmodel_obj = estimates
 #' )
+
 
 outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome_variable,
                                    treatment_variable, matching_variable, psmodel_obj,
