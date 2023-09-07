@@ -384,7 +384,7 @@ balancing_server <- function(id, parent, raw_data, outcome_variable, treatment_v
                          # Get AUC
                          output$common_support <- renderUI(p(
                            h4("Common Support Graph:"),
-                           renderPlot(evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support")),
+                           renderPlot(evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())),
                            p("Info about common support graph.")
                            ))
                          #
