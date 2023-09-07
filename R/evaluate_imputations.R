@@ -5,7 +5,7 @@
 # predmatrix = allows inspection of collinearity removals also
 
 evaluate_imputations <- function(estimation_model_object, evaluation_method, graph_display,
-                                 .data, treatment_variable, matching_variable, outcome_variable,...){
+                                 .data,...){
   switch(evaluation_method, 
          distributional_discrepancy = {
            evaluation = check_distributional_discrepancy(estimation_model_object, graph_display)
@@ -32,12 +32,6 @@ evaluate_imputations <- function(estimation_model_object, evaluation_method, gra
          influx_outflux = {
            evaluation = mice::flux(.data)
          },
-         # calculate_m = {
-         #   impdata1 <- mice::mice(.data, m = 5, maxit = 10)
-         #   modelFit1 <- with(impdata1, lm(Y ~ X1 + X2 + X3)) # add formula - Tr as outcome or Y?
-         #   how_many_imputations(modelFit1)
-         #   how_many_imputations(modelFit1, cv = .01)
-         # },
          # residuals = { # TO DO
          #   evaluation = 
          # },

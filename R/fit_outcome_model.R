@@ -63,7 +63,6 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
 
   } else if (extracted_balanced_data$process == "weighting_psm"){
   model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
-  model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
 
   }
   else if (extracted_balanced_data$process == "cc_nbp"){

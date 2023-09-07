@@ -25,25 +25,23 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
          
          poly = { 
            if(missing_method == "mi" & model_type == "poly"){
-             # imputed.dfs <- complete(handled_missingness, "all")
-             # imputed.dfs <- lapply(imputed.dfs, function(x) data.frame(x, lp=estimated_propensity_model[[1]]$lp))
-             # propensity_score <- lapply(imputed.dfs, function(x) data.frame(x, model=estimated_propensity_model[[1]]$model))
+             imputed.dfs <- complete(handled_missingness, "all")
+             imputed.dfs <- lapply(imputed.dfs, function(x) data.frame(x, lp=estimated_propensity_model[[1]]$lp))
+             propensity_score <- lapply(imputed.dfs, function(x) data.frame(x, model=estimated_propensity_model[[1]]$model))
              
-             propensity_score <- estimated_propensity_model
-            # names(propensity_score)[names(propensity_score) == 'polly$lp'] <- 'lp'
+             #propensity_score <- lapply(imputed.dfs, function(x) data.frame(x, impset="i"))
              
+             # propensity_score$impset <- i
+
            } else if (missing_method == "complete" & model_type == "poly"){
            
            
            propensity_score = as.data.frame(cbind(handled_missingness, 
                                                   #estimated_propensity_model$model, don't think this is needed
                                                      estimated_propensity_model$lp))
-           names(propensity_score)[names(propensity_score) == "polly$lp"] <- "lp"
+           names(propensity_score)[names(propensity_score) == "estimated_propensity_model$lp"] <- "lp"
 
-           } else if(missing_method == "weighting"){
-            propensity_score = estimated_propensity_model$fitted.values 
-            # is this correct? Polr vs Svyolr difference in output - no lp?
-          }
+           }
          },
          stop("I need a valid model! (glm, gbm, rforest, poly)")
          
