@@ -49,24 +49,24 @@ ui <- fluidPage(
                          "<img src='logos/WT.png' height = '60'>",
                          "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
                          "<img src='logos/UoE.png' height = '60'>")
-                         )
+                       )
                      )
                      
     ),
     
     dashboardBody(
       tabItems(
-      tabItem(tabName = "analysis", tabsetPanel(
-        id = "methods-tabs",
-        DigiCAT:::home_ui("home"),  ## Load home tab
-        DigiCAT:::data_upload_ui("data_upload"),  ## Load home tab
-        DigiCAT:::CF_approach_ui("CF_approach", descriptions = desc_global), ## Load CF approach tab
-        DigiCAT:::balancing_ui("balancing"), ## Load balancing tab
-        DigiCAT:::outcome_model_ui("outcome_model") ## Load outcome model tab
-      )),
-      tabItem(tabName = "TC", DigiCAT:::TCs_page),
-      tabItem(tabName = "about", DigiCAT:::about_page))
-      )# end dashboardBody
+        tabItem(tabName = "analysis", tabsetPanel(
+          id = "methods-tabs",
+          DigiCAT:::home_ui("home"),  ## Load home tab
+          DigiCAT:::data_upload_ui("data_upload"),  ## Load home tab
+          DigiCAT:::CF_approach_ui("CF_approach", descriptions = desc_global), ## Load CF approach tab
+          DigiCAT:::balancing_ui("balancing"), ## Load balancing tab
+          DigiCAT:::outcome_model_ui("outcome_model") ## Load outcome model tab
+        )),
+        tabItem(tabName = "TC", DigiCAT:::TCs_page),
+        tabItem(tabName = "about", DigiCAT:::about_page))
+    )# end dashboardBody
   )
 )
 

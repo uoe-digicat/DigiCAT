@@ -53,4 +53,5 @@ weighting_variable = NULL,
 cluster_variable = NULL,
 strata_variable = NULL
 )
+
 }

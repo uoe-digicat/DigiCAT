@@ -13,7 +13,7 @@ reset_upload_page <- function(reset_errors = FALSE, hide_data = FALSE, hide_vali
     feedbackDanger("treatment", show = FALSE)
     feedbackDanger("matchvars", show = FALSE)
     feedbackDanger("covars", show = FALSE)
-      }
+  }
   
   if (hide_data){
     ## Hide descriptive tab

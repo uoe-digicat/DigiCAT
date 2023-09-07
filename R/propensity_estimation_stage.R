@@ -29,7 +29,7 @@
 #' cluster_variable = NULL,
 #' strata_variable = NULL
 #' )
-
+#' 
 estimation_stage <- function(.data, missing_method, model_type, 
                              treatment_variable, matching_variable,
                              weighting_variable = NULL, cluster_variable = NULL,

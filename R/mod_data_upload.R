@@ -483,29 +483,29 @@ data_upload_server <- function(id, parent, enableLocal) {
                                                                           non_response_weight = input$non_response_weight_checkbox,
                                                                           clustering_var = input$clustering_var,
                                                                           stratification_var = input$stratification_var)
-
+                         
                          ## If survey design weight, clustering or stratification unsuitable (based on missingness or error in survey design), overwrite variable name with NULL or output
                          if (data_upload_values$validation$log$survey_weight_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
                            data_upload_values$survey_weight_var <- NULL
                          } else{ ## otherwise, overwrite with survey weight variable name to be output
                            data_upload_values$survey_weight_var <- input$survey_weight_var
                          }
-
+                         
                          if (data_upload_values$validation$log$clustering_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
                            data_upload_values$clustering_var <- NULL
                          } else{ ## otherwise, overwrite with clustering variable name to be output
                            data_upload_values$clustering_var <- input$clustering_var
                          }
-
+                         
                          if (data_upload_values$validation$log$stratification_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
                            data_upload_values$survey_weight <- NULL
                          } else{ ## otherwise, overwrite with stratification variable name to be output
                            data_upload_values$survey_weight <- input$stratification_var
                          }
-
+                         
                          ## If validation did not catch any fatal errors, enable "Next" button
                          if (data_upload_values$validation$log$treatment_variable_error == FALSE){
-                          shinyjs::enable("nextDU_btn")
+                           shinyjs::enable("nextDU_btn")
                          }
                          
                          ## Display warning under data/variable selection warning about reselection requiring revalidation/rerun of subsequent analysis

@@ -16,7 +16,7 @@
 #' @param outcome_model Name of outcome model being used (character string)
 
 get_R_script <- function(
-  ## Data upload
+    ## Data upload
   data_source, 
   file_path = NULL,
   categorical_variables = NULL,
@@ -44,15 +44,15 @@ get_R_script <- function(
     "remotes::install_github('josiahpjking/DigiCAT@develop')\n",
     "library(DigiCAT)\n"
   )
-
+  
   
   ## Data upload ----
   if (data_source == "own"){
     data_source_code <- paste0("\n","\n", "## Load in data (own)\n", "df <- read.csv(",file_path,")")
-    }
+  }
   if (data_source == "sample"){
     data_source_code <- paste0("\n","\n", "## Load in data (sample)\n", "df <- DigiCAT::zp_eg")
-    }
+  }
   
   ## Variable input
   variable_input_code <- paste0("\n \n ## Define input variables \n",
@@ -60,7 +60,7 @@ get_R_script <- function(
                                 "y_var <- ", "'",  outcome_variable, "'","\n",
                                 "t_var <- ", "'", treatment_variable, "'\n",
                                 "m_vars <- c(", paste0("'", matching_variables, "'", collapse = ","),")\n"
-                                )
+  )
   
   if (is.null(covariates)){
     variable_input_code <- paste0(variable_input_code, "covars <- NULL \n")
@@ -107,11 +107,11 @@ get_R_script <- function(
     "  missing_method = '", missingness,"',\n",
     "  model_type = '", balancing_model,"'\n",
     ")"
-    )
+  )
   
   
   ## Balancing ----
-    
+  
   if (CF_approach == "psm"){
     
     balancing_code <- paste0("\n",
@@ -128,9 +128,9 @@ get_R_script <- function(
                              "  method = '", matching_method,"'\n",
                              ")"
     )
-    }
+  }
   
-    if (CF_approach == "iptw"){
+  if (CF_approach == "iptw"){
     
     balancing_code <- paste0("\n",
                              "\n", 
@@ -143,8 +143,8 @@ get_R_script <- function(
                              "  missing_method = '", missingness,"',\n",
                              "  PS_estimation_object = PS_estimation_results\n",
                              ")"
-                             )
-    }
+    )
+  }
   
   if (CF_approach == "nbp"){
     
@@ -162,12 +162,12 @@ get_R_script <- function(
     )
   }
   
-
+  
   
   ## Outcome model ----
   
   if (CF_approach == "psm" | CF_approach == "iptw"){
-  
+    
     outcome_model_code <- paste0(
       "\n",
       "\n", 
