@@ -162,9 +162,10 @@ jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp"
 
 
 
-setwd("~/Desktop/WT_data_prize/bin/DigiCAT/")
+setwd("~/Desktop/WT_data_prize/bin/DigiCAT/R")
 files.sources = list.files()
-sapply(files.sources, source)
+setwd("~/Desktop/WT_data_prize/bin/DigiCAT/")
+sapply(paste0("R/",files.sources), source)
 
 
 

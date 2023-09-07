@@ -23,9 +23,17 @@ get_validation(
 
 \item{matchvars}{Name of matching variables.}
 
-\item{data}{Name of upladed dataset. Default is 'inputData$rawdata'.}
+\item{covars}{Name of covariates.}
 
-\item{NRW_var}{Name of non-response weight variable.}
+\item{survey_weight_var}{Name of survey weight variable.}
+
+\item{non_response_weight}{Is there a non-response weight variable?}
+
+\item{clustering_var}{Name of clustering variable.}
+
+\item{stratification_var}{Name of stratification variable.}
+
+\item{data}{Name of upladed dataset. Default is 'inputData$rawdata'.}
 }
 \description{
 Data validation in DigiCAT
