@@ -302,6 +302,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    }
                    ## If all required input present, carry out balancing
                    if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) | ((approach() == "nbp"))  ) {
+
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
