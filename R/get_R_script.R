@@ -1,7 +1,7 @@
 #' Function to produce downloadable R script
 
 #' @param data Dataframe
-#' @param data_source Source of data: "own", or "sample"
+#' @param data_source Source of data: `"own"`, or `"sample"`
 #' @param file_path File path to data
 #' @param categorical_variables Vector of categorical variable names in dataset
 #' @param outcome_variable Name of outcome variable in dataset (character string)
@@ -10,8 +10,8 @@
 #' @param covariates Vector of covariate names in dataset
 #' @param CF_approach Name of counterfactual appraoch being taken (character string)
 #' @param balancing_model Name of balancing model being used (character string)
-#' @param missingness Name of method of dealing with missingness being used (character string): "mi", or "complete"
-#' @param matching_method Name of balancing method being used (character string): "nearest" or "optimal"
+#' @param missingness Name of method of dealing with missingness being used (character string): `"mi"`, or `"complete"`
+#' @param matching_method Name of balancing method being used (character string): `"nearest"` or `"optimal"`
 #' @param matching_ratio Name of balancing ratio being used (numeric)
 #' @param outcome_model Name of outcome model being used (character string)
 
