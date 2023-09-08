@@ -19,25 +19,25 @@ outcome_analysis_stage(
 )
 }
 \arguments{
-\item{balanced_data}{}
+\item{balanced_data}{Balanced data object}
 
-\item{counterfactual_method}{}
+\item{counterfactual_method}{Character string indicating your chosen approach \code{"psm"}, \code{"iptw"}, or \code{"nbp"}}
 
-\item{outcome_variable}{}
+\item{outcome_variable}{Character string matching column name of your outcome variable}
 
-\item{treatment_variable}{}
+\item{treatment_variable}{Character string matching column name of your treatment variable}
 
-\item{matching_variable}{}
+\item{matching_variable}{Character vector matching column name(s) of your matching variable(s)}
 
-\item{psmodel_obj}{}
+\item{psmodel_obj}{Propensity score estimation object}
 
-\item{cluster_variable}{}
+\item{cluster_variable}{Character string matching column name of your clustering variable}
 
-\item{nonresponse_weights}{}
+\item{nonresponse_weights}{Character string matching column name of your non-response weight variable}
 
-\item{sampling_weights}{}
+\item{sampling_weights}{Character string matching column name of your sampling weight variable}
 
-\item{missing_method}{}
+\item{missing_method}{Character string indicating your chosen method of dealing with missingness \code{"complete"}, \code{"mi"}, or \code{"weighting"}}
 
 \item{...}{}
 }

@@ -3,16 +3,16 @@
 #' 
 #' This function runs the outcome model for counterfactual analysis in DigiCAT. 
 #'
-#' @param balanced_data 
-#' @param counterfactual_method 
-#' @param outcome_variable 
-#' @param treatment_variable 
-#' @param matching_variable 
-#' @param psmodel_obj 
-#' @param cluster_variable 
-#' @param nonresponse_weights 
-#' @param sampling_weights 
-#' @param missing_method 
+#' @param balanced_data Balanced data object
+#' @param counterfactual_method Character string indicating your chosen approach `"psm"`, `"iptw"`, or `"nbp"`
+#' @param outcome_variable Character string matching column name of your outcome variable
+#' @param treatment_variable Character string matching column name of your treatment variable
+#' @param matching_variable Character vector matching column name(s) of your matching variable(s)
+#' @param psmodel_obj Propensity score estimation object
+#' @param cluster_variable Character string matching column name of your clustering variable
+#' @param nonresponse_weights Character string matching column name of your non-response weight variable
+#' @param sampling_weights Character string matching column name of your sampling weight variable
+#' @param missing_method Character string indicating your chosen method of dealing with missingness `"complete"`, `"mi"`, or `"weighting"`
 #' @param ... 
 #'
 #' @return Estimated effect of treatment on outcome

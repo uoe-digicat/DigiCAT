@@ -4,15 +4,14 @@
 #' This function calculates the propensity score (or likelihood of belonging to the treatment group) 
 #' for each individual in the sample data, based on the matching variables provided.
 #' 
-#'
-#' @param .data 
-#' @param missing_method 
-#' @param model_type 
-#' @param treatment_variable 
-#' @param matching_variable 
-#' @param weighting_variable 
-#' @param cluster_variable 
-#' @param strata_variable 
+#' @param .data dataframe
+#' @param missing_method Character string indicating your chosen method of dealing with missingness `"complete"`, `"mi"`, or `"weighting"`
+#' @param model_type Character string indicating your chosen model for calculating propensity scores `"glm"`
+#' @param treatment_variable Character string matching column name of your treatment variable
+#' @param matching_variable Character vector/string matching column name(s) of your matching variable(s)
+#' @param weighting_variable Character string matching column name of your weighting variable
+#' @param cluster_variable Character string matching column name of your clustering variable
+#' @param strata_variable Character string matching column name of your stratification variable
 #' @param ... 
 #'
 #' @return Estimation model object

@@ -24,7 +24,7 @@ get_R_script(
 )
 }
 \arguments{
-\item{data_source}{Source of data: "own", or "sample"}
+\item{data_source}{Source of data: \code{"own"}, or \code{"sample"}}
 
 \item{file_path}{File path to data}
 
@@ -40,11 +40,11 @@ get_R_script(
 
 \item{CF_approach}{Name of counterfactual appraoch being taken (character string)}
 
-\item{missingness}{Name of method of dealing with missingness being used (character string): "mi", or "complete"}
+\item{missingness}{Name of method of dealing with missingness being used (character string): \code{"mi"}, or \code{"complete"}}
 
 \item{balancing_model}{Name of balancing model being used (character string)}
 
-\item{matching_method}{Name of balancing method being used (character string): "nearest" or "optimal"}
+\item{matching_method}{Name of balancing method being used (character string): \code{"nearest"} or \code{"optimal"}}
 
 \item{matching_ratio}{Name of balancing ratio being used (numeric)}
 
