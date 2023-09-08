@@ -1,9 +1,6 @@
 #' Flag variable input errors function
 #' @import shinyFeedback
-#' @param outcome Specify input. 
-#' @param treatment Specify treatment 
-#' @param matchvars Specify matchvars 
-#' @param covars Specify covars 
+#' 
 check_selected_variables <- function(outcome, treatment, matchvars, covars){
   
   

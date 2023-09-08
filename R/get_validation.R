@@ -1,6 +1,6 @@
 #' Data validation in DigiCAT
 #' @import moments
-#' @param data Name of upladed dataset. Default is 'inputData$rawdata'.
+#' @param data Name of uploaded dataset.
 #' @param treatment Name of treatment variable.
 #' @param outcome Name of outcome variable.
 #' @param matchvars Name of matching variables.

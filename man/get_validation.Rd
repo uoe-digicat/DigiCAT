@@ -33,7 +33,7 @@ get_validation(
 
 \item{stratification_var}{Name of stratification variable.}
 
-\item{data}{Name of upladed dataset. Default is 'inputData$rawdata'.}
+\item{data}{Name of uploaded dataset.}
 }
 \description{
 Data validation in DigiCAT

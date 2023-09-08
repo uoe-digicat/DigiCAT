@@ -6,15 +6,6 @@
 \usage{
 check_selected_variables(outcome, treatment, matchvars, covars)
 }
-\arguments{
-\item{outcome}{Specify input.}
-
-\item{treatment}{Specify treatment}
-
-\item{matchvars}{Specify matchvars}
-
-\item{covars}{Specify covars}
-}
 \description{
 Flag variable input errors function
 }
