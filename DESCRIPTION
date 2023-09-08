@@ -1,12 +1,24 @@
 Package: DigiCAT
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+Title: DigiCAT: Digital Counterfactual Analysis Tool
+Version: 1.0.0
+Authors@R:
+  c(person(given = "Aja",
+           family = "Murray",
+           role = "aut"),
+    person(given = "Josiah",
+           family = "King",
+           role = c("aut", "cre"),
+           email = "uoe_digicat-group@uoe.onmicrosoft.com"),
+    person(given = "Helen Wright",
+           family = "King",
+           role = "aut"),
+    person(given = "Hannah",
+           family = "Casey",
+           role = "aut"),
+    person("Wellcome Mental Health Data Prize", 
+            role = "fnd"))
+Description: With the DigiCAT app, you can upload your own data and leverage propensity score methods to conduct counterfactual analyses, gaining insights into the causal effects of specific interventions or treatments. The primary objective of the DigiCAT app is to provide researchers, regardless of their statistical background, with a user-friendly platform that removes barriers and enables them to utilize these methods effectively.
+License: use_gpl3_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3.9000
