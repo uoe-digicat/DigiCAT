@@ -376,15 +376,17 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        try({
                          
                          if(approach() == "psm" | approach() == "iptw"){
-                           # Get AUC
+                           # Get common support graph
+                           balancing_values$common_support_plot <- evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())
                            output$common_support <- renderUI(p(
                              h4("Common Support Graph:"),
-                             renderPlot(evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())),
+                             renderPlot(balancing_values$common_support_plot),
                              descriptions$common_support_graph
                            ))
                            #
                            ## Get love plot
-                           output$love_plot <- renderPlot(cobalt::love.plot(balancing_values$balancing_stage_res))
+                           balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
+                           output$love_plot <- renderPlot(balancing_values$love_plot)
                            ## Get balance table
                            balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]])
                            ## Remove empty columns from balance table
@@ -394,6 +396,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 3) else x))
                            row.names(balance_table) <- names_temp
                            ## Output balance table
+                           balancing_values$balance_table <- balance_table
                            output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
                            
                            ## Get observation table
@@ -403,6 +406,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            observation_table <- data.frame(lapply(observation_table,function(x) if(is.numeric(x)) round(x, 3) else x))
                            row.names(observation_table) <- names_temp
                            ## Output observation table
+                           balancing_values$observation_table <- observation_table
                            output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
                            
                          }
@@ -419,10 +423,13 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                              missing_method = missingness())
                            
                            ## Get love plot
-                           output$love_plot <- renderPlot(balancing_values$NBP_balancing_output$love_plot)
+                           balancing_values$love_plot <- balancing_values$NBP_balancing_output$love_plot
+                           output$love_plot <- renderPlot(balancing_values$love_plot)
                            ## Get balance table
+                           balancing_values$balance_table <- as.data.frame(balancing_values$NBP_balancing_output$balance_table)
                            output$balance_table  <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$balance_table), rownames = TRUE, options = list(scrollX = TRUE))})
                            ## Get observation table
+                           balancing_values$observation_table <- as.data.frame(balancing_values$NBP_balancing_output$observation_table)
                            output$observation_table <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$observation_table), rownames = TRUE, options = list(scrollX = TRUE))})
                            
                          }
@@ -509,7 +516,11 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  Balancing_output <- reactiveValues(estimation_stage_res = NULL,
                                                     balancing_stage_res = NULL,
                                                     ratio_radio = NULL,
-                                                    method_radio = NULL
+                                                    method_radio = NULL,
+                                                    common_support_plot = NULL,
+                                                    observation_table = NULL,
+                                                    love_plot = NULL,
+                                                    balance_table = NULL
                  )
                  
                  observe({
@@ -517,6 +528,10 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    Balancing_output$balancing_stage_res <- balancing_values$balancing_stage_res
                    Balancing_output$ratio_radio <- balancing_values$ratio
                    Balancing_output$method_radio <- input$method_radio
+                   Balancing_output$common_support_plot <- balancing_values$common_support_plot
+                   Balancing_output$observation_table <- balancing_values$observation_table
+                   Balancing_output$love_plot <- balancing_values$love_plot
+                   Balancing_output$balance_table <- balancing_values$balance_table
                  })
                  
                  return(Balancing_output)
