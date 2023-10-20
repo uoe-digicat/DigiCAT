@@ -46,13 +46,13 @@ ui <- fluidPage(
                          "<br><br><br><br><br><br><br><br><br><br><br><br>",
                          "<p style = 'text-align: left; padding-left: 20px;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
                          "<br><br><br>",
-                         "<img src='logos/WT.png' height = '60'>",
+                         "<a href='https://wellcome.org' target='_blank'><img src='logos/WT.png' height = '60'>",
                          "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
-                         "<img src='logos/UoE.png' height = '60'>")
+                         "<a href='https://www.ed.ac.uk' target='_blank'><img src='logos/UoE.png' height = '60'>"),
+                         "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
+                         "<a href='https://github.com/uoe-digicat/DigiCAT' target='_blank'><img src='logos/github-mark.png' height = '60'>")
                        )
-                     )
-                     
-    ),
+                     ),
     
     dashboardBody(
       tabItems(
