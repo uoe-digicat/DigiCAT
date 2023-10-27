@@ -157,8 +157,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    
                    
                    
-                   ## If outcome model has already been run, give informative message about rerun and disable "Next" button to force rerun
-                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
+                   ## If outcome model has already been run, give informative message about rerun
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res$standardised_format)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                       p(
@@ -234,15 +234,15 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          if(approach() == "psm" | approach() == "iptw"){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             descriptions$estimate,
-                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[1,1], 4)))),
+                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,1], 4)))),
                                                             br(),
                                                             descriptions$standard_error,
-                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[1,2], 4)))),
+                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,2], 4)))),
                                                             br(),
                                                             descriptions$p_value,
-                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[1,3], 4)))),
+                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,3], 4)))),
                                                             br(),
-                                                            strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4))))
+                                                            strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,5], 4))))
 
                            )
                          }
@@ -250,13 +250,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          if(approach() == "nbp"){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             descriptions$estimate,
-                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[2,1], 4)))),
+                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,1], 4)))),
                                                             br(),
                                                             descriptions$standard_error,
-                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[2,2], 4)))),
+                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,2], 4)))),
                                                             br(),
                                                             descriptions$p_value,
-                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[2,4], 4))))
+                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,4], 4))))
                            )
                          }
                          
@@ -277,13 +277,17 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            covariates = covariates(),
                            weighting_variable = survey_weight_var(),
                            cluster_variable = cluster_var(),
-                           stratification_variable = stratification_var(),
+                           strata_variable = stratification_var(),
                            CF_approach = approach(),
-                           missingness = missingness(),
+                           missing_method = missingness(),
                            balancing_model = balancing_model(),
                            matching_method = matching_method(),
                            matching_ratio = matching_ratio(),
-                           outcome_model = input$outcome_model_radio)
+                           outcome_model = input$outcome_model_radio,
+                           DigiCAT_balanced_data = balancing_stage_res(),
+                           DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
+                           DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
+                           DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results)
 
                          
                          ## Add download script button
@@ -308,7 +312,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Remove outcome model output and force rerun if previous steps have changed since previous run
                  observeEvent(c(estimation_stage_res(), balancing_stage_res()), {
                    ## First check if outcome model has been run yet, if yes, print informative message in output
-                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res$standardised_format)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                       p(
@@ -349,6 +353,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      filename = "DigiCAT_report.pdf",
                      content =
                        function(file) {
+                         shinyjs::disable("download_report")
+                         on.exit(shinyjs::enable("download_report"))
                          output <- render(
                            input = "report_template.Rmd",
                            output_format = "pdf_document",
@@ -373,7 +379,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                          love_plot = love_plot(),
                                          balance_table = balance_table(),
                                          outcome_model = input$outcome_model_radio,
-                                         outcome_res = outcome_model_values$outcome_analysis_stage_res)
+                                         outcome_res = outcome_model_values$outcome_analysis_stage_res$standardised_format)
                          )
                          file.copy(output, file)
                        }

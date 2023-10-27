@@ -43,16 +43,11 @@ data_upload_ui <- function(id) {
                           tags$h4(style="text-align: left;", "Choose CSV File or Use Example Data"),
                           uiOutput(ns("local_disabled")),
                           
-                          column(12,
-                                 fluidRow(column(6,
-                                                 ## Add file input for user to upload own data
-                                                 div(fileInput(ns("file1"), label = NULL, placeholder = "No file selected", accept=c("text/csv","text/comma-separated-values,text/plain",".csv")))
-                                                 ),
-                                          column(6,
-                                                 ## Add button to load sample data
-                                                 div(class = "buttonagency", actionButton(NS(id,"Btn_sampledata"), "Example Data"))
-                                                 )
-                                          )),
+                          div(style="margin: 0 auto;",
+                              actionButton(NS(id,"Btn_sampledata"), "Example Data", width = "100%"), ## Add button to load sample data
+                              p("OR", style="text-align: center; padding-top:5px;"),
+                              fileInput(ns("file1"), label = NULL, placeholder = "No file selected", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))),  ## Add file input for user to upload own data 
+                          ## Add variable inputs
                           pickerInput(inputId=ns("categorical_vars"), label ="Select categorical variables *", multiple = TRUE, 
                                       choices=NULL, selected=NULL
                           )  %>% ## add info about variables being classed automatically
@@ -544,7 +539,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                    data_upload_output$data <- data_upload_values$rawdata[,unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- input$file1$datapath
-                   data_upload_output$categorical_vars <- data_upload_values$categorical_vars
+                   data_upload_output$categorical_vars <- input$categorical_vars
                    data_upload_output$outcome <- input$outcome
                    data_upload_output$treatment <- input$treatment
                    data_upload_output$matchvars <- input$matchvars

@@ -447,7 +447,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
                            output$love_plot <- renderPlot(balancing_values$love_plot)
                            ## Get balance table
-                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]])
+                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
                            ## Remove empty columns from balance table
                            balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
                            ## Round numbers in balance table to 4 decimals
