@@ -43,7 +43,7 @@ of `r params$treatment_variable` on `r params$outcome_variable`.
 Matching variables included
 `r sub(",([^,]*)$"," and\\1", paste0(params$matching_variables, collapse = ", "))`.
 
-```{r, echo=FALSE, include=TRUE, comment=NA}
+```{r input, echo=FALSE, include=TRUE, comment=NA}
 
 additional_input_variables <- NULL
 
@@ -76,7 +76,7 @@ additional_input_variables <- paste(additional_input_variables, collapse = " ")
 `r additional_input_variables`
 
 ## Counterfactual Approach
-```{r, include = FALSE}
+```{r cf approach, include = FALSE}
 
 CF_approach <- NULL
 
@@ -134,13 +134,13 @@ CF_approach <- paste(CF_approach, collapse = " ")
 `r CF_approach`
 
 ## Balancing
-```{r, echo=FALSE}
+```{r balancing, echo=FALSE}
 balancing <- NULL
 
 ## Balancing parameters
 
 if(params$CF_approach == "psm"){
-  balancing <- paste0("Matching was carried out using a ratio of 1:", params$matching_ratio, " and a matching method of ", params$matching_method)
+  balancing <- paste0("Matching was carried out using a ratio of 1:", params$matching_ratio, " and a matching method of '", params$matching_method,"'. ")
 }
 
 if(params$CF_approach == "iptw"){
@@ -158,26 +158,87 @@ balancing <- paste(balancing, collapse = " ")
 
 `r balancing`
 
-```{r, echo=FALSE, include=TRUE, comment=NA}
+\newpage
+
+```{r common support description, echo=FALSE, include=TRUE, comment=NA}
+
+## Start plot number counter
+plot_number <- 1
+common_support_description <- "Common support for NBP coming soon."
 
 ## Common support graph
 if(params$CF_approach == "psm" | params$CF_approach == "iptw"){
-  params$common_support_plot + ggtitle("Common Support Graph")
+  common_support_description <- paste0("Plot 1: Common Support Graph")
+  plot_number <- plot_number + 1
 }
-
-## Observation table
-kable(params$observation_table, caption = "Observation table", align = "l")
-
-## Love Plot
-params$love_plot + ggtitle("Love Plot: Covariate Balance")
-
-## Balance table
-kable(params$balance_table, caption = "Balance table", align = "l")
 
 ```
 
+\begin{gather*}
+`r common_support_description`
+\end{gather*} 
+
+
+```{r common support plot, echo=FALSE, include=TRUE, comment=NA}
+
+## Common support graph
+if(params$CF_approach == "psm" | params$CF_approach == "iptw"){
+  params$common_support_plot
+}
+
+```
+
+\newpage
+
+```{r observation table , echo=FALSE, include=TRUE, comment=NA}
+
+## Observation table
+knitr::kable(params$observation_table, caption = "Observation table", format="latex", 
+      align = c("|p{6cm}","p{6cm}","p{6cm}|"), position = "h!")
+```
+
+\newpage
+
+```{r love plot description, echo=FALSE, include=TRUE, comment=NA}
+
+love_plot_description <- paste0("Plot ", plot_number, ": Love Plot")
+  plot_number <- plot_number + 1
+  
+
+```
+
+\begin{gather*}
+`r love_plot_description`
+\end{gather*} 
+
+```{r love plot, echo=FALSE, include=TRUE, comment=NA}
+
+## Love Plot
+params$love_plot
+
+```
+
+\newpage
+
+```{r balance table, echo=FALSE, include=TRUE, comment=NA}
+
+## Balance table
+if (params$missingness == "mi"){ ## More columns with MI
+
+knitr::kable(params$balance_table, caption = "Balance table", format="latex", 
+      align = c("|p{2cm}","p{2cm}", "p{2cm}", "p{2cm}", "p{2cm}", "p{2cm}","p{2cm}|"), position = "h!")
+} else{
+  knitr::kable(params$balance_table, caption = "Balance table", format="latex", 
+      align = c("|p{4cm}","p{4cm}", "p{4cm}","p{4cm}|"), position = "h!")
+
+}
+
+```
+
+\newpage
+
 ## Outcome Model
-```{r, echo = FALSE}
+```{r outcome, echo = FALSE}
 outcome_model <- NULL
 
 if(params$outcome_model == "linear_regression_wo_mvars"){
@@ -192,7 +253,13 @@ if(params$outcome_model == "linear_regression_w_mvars_interactions"){
   outcome_model <- paste0("Linear regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
 }
 
-outcome_model <- paste0(outcome_model," From this analysis, the estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " is ", round(params$outcome_res[1,1], 4), "(p-value = ", round(params$outcome_res[1,3], 4), ", standard error = ", round(params$outcome_res[1,2], 4), ", 95% confidence interval:", round(params$outcome_res[1,4], 4), " to ", round(params$outcome_res[1,5], 4),  ")" )
+if(params$CF_approach == "psm" | params$CF_approach == "iptw" ){
+  outcome_model <- paste0(outcome_model," From this analysis, the estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " is ", round(params$outcome_res[1,1], 4), "(p-value = ", round(params$outcome_res[1,3], 4), ", standard error = ", round(params$outcome_res[1,2], 4), ", 95% confidence interval:", round(params$outcome_res[1,4], 4), " to ", round(params$outcome_res[1,5], 4),  ")" )
+}
+
+if(params$CF_approach == "nbp"){
+  outcome_model <- paste0(outcome_model," From this analysis, the estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " is ", round(params$outcome_res[2,1], 4), " (p-value = ", round(params$outcome_res[2,4], 4), ", standard error = ", round(params$outcome_res[2,2], 4), ").")
+}
 
 ```
 
@@ -202,6 +269,6 @@ outcome_model <- paste0(outcome_model," From this analysis, the estimated effect
 
 ## R session information:
 
-```{r, echo=FALSE, include=TRUE}
+```{r session info, echo=FALSE, include=TRUE, }
 sessionInfo()
 ```

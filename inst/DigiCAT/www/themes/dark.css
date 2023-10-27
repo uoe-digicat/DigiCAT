@@ -90,6 +90,11 @@ tbody {
   color: #ffffff;
 }
 
+/* Standard font colour*/
+#basic_font {
+  color: #ffffff;
+}
+
 /* Tabpanel*/
 .tabbable > .nav > li > a {
   background-color: #170344;
@@ -98,36 +103,6 @@ tbody {
 .tabbable > .nav > li[class=active] > a {
   background-color: #170344;
   color: #8ecdff;
-}
-
-      
-/* Home page font */  
-#home {
-  color: #ffffff;
-  text-align: left;
-}
-
-/* data uplaod page font */  
-#dataupload {
-  color: #8ecdff;
-  text-align: left;
-}
-
-/* configure methods page font */  
-#method {
-  color: #ffffff;
-  text-align: left;
-}
-
-/* configure methods page font */  
-#psresults {
-  color: #ffffff;
-  text-align: left;
-}
-
-#results {
-  color: #ffffff;
-  text-align: left;
 }
 
 

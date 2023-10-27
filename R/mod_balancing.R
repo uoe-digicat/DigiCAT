@@ -42,12 +42,19 @@ balancing_ui <- function(id) {
                
                ## Balancing output ----
                
-               div(style = "width: 49%; margin-left: 2%; border-color: transparent",
-                   class = "text_blocks",
-                   withSpinner(uiOutput(ns("balancing_output"))),
-               )
+               mainPanel(wellPanel(id = "well_panel",
+                     tabsetPanel(id = NS(id,"results_panel"),
+                                 tabPanel(title = "Matching Variable(s) Summary (Unbalanced)",
+                                          value = NS(id, 'descriptive_stats'),
+                                          br(),
+                                          uiOutput(ns("descriptive_stats"))),
+                                 tabPanel(title = "Output",
+                                          value = NS(id, 'output'),
+                                          br(),
+                                          withSpinner(uiOutput(ns("balancing_output"))))
+                     )
+                   ))
            )
-           
   )
 }
 
@@ -69,9 +76,64 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    matching_ratio_description = NULL,
                    estimation_stage_res = NULL,
                    balancing_stage_res = NULL,
-                   output = NULL)
+                   matching_var_balance = NULL,
+                   descriptive_stats = NULL,
+                   output = p(h4("Output:"),
+                              p("Once you have selected your matching method and ratio, press
+                       'Run' to get output.")))
                  
                  ## Page Setup ----
+                 
+                 # Get descriptive statistics of unbalanced matching variables y treatment group
+                 observeEvent(c(treatment_variable(), matching_variables()), {
+
+                   ## Ensure data, matching variables and treatment variable have been seleceted
+                   if (!(is.null(raw_data()) | is.null(treatment_variable()) | is.null(matching_variables()))){
+
+                     ## Define summary function
+                     my_summary <- function(v){
+                       if(!any(is.na(v))){
+                         res <- c(summary(v),"NA's"=0)
+                       } else{
+                         res <- summary(v)
+                       }
+                       return(res)
+                     }
+
+                     ## Get treatment groups
+                     groups <- unique(isolate(raw_data())[,isolate(treatment_variable())])
+                     groups <- sort(groups)
+
+                     # Subset data by treatment group and get descriptives on each variable (by group)
+                     unbalanced_summary <- NA
+
+                     for (group in groups){
+                       ## Get descriptives
+                       ls <- lapply(as.data.frame(isolate(raw_data())[isolate(raw_data())[isolate(treatment_variable())] == group, isolate(matching_variables())]), my_summary)
+                       df <- data.frame(matrix(unlist(ls), ncol = max(lengths(ls)), byrow = TRUE))
+                       names(df) <- names(ls[[which(lengths(ls)>0)[1]]])
+                       rownames(df) <- paste0(isolate(matching_variables()), " in ", isolate(treatment_variable()), " group ", group)
+                       unbalanced_summary <- rbind(unbalanced_summary, df)
+                     }
+                     
+                     unbalanced_summary <- unbalanced_summary[-1,]
+
+                     ## Reorder table so matching variables are together
+                     formatted_unbalanced_summary <- NA
+
+                     for (matching_index in 1:length(isolate(matching_variables()))){
+                       for (group in groups){
+                         index <- matching_index + (length(isolate(matching_variables())) * (which(groups == group) - 1))
+                         ## Get description of each matching variable in each group
+                         formatted_unbalanced_summary_temp <- unbalanced_summary[index,]
+                         formatted_unbalanced_summary <- rbind(formatted_unbalanced_summary,formatted_unbalanced_summary_temp)
+                       }
+                     }
+
+                     balancing_values$descriptive_stats <- DT::renderDataTable({DT::datatable(round(formatted_unbalanced_summary[-1,], 2), rownames = TRUE, options = list(scrollX = TRUE))})
+                   }
+                 })
+                 
                  
                  ## Render balancing analysis options based on approach chosen
                  observeEvent(approach(),{
@@ -118,9 +180,6 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$matching_method_description = NULL
                      balancing_values$matching_ratio_description = NULL
                      balancing_values$ratio =  NULL
-                     balancing_values$output = p(h4("Output:"),
-                                                 p("Once you have selected your matching method and ratio, press
-                       'Run' to get output."))
                    }
                    
                    if (approach() == "nbp"){
@@ -159,8 +218,6 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$matching_method_description = NULL
                      balancing_values$matching_ratio_description = NULL
                      balancing_values$ratio =  NULL
-                     balancing_values$output = p(h4("Output:"),
-                                                 p("Press 'Run' to get balancing output."))
                    }
                    
                    if (approach() == "iptw"){
@@ -294,7 +351,6 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    if(approach() == "psm" & is.null(input$method_radio)){
                      balancing_values$matching_method_missing_message <- p("Please select a matching method before proceeding", style = "color:red")
                    }
-                   
                    ## If matching approach selected but no balancing ratio, give error message
                    ## Slider counter used as slider input cannot be initiated with NULL - counter value of greater than 0 indicates slider input has been selected
                    if(approach() == "psm" & is.null(balancing_values$ratio)){
@@ -306,6 +362,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
+                     
+                     ## Move to output tab
+                     updateTabsetPanel(session = parent, inputId = "balancing-results_panel", selected = "balancing-output")
                      
                      ## Remove balancing output
                      balancing_values$estimation_stage_res <- NULL
@@ -388,7 +447,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
                            output$love_plot <- renderPlot(balancing_values$love_plot)
                            ## Get balance table
-                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res))))]])
+                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
                            ## Remove empty columns from balance table
                            balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
                            ## Round numbers in balance table to 4 decimals
@@ -508,6 +567,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  output$matching_ratio_description <- renderUI(balancing_values$matching_ratio_description)
                  output$matching_ratio_rerun_message <- renderUI(balancing_values$matching_ratio_rerun_message)
                  output$matching_ratio_missing_message <- renderUI(balancing_values$matching_ratio_missing_message)
+                 output$descriptive_stats <- renderUI(balancing_values$descriptive_stats)
                  output$balancing_output <- renderUI(balancing_values$output)
                  
                  ## Return balancing output to server ----

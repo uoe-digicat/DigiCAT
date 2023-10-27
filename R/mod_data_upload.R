@@ -42,20 +42,12 @@ data_upload_ui <- function(id) {
                           ## Give instructions to get data
                           tags$h4(style="text-align: left;", "Choose CSV File or Use Example Data"),
                           uiOutput(ns("local_disabled")),
-                          ## Add button to load sample data
-                          div(class = "buttonagency",
-                              style="max-width:40%; float:right;", ## position to right
-                              actionButton(NS(id,"Btn_sampledata"), "Load Example Data")),
                           
-                          ## Add file input for user to upload own data
-                          div(style=";max-width:55%; float:left;", ## position to left
-                              fileInput(ns("file1"), label = NULL, placeholder = "No file selected",
-                                        accept=c("text/csv","text/comma-separated-values,text/plain",".csv")
-                              )),
-                          
-                          ## Give instructions to select/check variable class
-                          br(),
-                          
+                          div(style="margin: 0 auto;",
+                              actionButton(NS(id,"Btn_sampledata"), "Example Data", width = "100%"), ## Add button to load sample data
+                              p("OR", style="text-align: center; padding-top:5px;"),
+                              fileInput(ns("file1"), label = NULL, placeholder = "No file selected", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))),  ## Add file input for user to upload own data 
+                          ## Add variable inputs
                           pickerInput(inputId=ns("categorical_vars"), label ="Select categorical variables *", multiple = TRUE, 
                                       choices=NULL, selected=NULL
                           )  %>% ## add info about variables being classed automatically
@@ -122,7 +114,7 @@ data_upload_ui <- function(id) {
                               actionButton(NS(id,"clear_btn"), "Clear Data", class = "default_button")
                           )),
              mainPanel(wellPanel(id = "well_panel",
-                                 tabsetPanel(id = NS(id,"Tab_data"),
+                                 tabsetPanel(id = NS(id,"data_panel"),
                                              tabPanel(title = "Requirements", value = NS(id,"data_requirements"),
                                                       uiOutput(ns("upload_error")),
                                                       br(),
@@ -138,7 +130,7 @@ data_upload_ui <- function(id) {
                                                           h5(strong("1. Upload data: "), "Upload your own data or use our example data. See the example data description."),
                                                           h5(strong("2. Select input variables")),
                                                           h5(strong("3. Validate input:"), "Ensure inputed data and variables meet requirments."),
-                                                          h5(strong("4. Process to counterfactual approach")),
+                                                          h5(strong("4. Proceed to counterfactual approach")),
                                                           br(), h4(strong("Input requirements:")),
                                                           h5(strong("Required input:"), "Data, categorical variables, outcome, treatment, matching variables*"),
                                                           p("*See the ",  a(id = "link","tutorials", href="https://uoe-digicat.github.io/#overview-of-tutorials", target="_blank")," for guidance in choosing matching variables"))
@@ -174,8 +166,8 @@ data_upload_server <- function(id, parent, enableLocal) {
                  shinyjs::disable("nextDU_btn")
                  
                  ## Hide data and validation tabs initially
-                 hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
-                 hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "data_validation"))
+                 hideTab(session = parent, inputId = NS(id, "data_panel"), target = NS(id, "raw_data"))
+                 hideTab(session = parent, inputId = NS(id, "data_panel"), target = NS(id, "data_validation"))
                  
                  ## Disable "non-response weight" checkbox initially
                  shinyjs::disable("non_response_weight_checkbox")
@@ -308,7 +300,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                      try({
                        
                        ## Show and switch to data tab
-                       showTab(session = parent, inputId = NS(id,"Tab_data"), target = NS(id, "raw_data"), select = TRUE)
+                       showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
                        ## Remove data upload error if present
                        data_upload_values$upload_error <- NULL
                        
@@ -339,10 +331,10 @@ data_upload_server <- function(id, parent, enableLocal) {
                        if(any(c(initial_data_check_ls$small_cols, initial_data_check_ls$small_rows, initial_data_check_ls$some_nonnumeric))){
                          
                          ## Move back to data requirements page
-                         updateTabsetPanel(session = parent, inputId = "data_upload-Tab_data", selected = "data_upload-data_requirements")
+                         updateTabsetPanel(session = parent, inputId = "data_upload-data_panel", selected = "data_upload-data_requirements")
                          
                          ## Hide data tab
-                         hideTab(session = parent, inputId = NS(id, "Tab_data"), target = NS(id, "raw_data"))
+                         hideTab(session = parent, inputId = NS(id, "data_panel"), target = NS(id, "raw_data"))
                          
                          ## Reset variable inputs
                          updatePickerInput(session, "categorical_vars", choices = character(0))
@@ -398,7 +390,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                    data_upload_values$data_source <- "sample"
                    
                    ## Show and switch to data tab
-                   showTab(session = parent, inputId = NS(id,"Tab_data"), target = NS(id, "raw_data"), select = TRUE)
+                   showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
                    
                    ## Update variable selection
                    updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(data_upload_values$rawdata)))
@@ -471,7 +463,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                        ## If there is no missing data and no variable mismatched, proceed to next tab
                        if(all(!c(variable_check_info$required_input_missmatched, variable_check_info$required_input_missing))){
                          ## Show and switch to validate tab
-                         showTab(inputId = NS(id,"Tab_data"), target = NS(id,"data_validation"), select = TRUE, session = parent)
+                         showTab(inputId = NS(id,"data_panel"), target = NS(id,"data_validation"), select = TRUE, session = parent)
                          
                          ## Validate data
                          data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, 
@@ -522,7 +514,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                  
                  ## Pass output to UI ----
                  
-                 output$contents <- DT::renderDataTable({DT::datatable(data_upload_values$rawdata, options = list(scrollX = TRUE))})
+                 output$contents <- DT::renderDataTable({DT::datatable(round(data_upload_values$rawdata, 2), options = list(scrollX = TRUE))})
                  output$data_validation <- renderUI(p(data_upload_values$validation$print))
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
@@ -547,7 +539,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                    data_upload_output$data <- data_upload_values$rawdata[,unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- input$file1$datapath
-                   data_upload_output$categorical_vars <- data_upload_values$categorical_vars
+                   data_upload_output$categorical_vars <- input$categorical_vars
                    data_upload_output$outcome <- input$outcome
                    data_upload_output$treatment <- input$treatment
                    data_upload_output$matchvars <- input$matchvars
