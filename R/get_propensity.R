@@ -7,20 +7,31 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
          glm = {
            if(missing_method == "mi"){
              propensity_score = lapply(complete(handled_missingness, "all"), 
-                               function(x) predict(glm(f, data = x, family=binomial(link="probit"), ...),
-                                                   type = "response"))
+                                       function(x) predict(glm(f, data = x, family=binomial(link="probit"), ...),
+                                                           type = "response"))
            } else { # for CC and weighting approaches alike
              propensity_score = estimated_propensity_model$fitted.values 
-             } 
+           } 
          },
          
          gbm = {
-           
-           # add in
+           if(missing_method == "mi"){
+             propensity_score = lapply(complete(handled_missingness, "all"), 
+                                       function(x) predict(gbm(as.formula(f), data = x, ...),
+                                                           type = "response"))  
+           } else {
+             propensity_score = predict(estimated_propensity_model)
+           }
          },
          
          rf = {
-           # add in 
+           if(missing_method == "mi"){
+             propensity_score = lapply(complete(handled_missingness, "all"), 
+                                       function(x) predict(randomForest(as.formula(f), data = x, ...),
+                                                           type = "response"))    
+           } else{
+             propensity_score = predict(estimated_propensity_model, type = "response")
+           }
          },
          
          poly = { 
@@ -30,28 +41,26 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
              # propensity_score <- lapply(imputed.dfs, function(x) data.frame(x, model=estimated_propensity_model[[1]]$model))
              
              propensity_score <- estimated_propensity_model
-            # names(propensity_score)[names(propensity_score) == 'polly$lp'] <- 'lp'
+             # names(propensity_score)[names(propensity_score) == 'polly$lp'] <- 'lp'
              
            } else if (missing_method == "complete" & model_type == "poly"){
-           
-           
-           propensity_score = as.data.frame(cbind(handled_missingness, 
-                                                  #estimated_propensity_model$model, don't think this is needed
-                                                     estimated_propensity_model$lp))
-           names(propensity_score)[names(propensity_score) == "polly$lp"] <- "lp"
-
+             
+             
+             propensity_score = as.data.frame(cbind(handled_missingness, 
+                                                    #estimated_propensity_model$model, don't think this is needed
+                                                    estimated_propensity_model$lp))
+             names(propensity_score)[names(propensity_score) == "polly$lp"] <- "lp"
+             
            } else if(missing_method == "weighting"){
-            propensity_score = estimated_propensity_model$fitted.values 
-            # is this correct? Polr vs Svyolr difference in output - no lp?
-          }
+             propensity_score = estimated_propensity_model$fitted.values 
+             # is this correct? Polr vs Svyolr difference in output - no lp?
+           }
          },
          stop("I need a valid model! (glm, gbm, rforest, poly)")
          
   )
   return(propensity_score)
 }
-
-
 
 
 
