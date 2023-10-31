@@ -45,11 +45,11 @@ balancing_ui <- function(id) {
                mainPanel(wellPanel(id = "well_panel",
                      tabsetPanel(id = NS(id,"results_panel"),
                                  tabPanel(title = "Matching Variable(s) Summary (Unbalanced)",
-                                          value = NS(id, 'descriptive_stats'),
+                                          value = NS(id,'descriptive_stats'),
                                           br(),
                                           uiOutput(ns("descriptive_stats"))),
                                  tabPanel(title = "Output",
-                                          value = NS(id, 'output'),
+                                          value = NS(id,"output"),
                                           br(),
                                           withSpinner(uiOutput(ns("balancing_output"))))
                      )
@@ -359,13 +359,13 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    ## If all required input present, carry out balancing
                    if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) | ((approach() == "nbp"))  ) {
 
-                     
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
                      
-                     ## Move to output tab
-                     updateTabsetPanel(session = parent, inputId = "balancing-results_panel", selected = "balancing-output")
-                     
+                     ## Show output tab - updateTabsetPanel doesn't work here for some reason so using showTab instead
+                     hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "output"))
+                     showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "output"), select = TRUE)
+
                      ## Remove balancing output
                      balancing_values$estimation_stage_res <- NULL
                      balancing_values$balancing_stage_res <- NULL
@@ -435,13 +435,16 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        try({
                          
                          if(approach() == "psm" | approach() == "iptw"){
-                           # Get common support graph
-                           balancing_values$common_support_plot <- evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())
-                           output$common_support <- renderUI(p(
-                             h4("Common Support Graph:"),
-                             renderPlot(balancing_values$common_support_plot),
-                             descriptions$common_support_graph
-                           ))
+                           
+                           if((balancing_model() == "glm" & missingness() == "complete") | (balancing_model() == "glm" & missingness() == "mi")){
+                             # Get common support graph - only works with GLM currently (MI and CC)
+                             balancing_values$common_support_plot <- evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())
+                             output$common_support <- renderUI(p(
+                               h4("Common Support Graph:"),
+                               renderPlot(balancing_values$common_support_plot),
+                               descriptions$common_support_graph
+                             ))
+                           }
                            #
                            ## Get love plot
                            balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
@@ -497,8 +500,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
                            tabsetPanel(id = "well_panel",
-                                       ## Don't include common support graph as output if appraoch is NBP
-                                       if(approach() != "nbp"){
+                                       ## Don't include common support graph if propensity model other than GLM used
+                                       if(balancing_model() == "glm"){
                                          tabPanel(title = "Common Support Graph",
                                                   value = NS(id, 'common_support_graph_tab'),
                                                   br(),
@@ -546,6 +549,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  observeEvent(c(approach(), missingness(), balancing_model(), raw_data(), treatment_variable(), outcome_variable(), matching_variables(), categorical_variables(), covariates(), survey_weight_var(), cluster_var(), stratification_var()), {
                    ## First check if balancing has been run yet, if yes, print informative message and force rerun
                    if (!is.null(balancing_values$balancing_stage_res)){
+                     
+                     ## Switch back to matching vars summary
+                     showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "descriptive_stats"), select = TRUE)
                      
                      ## Replace balancing model output with explanation of why output has been deleted
                      balancing_values$output <- p(h4("Output:"),

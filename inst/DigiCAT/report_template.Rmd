@@ -124,6 +124,14 @@ if (params$balancing_model == "glm"){
   CF_approach <- c(CF_approach, paste0("A logistic regression model was used to calculate propensity scores in the sample."))
 }
 
+if (params$balancing_model == "gbm"){
+  CF_approach <- c(CF_approach, paste0("Gradient boosting machine (GBM) was used to calculate propensity scores in the sample."))
+}
+
+if (params$balancing_model == "rf"){
+  CF_approach <- c(CF_approach, paste0("Random forest was used to calculate propensity scores in the sample."))
+}
+
 ## glm
 if (params$balancing_model == "orl"){
   CF_approach <- c(CF_approach, paste0("An ordinal logistic regression was used to calculate propensity scores in the sample."))
@@ -182,7 +190,7 @@ if(params$CF_approach == "psm" | params$CF_approach == "iptw"){
 ```{r common support plot, echo=FALSE, include=TRUE, comment=NA}
 
 ## Common support graph
-if(params$CF_approach == "psm" | params$CF_approach == "iptw"){
+if(params$balancing_model == "glm"){
   params$common_support_plot
 }
 
@@ -226,7 +234,7 @@ params$love_plot
 if (params$missingness == "mi"){ ## More columns with MI
 
 knitr::kable(params$balance_table, caption = "Balance table", format="latex", 
-      align = c("|p{2cm}","p{2cm}", "p{2cm}", "p{2cm}", "p{2cm}", "p{2cm}","p{2cm}|"), position = "h!")
+      align = c("|p{1.5cm}","p{1.5cm}", "p{1.5cm}", "p{1.5cm}", "p{1.5cm}", "p{1.5cm}","p{1.5cm}|"), position = "h!")
 } else{
   knitr::kable(params$balance_table, caption = "Balance table", format="latex", 
       align = c("|p{4cm}","p{4cm}", "p{4cm}","p{4cm}|"), position = "h!")
