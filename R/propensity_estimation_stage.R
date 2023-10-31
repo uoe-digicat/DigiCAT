@@ -15,6 +15,8 @@
 #' @param ... 
 #'
 #' @return Estimation model object
+#' @import gbm
+#' @import randomForest
 #' @export
 #'
 #' @examples 

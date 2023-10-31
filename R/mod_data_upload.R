@@ -266,7 +266,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                  ## Update app when file uploaded
                  observeEvent(input$file1, {
                    
-                   ## Reset any input errors and hide validation tab
+                   # Reset any input errors and hide validation tab
                    reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, hide_data = TRUE, parent = parent)
                    ## Remove validation info
                    data_upload_values$validation <- NULL
@@ -281,85 +281,87 @@ data_upload_server <- function(id, parent, enableLocal) {
                    updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
                    ## Disable "non-response weight" checkbox
                    shinyjs::disable("non_response_weight_checkbox")
-                   
+
                    ## Load in data
                    ## Save potential error to check for running of code dependent on data upload
                    error_check <- NA
                    error_check <- tryCatch({
+
                      data_upload_values$rawdata <- read.csv(input$file1$datapath)},
-                     
+
                      ## If data does not upload, return error message
                      error = function(cond) {
                        ## Output error message
                        data_upload_values$upload_error <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
-                       
+
                      })
-                   
+
                    ## Carry out data checks if no error in data upload
                    if (all(!grepl("Error:", error_check))){
                      try({
-                       
+
                        ## Show and switch to data tab
                        showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
                        ## Remove data upload error if present
                        data_upload_values$upload_error <- NULL
-                       
+
                        ## Save data source
                        data_upload_values$data_source <- "own"
-                       
+
                        ## Check data upon upload
                        initial_data_check_ls <- initial_data_check(data_upload_values$rawdata)
-                       
+
                        ## If data is too small give error and delete
                        if(initial_data_check_ls$small_rows){
                          data_upload_values$upload_error <- p("Error: Data has too few rows! (<10 rows)", style = "color:red")
                          data_upload_values$rawdata <- NULL
                        }
-                       
+
                        if(initial_data_check_ls$small_cols){
                          data_upload_values$upload_error <- p("Error: Data has too few columns! (<2 columns)", style = "color:red")
                          data_upload_values$rawdata <- NULL
                        }
-                       
+
                        ## If data is contains nonnumeric values, give error, delete and remove data tab
                        if(initial_data_check_ls$some_nonnumeric){
                          data_upload_values$upload_error <- p("Error: Non numeric values detected!", style = "color:red")
                          data_upload_values$rawdata <- NULL
                        }
-                       
+
                        ## If inappropriate data is uploaded:
                        if(any(c(initial_data_check_ls$small_cols, initial_data_check_ls$small_rows, initial_data_check_ls$some_nonnumeric))){
-                         
-                         ## Move back to data requirements page
-                         updateTabsetPanel(session = parent, inputId = "data_upload-data_panel", selected = "data_upload-data_requirements")
-                         
+
                          ## Hide data tab
                          hideTab(session = parent, inputId = NS(id, "data_panel"), target = NS(id, "raw_data"))
-                         
+
                          ## Reset variable inputs
-                         updatePickerInput(session, "categorical_vars", choices = character(0))
-                         updatePickerInput(session, "outcome", choices=character(0))
-                         updatePickerInput(session, "treatment", choices=character(0))
-                         updatePickerInput(session, "matchvars", choices=character(0))
-                         updatePickerInput(session, "covars", choices=character(0))
+                         updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
+                         updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
+                         updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
+                         updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
+                         updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
+                         
+                         updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
+                         updatePickerInput(session, "clustering_var", choices = names(isolate(data_upload_values$rawdata)))
+                         updatePickerInput(session, "stratification_var", choices = names(isolate(data_upload_values$rawdata)))
+                         
                        }
-                       
-                       
+
                        ## Get variable classes
                        categorical_variables <- get_categorical_variables(data_upload_values$rawdata)
                        continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% categorical_variables]
-                       
+
                        ## Reset variable inputs
                        updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
                        updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
                        updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
                        updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
                        updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
-                       
+
                        updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
                        updatePickerInput(session, "clustering_var", choices = names(isolate(data_upload_values$rawdata)))
                        updatePickerInput(session, "stratification_var", choices = names(isolate(data_upload_values$rawdata)))
-                       
+
                      })
                    }
                  })
@@ -536,7 +538,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                                                       validation_log = NULL)
                  
                  observe({
-                   data_upload_output$data <- data_upload_values$rawdata[,unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
+                   data_upload_output$data <- data_upload_values$rawdata[,unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var) %in% names(data_upload_values$rawdata))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- input$file1$datapath
                    data_upload_output$categorical_vars <- input$categorical_vars

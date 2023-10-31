@@ -63,8 +63,10 @@ library(rmarkdown)
 library(shiny)
 library(shinyFeedback)
 library(shinycssloaders)
-library(survey)"
-  )
+library(survey)
+library(gbm)
+library(randomForest)"
+)
   
   
   ## Data upload ----
@@ -225,7 +227,7 @@ library(survey)"
   }
   
   ## Propensity score estimation----
-  
+  ## From estimate_model.R
   propensity_score_model_code <- paste0("\n","\n", 
                                         "## Get propensity scores \n",
                                         "f = paste0(treatment_variable,'~',paste0(matching_variable, collapse='+'))")
@@ -247,6 +249,30 @@ library(survey)"
     }
   }
   
+  if (balancing_model == "gbm"){
+    if (missing_method == "complete"){
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "estimated_propensity_model = gbm(as.formula(f), data = handled_missingness)")
+    }
+    if (missing_method == "mi"){
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "estimated_propensity_model = lapply(complete(handled_missingness, 'all'),
+                                          function(x) gbm(as.formula(f), data = x))")
+    }
+  }
+  
+  if (balancing_model == "rf"){
+    if (missing_method == "complete"){
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "estimated_propensity_model = randomForest::randomForest(as.formula(f), data = handled_missingness)")
+    }
+    if (missing_method == "mi"){
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "estimated_propensity_model = lapply(complete(handled_missingness, 'all'), # switch to ranger for comp speed
+                                          function(x) randomForest::randomForest(as.formula(f), data = x))")
+    }
+  }
+
   if (balancing_model == "poly"){
     
     if (missing_method == "complete"){
@@ -256,7 +282,7 @@ library(survey)"
     }
   }
     
-  
+  ## From get_propensity.R
   if (balancing_model == "glm"){
     if(missing_method == "mi"){
       propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
@@ -266,6 +292,30 @@ library(survey)"
     } else { # for CC and weighting approaches alike
       propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
                                             "propensity_score = estimated_propensity_model$fitted.values")
+    } 
+  }
+  
+  if (balancing_model == "gbm"){
+    if(missing_method == "mi"){
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "propensity_score = lapply(complete(handled_missingness, 'all'), 
+                                function(x) predict(gbm(as.formula(f), data = x),
+                                                    type = 'response'))")
+    } else { # for CC and weighting approaches alike
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "propensity_score = predict(estimated_propensity_model)")
+    } 
+  }
+  
+  if (balancing_model == "rf"){
+    if(missing_method == "mi"){
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "propensity_score = lapply(complete(handled_missingness, 'all'), 
+                                function(x) predict(randomForest(as.formula(f), data = x),
+                                                    type = 'response'))")
+    } else { # for CC and weighting approaches alike
+      propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                            "propensity_score = predict(estimated_propensity_model)")
     } 
   }
   

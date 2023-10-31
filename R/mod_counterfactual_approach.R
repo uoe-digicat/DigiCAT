@@ -297,19 +297,19 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      
                      ## If approach other than NBP selected, base balancing model choice off of missingness
                      else {
-                       if (input$missingness_radio == "complete"){
+                       if (input$missingness_radio == "complete" | input$missingness_radio == "mi"){
                          
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                          #"Gradient Boosting Machine (GBM)" = "gbm",
-                                          #"Random Forest" = "rforest",
+                                          "Gradient Boosting Machine (GBM)" = "gbm",
+                                          "Random Forest" = "rf",
                                           "Logistic Regression" = "glm"),
                                         selected = character(0)))
                          )
                        }
                        
-                       if (input$missingness_radio == "mi" | input$missingness_radio == "weighting"){
+                       if (input$missingness_radio == "weighting"){
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
@@ -358,6 +358,14 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    
                    if(input$balancing_model_radio == "glm"){
                      CF_approach_values$balancing_model_description <- descriptions$glm
+                   }
+                   
+                   if(input$balancing_model_radio == "rt"){
+                     CF_approach_values$balancing_model_description <- NULL
+                   }
+                   
+                   if(input$balancing_model_radio == "gbm"){
+                     CF_approach_values$balancing_model_description <- NULL
                    }
                    
                    if(input$balancing_model_radio == "poly"){
