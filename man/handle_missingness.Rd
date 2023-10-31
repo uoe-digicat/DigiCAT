@@ -4,7 +4,13 @@
 \alias{handle_missingness}
 \title{Function to handle missingness in datasets}
 \usage{
-handle_missingness(.data, missing_method = NULL, design_object = NULL, ...)
+handle_missingness(
+  .data,
+  missing_method = NULL,
+  design_object = NULL,
+  counterfactual_method = NULL,
+  ...
+)
 }
 \arguments{
 \item{.data}{}
