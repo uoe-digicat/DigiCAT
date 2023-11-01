@@ -1,10 +1,10 @@
 #' Function to balance datasets
 #'
-#' @param counterfactual_method 
-#' @param treatment_variable 
-#' @param matching_variable 
-#' @param PS_estimation_object 
-#' @param missing_method 
+#' @param counterfactual_method Character string indicating your chosen approach `"psm"`, `"iptw"`, or `"nbp"`
+#' @param treatment_variable Character string matching column name of your treatment variable
+#' @param matching_variable Character vector matching column name(s) of your matching variable(s)
+#' @param PS_estimation_object Propensity score estimation object
+#' @param missing_method Character string indicating your chosen method of dealing with missingness `"complete"`, `"mi"`, or `"weighting"`
 #' @param eff 
 #' @param ... 
 #'

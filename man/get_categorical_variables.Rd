@@ -4,7 +4,7 @@
 \alias{get_categorical_variables}
 \title{Get categorical column names function}
 \usage{
-get_categorical_variables(x)
+get_categorical_variables(df)
 }
 \description{
 Get categorical column names function

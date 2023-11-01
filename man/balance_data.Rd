@@ -15,15 +15,15 @@ balance_data(
 )
 }
 \arguments{
-\item{counterfactual_method}{}
+\item{counterfactual_method}{Character string indicating your chosen approach \code{"psm"}, \code{"iptw"}, or \code{"nbp"}}
 
-\item{treatment_variable}{}
+\item{treatment_variable}{Character string matching column name of your treatment variable}
 
-\item{matching_variable}{}
+\item{matching_variable}{Character vector matching column name(s) of your matching variable(s)}
 
-\item{PS_estimation_object}{}
+\item{PS_estimation_object}{Propensity score estimation object}
 
-\item{missing_method}{}
+\item{missing_method}{Character string indicating your chosen method of dealing with missingness \code{"complete"}, \code{"mi"}, or \code{"weighting"}}
 
 \item{eff}{}
 

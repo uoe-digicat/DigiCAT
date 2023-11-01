@@ -27,6 +27,6 @@ TCs_page <-
       h5("We may modify or terminate the App or these terms without prior notice."),
       br(),
       div(style = "text-align:center",
-          actionButton('Btn_agree_TCs', 'I agree, get started'))
+          actionButton('Btn_agree_TCs', 'Back to analysis'))
       
   )

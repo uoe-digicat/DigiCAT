@@ -17,21 +17,21 @@ estimation_stage(
 )
 }
 \arguments{
-\item{.data}{}
+\item{.data}{dataframe}
 
-\item{missing_method}{}
+\item{missing_method}{Character string indicating your chosen method of dealing with missingness \code{"complete"}, \code{"mi"}, or \code{"weighting"}}
 
-\item{model_type}{}
+\item{model_type}{Character string indicating your chosen model for calculating propensity scores \code{"glm"}}
 
-\item{treatment_variable}{}
+\item{treatment_variable}{Character string matching column name of your treatment variable}
 
-\item{matching_variable}{}
+\item{matching_variable}{Character vector/string matching column name(s) of your matching variable(s)}
 
-\item{weighting_variable}{}
+\item{weighting_variable}{Character string matching column name of your weighting variable}
 
-\item{cluster_variable}{}
+\item{cluster_variable}{Character string matching column name of your clustering variable}
 
-\item{strata_variable}{}
+\item{strata_variable}{Character string matching column name of your stratification variable}
 
 \item{...}{}
 }

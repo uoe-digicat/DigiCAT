@@ -1,0 +1,282 @@
+---
+title: "DigiCAT Counterfactual Analysis Report"
+output: pdf_document
+params:
+  n: NA
+  data_name: NA
+  data: NA
+  outcome_variable: NA
+  treatment_variable: NA
+  matching_variables: NA
+  covariates: NA
+  weighting_variable: NA
+  non_response_weight: NA
+  cluster_variable: NA
+  stratification_variable: NA
+  CF_approach: NA
+  missingness: NA
+  balancing_model: NA
+  matching_method: NA
+  matching_ratio: NA
+  common_support_plot: NA
+  observation_table: NA
+  love_plot: NA
+  balance_table: NA
+  outcome_model: NA
+  outcome_res: NA
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+## Sample used in counterfactual analysis
+
+Data from `r params$data_name` was used for this analysis. This data set
+contains `r nrow(params$data)` rows and `r ncol(params$data)` columns. A
+total of `r nrow(params$data) - nrow(na.omit(params$data))` rows
+containing missing data were detected.
+
+## Input variables
+
+Counterfactual analysis was used to measure the potential causal effect
+of `r params$treatment_variable` on `r params$outcome_variable`.
+Matching variables included
+`r sub(",([^,]*)$"," and\\1", paste0(params$matching_variables, collapse = ", "))`.
+
+```{r input, echo=FALSE, include=TRUE, comment=NA}
+
+additional_input_variables <- NULL
+
+## If covariates exist, name them
+if (!is.null(params$covariates)){
+  additional_input_variables <- c(additional_input_variables, paste0("Additional covariates included ", sub(",([^,]*)$"," and\\1", paste0(params$covariates, collapse = ", "))))
+}
+
+## If survey weights exist, name
+if (!is.null(params$weighting_variable) & params$non_response_weight == FALSE){
+  additional_input_variables <- c(additional_input_variables, paste0("Survey weights were indicated in ", params$weighting_variable, "."))
+}
+
+if (!is.null(params$weighting_variable) & params$non_response_weight == TRUE){
+  additional_input_variables <- c(additional_input_variables, paste0("Survey weights were indicated in ", params$weighting_variable, ". These weights compensated for non-response."))
+}
+
+## If cluster exist, name
+if (!is.null(params$cluster_variable)){
+  additional_input_variables <- c(additional_input_variables, paste0(params$cluster_variable, " indicated clusters within the sample."))
+}
+
+## If stratification exist, name
+if (!is.null(params$stratification_variable)){
+ additional_input_variables <- c(additional_input_variables, paste0(params$stratification_variable, " was used to stratify the sample."))
+}
+
+additional_input_variables <- paste(additional_input_variables, collapse = " ")
+```
+`r additional_input_variables`
+
+## Counterfactual Approach
+```{r cf approach, include = FALSE}
+
+CF_approach <- NULL
+
+## Counterfactual approach
+## PSM
+if(params$CF_approach == "psm"){
+  CF_approach <- paste0("Propensity score matching was used to carry out counterfactual analysis.")
+}
+
+## IPTW
+if(params$CF_approach == "iptw"){
+  CF_approach <- c(CF_approach, paste0("Inverse probability of treatment weighting (IPTW) was used to carry out counterfactual analysis."))
+}
+
+## NBP
+if(params$CF_approach == "nbp"){
+   CF_approach <- c(CF_approach, paste0("Non-bipartite propensity matching (NBP) was used to carry out counterfactual analysis."))
+}
+
+
+## Data missingness
+## If no missing data
+if (nrow(params$data) - nrow(na.omit(params$data)) == 0){
+  CF_approach <- c(CF_approach, paste0("No missing data was detected."))
+}
+
+## MI
+if ((nrow(params$data) - nrow(na.omit(params$data)) > 0) & params$missingness == "mi"){
+  CF_approach <- c(CF_approach, paste0("Missing data was handled using multiple imputation (m = 5)."))
+}
+
+## CC
+if ((nrow(params$data) - nrow(na.omit(params$data)) > 0) & params$missingness == "complete"){
+  CF_approach <- c(CF_approach, paste0("Missing data was handled using complete case analysis (CCA)."))
+}
+
+## weighting
+if ((nrow(params$data) - nrow(na.omit(params$data)) > 0) & params$missingness == "weighting"){
+  CF_approach <- c(CF_approach, paste0("Missing data was handled using non-response weighting."))
+}
+
+## Balancing model
+## glm
+if (params$balancing_model == "glm"){
+  CF_approach <- c(CF_approach, paste0("A logistic regression model was used to calculate propensity scores in the sample."))
+}
+
+if (params$balancing_model == "gbm"){
+  CF_approach <- c(CF_approach, paste0("Gradient boosting machine (GBM) was used to calculate propensity scores in the sample."))
+}
+
+if (params$balancing_model == "rf"){
+  CF_approach <- c(CF_approach, paste0("Random forest was used to calculate propensity scores in the sample."))
+}
+
+## glm
+if (params$balancing_model == "orl"){
+  CF_approach <- c(CF_approach, paste0("An ordinal logistic regression was used to calculate propensity scores in the sample."))
+}
+
+CF_approach <- paste(CF_approach, collapse = " ")
+```
+`r CF_approach`
+
+## Balancing
+```{r balancing, echo=FALSE}
+balancing <- NULL
+
+## Balancing parameters
+
+if(params$CF_approach == "psm"){
+  balancing <- paste0("Matching was carried out using a ratio of 1:", params$matching_ratio, " and a matching method of '", params$matching_method,"'. ")
+}
+
+if(params$CF_approach == "iptw"){
+  balancing <- paste0("In order to balance the sample across treatment groups, the propensity scores estimates are transformed to provide weights to be used in the outcome model.")
+}
+
+if(params$CF_approach == "nbp"){
+  balancing <- paste0("NBP uses 1:1 optimal matching, minimising the overall propensity score differences between matched cases. The algorithm in DigiCAT also disallows matches of pairs that are too dis-similar to help ensure that there is good balance between the groups after matching.")
+}
+
+balancing <- c(balancing ,paste0("Balancing output can be seen below."))
+
+balancing <- paste(balancing, collapse = " ")
+```
+
+`r balancing`
+
+\newpage
+
+```{r common support description, echo=FALSE, include=TRUE, comment=NA}
+
+## Start plot number counter
+plot_number <- 1
+common_support_description <- "Common support for NBP coming soon."
+
+## Common support graph
+if(params$CF_approach == "psm" | params$CF_approach == "iptw"){
+  common_support_description <- paste0("Plot 1: Common Support Graph")
+  plot_number <- plot_number + 1
+}
+
+```
+
+\begin{gather*}
+`r common_support_description`
+\end{gather*} 
+
+
+```{r common support plot, echo=FALSE, include=TRUE, comment=NA}
+
+## Common support graph
+if(params$balancing_model == "glm"){
+  params$common_support_plot
+}
+
+```
+
+\newpage
+
+```{r observation table , echo=FALSE, include=TRUE, comment=NA}
+
+## Observation table
+knitr::kable(params$observation_table, caption = "Observation table", format="latex", 
+      align = c("|p{6cm}","p{6cm}","p{6cm}|"), position = "h!")
+```
+
+\newpage
+
+```{r love plot description, echo=FALSE, include=TRUE, comment=NA}
+
+love_plot_description <- paste0("Plot ", plot_number, ": Love Plot")
+  plot_number <- plot_number + 1
+  
+
+```
+
+\begin{gather*}
+`r love_plot_description`
+\end{gather*} 
+
+```{r love plot, echo=FALSE, include=TRUE, comment=NA}
+
+## Love Plot
+params$love_plot
+
+```
+
+\newpage
+
+```{r balance table, echo=FALSE, include=TRUE, comment=NA}
+
+## Balance table
+if (params$missingness == "mi"){ ## More columns with MI
+
+knitr::kable(params$balance_table, caption = "Balance table", format="latex", 
+      align = c("|p{1.5cm}","p{1.5cm}", "p{1.5cm}", "p{1.5cm}", "p{1.5cm}", "p{1.5cm}","p{1.5cm}|"), position = "h!")
+} else{
+  knitr::kable(params$balance_table, caption = "Balance table", format="latex", 
+      align = c("|p{4cm}","p{4cm}", "p{4cm}","p{4cm}|"), position = "h!")
+
+}
+
+```
+
+\newpage
+
+## Outcome Model
+```{r outcome, echo = FALSE}
+outcome_model <- NULL
+
+if(params$outcome_model == "linear_regression_wo_mvars"){
+  outcome_model <- paste0("Linear regression without matching variables as covariates was used as the outcome model in this analysis.")
+}
+
+if(params$outcome_model == "linear_regression_w_mvars"){
+  outcome_model <- paste0("Linear regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
+}
+
+if(params$outcome_model == "linear_regression_w_mvars_interactions"){
+  outcome_model <- paste0("Linear regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
+}
+
+if(params$CF_approach == "psm" | params$CF_approach == "iptw" ){
+  outcome_model <- paste0(outcome_model," From this analysis, the estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " is ", round(params$outcome_res[1,1], 4), "(p-value = ", round(params$outcome_res[1,3], 4), ", standard error = ", round(params$outcome_res[1,2], 4), ", 95% confidence interval:", round(params$outcome_res[1,4], 4), " to ", round(params$outcome_res[1,5], 4),  ")" )
+}
+
+if(params$CF_approach == "nbp"){
+  outcome_model <- paste0(outcome_model," From this analysis, the estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " is ", round(params$outcome_res[2,1], 4), " (p-value = ", round(params$outcome_res[2,4], 4), ", standard error = ", round(params$outcome_res[2,2], 4), ").")
+}
+
+```
+
+`r outcome_model`
+
+\newpage
+
+## R session information:
+
+```{r session info, echo=FALSE, include=TRUE, }
+sessionInfo()
+```

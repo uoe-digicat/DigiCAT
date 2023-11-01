@@ -17,12 +17,12 @@ reset_upload_page <- function(reset_errors = FALSE, hide_data = FALSE, hide_vali
   
   if (hide_data){
     ## Hide descriptive tab
-    hideTab(session = parent, inputId = "data_upload-Tab_data", target = "data_upload-raw_data")
+    hideTab(session = parent, inputId = "data_upload-data_panel", target = "data_upload-raw_data")
     
   }
   
   if (hide_validation){
     ## Hide validation tab
-    hideTab(session = parent, inputId = "data_upload-Tab_data", target = "data_upload-data_validation")
+    hideTab(session = parent, inputId = "data_upload-data_panel", target = "data_upload-data_validation")
   }
 } 
