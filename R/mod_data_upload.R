@@ -538,7 +538,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                                                       validation_log = NULL)
                  
                  observe({
-                   data_upload_output$data <- data_upload_values$rawdata[,unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var) %in% names(data_upload_values$rawdata))]
+                   data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- input$file1$datapath
                    data_upload_output$categorical_vars <- input$categorical_vars

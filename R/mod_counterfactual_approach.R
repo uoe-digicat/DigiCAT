@@ -302,7 +302,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                          "Generalized Boosted Model, (GBM)" = "gbm",
+                                          "Generalized Boosted Model (GBM)" = "gbm",
                                           "Random Forest" = "rf",
                                           "Logistic Regression" = "glm"),
                                         selected = character(0)))
