@@ -2,9 +2,9 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
                                   weighting_variable, counterfactual_method, treatment_variable,...){
   
   if( "mimids" %in% class(balanced_data)) { 
-   extracted_balanced_data = MatchThem::complete(balanced_data, "all", all = FALSE) 
-   return(list(extracted_balanced_data, process = "mi_psm"))
-   
+    extracted_balanced_data = MatchThem::complete(balanced_data, "all", all = FALSE) 
+    return(list(extracted_balanced_data, process = "mi_psm"))
+    
   } else if ( "wimids" %in% class(balanced_data)){
     extracted_balanced_data = MatchThem::complete(balanced_data, "all", all = FALSE) 
     return(list(extracted_balanced_data, process = "mi_iptw"))
@@ -19,10 +19,10 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
   } else if(missing_method =="weighting" & "matchit" %in% class(balanced_data)){
     extracted_balanced_data = match.data(balanced_data)
     extracted_balanced_design = svydesign(ids=~subclass, weights = (extracted_balanced_data[[weighting_variable]]*extracted_balanced_data$weights), 
-                                                  data = extracted_balanced_data)
+                                          data = extracted_balanced_data)
     extracted_balanced_data = extracted_balanced_design
     return(list(extracted_balanced_data, process = "weighting_psm"))
-
+    
   } else if ( "weightit" %in% class(balanced_data) & missing_method == "complete"){
     psmodel_obj$missingness_treated_dataset = cbind(psmodel_obj$missingness_treated_dataset,balanced_data$weights)
     colnames(psmodel_obj$missingness_treated_dataset)[colnames(psmodel_obj$missingness_treated_dataset) == "balanced_data$weights"] <- "weights"
@@ -36,7 +36,7 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     survey_data = cbind(survey_data,balanced_data$weights)
     colnames(survey_data)[colnames(survey_data) == "balanced_data$weights"] <- "weights"
     extracted_balanced_data = svydesign(ids=~1, weights = (survey_data[[weighting_variable]]*survey_data$weights), 
-                                          data = survey_data)
+                                        data = survey_data)
     extracted_balanced_data = extracted_balanced_data
     return(list(extracted_balanced_data, process = "weighting_iptw"))
     
@@ -44,6 +44,11 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     extracted_balanced_data = balanced_data
     # replace treatment variable with dose
     return(list(extracted_balanced_data, process = "cc_nbp"))
+  }
+  else if(counterfactual_method == "nbp" & missing_method == "weighting"){
+    extracted_balanced_data = balanced_data
+    # replace treatment variable with dose
+    return(list(extracted_balanced_data, process = "weighting_nbp"))
   }
   
 }

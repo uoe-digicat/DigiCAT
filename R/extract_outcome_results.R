@@ -16,5 +16,9 @@ extract_outcome_results <- function(fitted_model, missing_method,...){
     extracted_outcome_results = summary(fitted_model)
     return(list(extracted_outcome_results, process = "cc"))
     
+  }else if("svyglm" %in% class(fitted_model) & missing_method == "weighting"){
+    extracted_outcome_results = summary(fitted_model)
+    return(list(extracted_outcome_results, process = "weighting"))
+    
   }
 }

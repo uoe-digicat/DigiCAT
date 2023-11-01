@@ -69,13 +69,13 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
              estimated_propensity_model = MASS::polr(f, data = handled_missingness, 
                                                      Hess = T, ...)
            } else if(missing_method == "weighting"){
-             handled_missingness[[treatment_variable]] <- as.factor(handled_missingness[[treatment_variable]])
+             handled_missingness[[7]][[treatment_variable]] <- as.factor(handled_missingness[[7]][[treatment_variable]])
              estimated_propensity_model = svyolr(f, design=handled_missingness)
              
            }
            
          },
-         stop("I need a valid model! (glm, gbm, rforest, poly)")
+         stop("I need a valid model! (glm, gbm, rf, poly)")
   )
   return(estimated_propensity_model)
 }
