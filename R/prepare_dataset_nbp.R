@@ -11,11 +11,15 @@ prepare_dataset_nbp <- function(propensity_scores, treatment_variable, missing_m
     #propensity_scores$ID <- seq_along(propensity_scores[,1]) # needs to be for each set only
     
   }
+  else if(missing_method == "weighting"){
+    propensity_scores[[treatment_variable]] = as.numeric(as.character(propensity_scores[[treatment_variable]]))
+    propensity_scores$ID <- seq_along(propensity_scores[,1])
+    
+  }
   
   return(propensity_scores)
   
 }
-
 
 
 
