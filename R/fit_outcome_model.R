@@ -1,7 +1,7 @@
 
-fit_outcome_model <- function(balanced_data,extracted_balanced_data,
+fit_outcome_model <- function(balanced_data,extracted_balanced_data, psmodel_obj,
                               outcome_variable, treatment_variable, matching_variable,
-                              covariates = NULL, doubly = TRUE, psmodel_obj,
+                              covariates = NULL, doubly = TRUE,
                               ...){
   if(doubly){
     if(!is.null(covariates)){

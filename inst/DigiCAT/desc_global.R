@@ -67,6 +67,16 @@ desc_global <<- list(
             in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual. See the ", 
             a(id = "link","logistic regression section of our tutorials", href = "https://uoe-digicat.github.io/04_cfmethod.html#propensity-score-specification-and-estimation", target="_blank"), " for more information.")),
   
+  rf = p(h5("Random Forest:"),
+         p("Random forest models are meta-estimators that fit decision trees on bootstrapped subsets of a dataset. 
+            A final prediction is estimated by aggregating the predictions of these trees through voting or averaging.")),
+  
+  gbm = p(h5("Generalized Boosted Models (GBM):"),
+         p("GBM are a type of machine-learning algorithm that combine decision trees and boosting methods. 
+           It's a meta-estimator where weak models, in this case, decision trees, are sequentially trained to correct the errors of the previous ones. 
+           Higher weights are assigned to misclassified instances, meaning subsequent models rectify these predictions. 
+           The final output is a weighted sum of the individual weak learner predictions.")),
+  
   olr = p(h5("Ordinal logistic regression:"),
           p("For ordinal treatments an ordinal logistic regression model is used to estimate the propensity scores used for matching. It predicts treatment (as an ordinal variable with 
             different dosage levels) from the set of chosen matching variables.. See the ", 
