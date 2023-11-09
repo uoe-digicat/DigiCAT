@@ -173,8 +173,8 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                        output$approach_description_general <- renderUI(descriptions$cfapproach_ordinal)
                        
                        
-                       ## If data does not contain missingness, only offer CC
-                       if(validation_log()$no_missingness_no_non_response | validation_log()$no_missingness_but_non_response){
+                       ## If no missingness detected and no non repose weight, only offer complete case
+                       if(validation_log()$no_missingness_no_non_response){
                          
                          output$missingness_selection <- renderUI(p(
                            radioButtons(NS(id, "missingness_radio"), 
@@ -187,17 +187,46 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                          )
                          )
                        }
-                       else{
-                         ## CC available as missingness 
+                       
+                       ## If no missingness detected but non reponse weight, offer complete case and weighting
+                       if(validation_log()$no_missingness_but_non_response){
+                         
                          output$missingness_selection <- renderUI(p(
                            radioButtons(NS(id, "missingness_radio"), 
                                         label = h4("2. Choose a Method of Dealing with Missingess:"),
                                         choices = list(
-                                          #"Multiple Imputation" = "mi",
+                                          "Weighting" = "weighting",
+                                          "Complete Case" = "complete"),
+                                        selected = character(0)),
+                           br(),
+                           p("No missing data detected, please proceed with complete case or weighting")
+                         )
+                         )
+                       }
+                       
+                       ## If there is data missingness and non response weights provided, include weighting as a missingness option
+                       if (validation_log()$some_missingness_but_non_response){
+                         
+                         output$missingness_selection <- renderUI(p(
+                           radioButtons(NS(id, "missingness_radio"), 
+                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
+                                        choices = list(
+                                          "Weighting" = "weighting",
                                           "Complete Case" = "complete"),
                                         selected = character(0))
                          )
                          )
+                       }
+                       
+                       ## If there is data missingness and no non response weight provided, don't add weighting
+                       if (validation_log()$some_missingness_no_non_response){
+                         output$missingness_selection <- renderUI(p(
+                           radioButtons(NS(id, "missingness_radio"), 
+                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
+                                        choices = list(
+                                          "Complete Case" = "complete"),
+                                        selected = character(0))
+                         ))
                        }
                        
                        
@@ -302,7 +331,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                          "Generalized Boosted Model (GBM)" = "gbm",
+                                          "Generalized Boosted Models (GBM)" = "gbm",
                                           "Random Forest" = "rf",
                                           "Logistic Regression" = "glm"),
                                         selected = character(0)))
@@ -360,12 +389,12 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      CF_approach_values$balancing_model_description <- descriptions$glm
                    }
                    
-                   if(input$balancing_model_radio == "rt"){
-                     CF_approach_values$balancing_model_description <- NULL
+                   if(input$balancing_model_radio == "rf"){
+                     CF_approach_values$balancing_model_description <- descriptions$rf
                    }
                    
                    if(input$balancing_model_radio == "gbm"){
-                     CF_approach_values$balancing_model_description <- NULL
+                     CF_approach_values$balancing_model_description <- descriptions$gbm
                    }
                    
                    if(input$balancing_model_radio == "poly"){

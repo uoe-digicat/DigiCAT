@@ -179,6 +179,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                  ## If "Prev" selected on data upload page, go back to start page
                  observeEvent(input$prevDU_btn,{
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "home-tab")
+                   shinyjs::removeClass(selector = "body", class = "sidebar-collapse") ## Expand NavBar
                  }
                  )
                  
