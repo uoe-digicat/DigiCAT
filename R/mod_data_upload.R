@@ -282,13 +282,14 @@ data_upload_server <- function(id, parent, enableLocal) {
                    updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
                    ## Disable "non-response weight" checkbox
                    shinyjs::disable("non_response_weight_checkbox")
-
+                   
                    ## Load in data
                    ## Save potential error to check for running of code dependent on data upload
                    error_check <- NA
+                   
                    error_check <- tryCatch({
 
-                     data_upload_values$rawdata <- read.csv(input$file1$datapath)},
+                    data_upload_values$rawdata <- read.csv(input$file1$datapath)},
 
                      ## If data does not upload, return error message
                      error = function(cond) {
@@ -300,9 +301,10 @@ data_upload_server <- function(id, parent, enableLocal) {
                    ## Carry out data checks if no error in data upload
                    if (all(!grepl("Error:", error_check))){
                      try({
-
+                       
                        ## Show and switch to data tab
                        showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
+
                        ## Remove data upload error if present
                        data_upload_values$upload_error <- NULL
 
@@ -331,9 +333,6 @@ data_upload_server <- function(id, parent, enableLocal) {
 
                        ## If inappropriate data is uploaded:
                        if(any(c(initial_data_check_ls$small_cols, initial_data_check_ls$small_rows, initial_data_check_ls$some_nonnumeric))){
-
-                         ## Hide data tab
-                         hideTab(session = parent, inputId = NS(id, "data_panel"), target = NS(id, "raw_data"))
 
                          ## Reset variable inputs
                          updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
@@ -427,6 +426,7 @@ data_upload_server <- function(id, parent, enableLocal) {
                    updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
                    
                    output$no_data_warning <- NULL ## Remove "no data" warning
+                   output$upload_error <- NULL ## Remove upload error
                    
                    ## Clear input pickers
                    updatePickerInput(session, "categorical_vars", choices = character(0))
