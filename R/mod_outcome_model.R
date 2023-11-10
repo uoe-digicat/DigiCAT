@@ -52,18 +52,31 @@ outcome_model_ui <- function(id) {
                ),
                
                ## Outcome model output ----
-               div(style = "width: 49%; margin-left: 2%;",
-                   class = "text_blocks",
-                   ## Output of selected outcome_model model
-                   withSpinner(uiOutput(ns("outcome_model_output")))
-               )
-           ),
-           br(),
            
-           ## Downloadable Output ----
-           div(align="center",
-               uiOutput(ns("download_options"))
-           )
+           mainPanel(wellPanel(id = "well_panel",
+                               tabsetPanel(id = NS(id,"results_panel"),
+                                           tabPanel(title = "Outcome Model Output",
+                                                    value = NS(id,'descriptive_stats'),
+                                                    ## Output of selected outcome_model model
+                                                    withSpinner(uiOutput(ns("outcome_model_output"))),
+                                                    br(),
+                                                    div(align="center", uiOutput(ns("sensitivity_analysis_button")))
+                                                    ),
+                                           tabPanel(title = "Sensitivity Analysis",
+                                                    value = NS(id,'sensitivity_analysis'),
+                                                    br(),
+                                                    uiOutput(ns("sensitivity_analysis_output"))
+                                                    )
+                                               )
+                                   ))
+           ),
+               
+               br(),
+           
+               ## Downloadable Output ----
+               div(align="center",
+                   uiOutput(ns("download_options"))
+                   )
   )
 }
 
@@ -98,7 +111,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    R_script = NULL,
                    report = NULL,
                    output = p(h4("Output:"),
-                              p("Once you have selected your outcome model, press'Run' to get results."))
+                              p("Once you have selected your outcome model, press'Run' to get results.")),
+                   sensitivity_analysis_output = NULL
                  )
                  
                  ## Navigation ----
@@ -112,6 +126,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "get_results-tab")
                  })
                  
+                 ## Page setup ----
+                 
+                 ## Hide sensitivity analysis tab initially
+                 hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
                  
                  ## Update choice of outcome model when approach is changed
                  observeEvent(approach(),{
@@ -155,8 +173,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    ## Remove missing parameter message if present
                    outcome_model_values$model_missing_message  <- NULL
                    
-                   
-                   
+
                    ## If outcome model has already been run, give informative message about rerun
                    if (!is.null(outcome_model_values$outcome_analysis_stage_res$standardised_format)){
                      ## Replace balancing model output with explanation of why output has been deleted
@@ -166,6 +183,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
                      
                    }
+                   
+                   ## Hide sensitivity analysis button and tab
+                   hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
+                   output$sensitivity_analysis_button <- NULL
                  })
                  
                  
@@ -297,6 +318,12 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                              downloadButton(session$ns("download_report"), "Download Report", class = "default_button"))
                          })
                          
+                         ## Add sensitivity analysis option
+                         output$sensitivity_analysis_button <- renderUI({
+                           div(
+                             actionButton(session$ns("sensitivity_analysis_button"), "Run Sensitivity Analysis", class = "default_button"))
+                         })
+                         
                          ## If file path is NULL (when example data used), create new variable to record this
                          if (is.null(file_path())){
                            outcome_model_values$file_path <- "DigiCAT Example Data"
@@ -322,7 +349,25 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      ## Remove download button
                      output$download_options <- NULL
                      
+                     ## Remove sensitivity analysis button
+                     output$sensitivity_analysis_button <- NULL
+                     
+                     ## Hide sensitivity analysis tab and button
+                     hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
+                     output$sensitivity_analysis_button <- NULL
                    }
+                 })
+                 
+                 ## Sensitivity analysis ----
+                 observeEvent(input$sensitivity_analysis_button, {
+                   
+                   ## Show and swithc to sensitivity analysis tab
+                   showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"), select = TRUE)
+        
+                   outcome_model_values$sensitivity_analysis_output <- p("Output of sensitivity analysis can go here")
+                   
+                   
+                   
                  })
                  
                  ## Download output ----
@@ -394,6 +439,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  output$outcome_model_rerun_message <- renderUI(outcome_model_values$model_rerun_message)
                  output$outcome_model_parameters_method <- renderUI(outcome_model_values$parameters_method)
                  output$outcome_model_output <- renderUI(outcome_model_values$output)
+                 output$sensitivity_analysis_output <- renderUI(outcome_model_values$sensitivity_analysis_output)
                  
                })
 }
