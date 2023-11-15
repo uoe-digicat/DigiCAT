@@ -22,7 +22,11 @@ calculate_ordered_logistic_linear_predictor <- function(formula, data,
 
 get_propensity <- function(estimated_propensity_model, model_type, treatment_variable, matching_variable, 
                            handled_missingness, missing_method,...){
-  f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
+  if(model_type != "poly"){
+    f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
+  } else {
+    f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
+  }
   
   switch(model_type, 
          
@@ -78,6 +82,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
              propensity_score <- calculate_ordered_logistic_linear_predictor(formula = f, 
                                                                              data = handled_missingness$variables,
                                                                              design_object = handled_missingness)
+             propensity_score <- cbind(handled_missingness$variables, propensity_score)
            }
          },
          stop("I need a valid model! (glm, gbm, rf, poly)")
@@ -85,7 +90,5 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
   )
   return(propensity_score)
 }
-
-
 
 
