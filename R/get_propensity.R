@@ -62,13 +62,8 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
          
          poly = { 
            if(missing_method == "mi" & model_type == "poly"){
-             # imputed.dfs <- complete(handled_missingness, "all")
-             # imputed.dfs <- lapply(imputed.dfs, function(x) data.frame(x, lp=estimated_propensity_model[[1]]$lp))
-             # propensity_score <- lapply(imputed.dfs, function(x) data.frame(x, model=estimated_propensity_model[[1]]$model))
-             
              propensity_score <- estimated_propensity_model
-             # names(propensity_score)[names(propensity_score) == 'polly$lp'] <- 'lp'
-             
+
            } else if (missing_method == "complete" & model_type == "poly"){
              
              
