@@ -34,7 +34,7 @@ outcome_model_ui <- function(id) {
            
            ## Outcome model selection ----
            div(style = "display: flex;",
-               div(style = "width: 49%;",
+               div(style = "width: 65.5%;",
                    class = "text_blocks",
                    radioButtons(NS(id, "outcome_model_radio"), label = h4("Choose an Outcome Model:"),
                                 choices = list(
@@ -56,7 +56,7 @@ outcome_model_ui <- function(id) {
            mainPanel(wellPanel(id = "well_panel",
                                tabsetPanel(id = NS(id,"results_panel"),
                                            tabPanel(title = "Outcome Model Output",
-                                                    value = NS(id,'descriptive_stats'),
+                                                    value = NS(id,'outcome_model_results'),
                                                     ## Output of selected outcome_model model
                                                     withSpinner(uiOutput(ns("outcome_model_output"))),
                                                     br(),
@@ -354,6 +354,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      
                      ## Hide sensitivity analysis tab and button
                      hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
+                     showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "outcome_model_results"), select = TRUE)
                      output$sensitivity_analysis_button <- NULL
                    }
                  })
@@ -364,7 +365,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    ## Show and swithc to sensitivity analysis tab
                    showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"), select = TRUE)
         
-                   outcome_model_values$sensitivity_analysis_output <- p("Output of sensitivity analysis can go here")
+                   outcome_model_values$sensitivity_analysis_output <- p("Coming Soon!")
                    
                    
                    

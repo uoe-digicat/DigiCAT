@@ -52,12 +52,12 @@ home_ui <- function(id) {
                    h4("4. Outcome model:", style = "text-align: left;"),
                    p("Run your outcome model to estimate the effect of the treatment on the outcome."))
            ),
-           br(),br(),br(),
+           br(),br(),
            
            ## Navigation ----
-           div(style="text-align: center;",
+           div(style="text-align: center; position: relative;",
                actionButton(ns("start_btn"),label="Get Started!", class = "default_button")),
-           br(),br(),br(),
+           br(),br(),
            
            ## Tool description ----
            fluidRow(
