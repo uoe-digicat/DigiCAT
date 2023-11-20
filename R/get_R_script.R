@@ -71,7 +71,7 @@ library(randomForest)"
   
   ## Data upload ----
   if (data_source == "own"){
-    data_source_code <- paste0("\n","\n", "## Load in own data - for security reasons filepaths cannot be stored, please fill in local filepath below", "df <- read.csv('')")
+    data_source_code <- paste0("\n","\n", "## Load in own data - for security reasons filepaths cannot be stored, please fill in local filepath below\n", "df <- read.csv('')")
   }
   if (data_source == "sample"){
     data_source_code <- paste0("\n","\n", "## Load in data (sample dataset (DigiCAT package is required))\n", "df <- DigiCAT::zp_eg")
