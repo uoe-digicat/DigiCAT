@@ -56,6 +56,7 @@ home_ui <- function(id) {
            
            ## Navigation ----
            div(style="text-align: center; position: relative;",
+               uiOutput(ns("warning")),
                actionButton(ns("start_btn"),label="Get Started!", class = "default_button")),
            br(),br(),
            
@@ -100,10 +101,17 @@ home_ui <- function(id) {
   
 }
 
-home_server <- function(id, parent) {
+home_server <- function(id, parent, enableLocal) {
   
   moduleServer(id,
                function(input, output, session) {
+                 
+                 ## If data upload is enabled, give warning about current developemnt
+                 if(enableLocal==TRUE){
+                   output$warning = renderUI({
+                     h3("Caution: This tool is under development; outputs may be incomplete or inaccurate.", style = "color:red")
+                   })
+                 }
                  
                  ## Start and terms of use ----
                  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 

@@ -319,10 +319,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          })
                          
                          ## Add sensitivity analysis option
-                         output$sensitivity_analysis_button <- renderUI({
-                           div(
-                             actionButton(session$ns("sensitivity_analysis_button"), "Run Sensitivity Analysis", class = "default_button"))
-                         })
+                         # output$sensitivity_analysis_button <- renderUI({
+                         #   div(
+                         #     actionButton(session$ns("sensitivity_analysis_button"), "Run Sensitivity Analysis", class = "default_button"))
+                         # })
                          
                          ## If file path is NULL (when example data used), create new variable to record this
                          if (is.null(file_path())){

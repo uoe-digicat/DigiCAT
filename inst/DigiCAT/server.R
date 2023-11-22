@@ -33,7 +33,8 @@ server <- function(input, output, session) {
   ####
   
   DigiCAT:::home_server("home",
-                        parent = session)
+                        parent = session,
+                        enableLocal = enable_local_data)
   
   ####
   # Data upload ----
