@@ -21,7 +21,7 @@ calculate_ordered_logistic_linear_predictor <- function(formula, data,
 }
 
 get_propensity <- function(estimated_propensity_model, model_type, treatment_variable, matching_variable, 
-                           handled_missingness, missing_method,...){
+                           handled_missingness, missing_method,.data,...){
   if(model_type != "poly"){
     f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
   } else {
@@ -63,7 +63,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
          poly = { 
            if(missing_method == "mi" & model_type == "poly"){
              propensity_score <- estimated_propensity_model
-
+             
            } else if (missing_method == "complete" & model_type == "poly"){
              
              
@@ -85,5 +85,4 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
   )
   return(propensity_score)
 }
-
 

@@ -1,7 +1,10 @@
 estimate_model <- function(handled_missingness, model_type = NULL, treatment_variable, matching_variable, 
                            missing_method,...){
-  f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
-  
+  if(model_type != "poly"){
+    f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
+  } else {
+    f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
+  }
   switch(model_type, 
          
          glm = {
@@ -75,7 +78,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            }
            
          },
-         stop("I need a valid model! (glm, gbm, rf, poly)")
+         stop("I need a valid model! (glm, gbm, rforest, poly)")
   )
   return(estimated_propensity_model)
 }
