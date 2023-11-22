@@ -46,7 +46,10 @@ Imports:
     see,
     patchwork,
     tidyverse,
-    nbpMatching
+    nbpMatching,
+    randomForest,
+    gbm,
+    parallel
 Remotes:
     couthcommander/nbpMatching,
     imbs-hl/ranger

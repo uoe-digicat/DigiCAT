@@ -31,7 +31,10 @@ ui <- fluidPage(
   # Dashboard page layout
   dashboardPage(
     skin = "blue",
-    dashboardHeader(title="DigiCAT", titleWidth = 300),
+    dashboardHeader(
+      title="DigiCAT",
+      titleWidth = 300,
+      tags$li(class = "dropdown",a(id = "link", "Share feedback on GitHub",  href = "https://github.com/uoe-digicat/DigiCAT/issues", target = "_blank"))),
     dashboardSidebar(width = 300,
                      sidebarMenu(
                        id = "main_tabs",
@@ -42,19 +45,20 @@ ui <- fluidPage(
                        menuItem("Terms & Conditions", tabName = "TC", icon = icon("square-check")),
                        menuItem("About", tabName = "about", icon = icon("circle-info")),
                        checkboxInput("style", "Dark Mode"),
+                       HTML("<br><br><br><br><br><br><br><br><br><br><br>"),
                        HTML(paste0(
-                         "<br><br><br><br><br><br><br><br><br><br><br><br>",
-                         "<p style = 'text-align: left; padding-left: 20px;'><small><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'>uoe_digicat-group@uoe.onmicrosoft.com</a>",
-                         "<br><br><br>",
-                         "<img src='logos/WT.png' height = '60'>",
+                         "<p style = 'text-align: left; padding-left: 20px; font-size: 12px;'><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'> Email: uoe_digicat-group@uoe.onmicrosoft.com</a>",
+                         "<br><br><br><br><br><br>",
+                         "<a href='https://wellcome.org' target='_blank'><img src='logos/WT.png' height = '60'>",
                          "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
-                         "<img src='logos/UoE.png' height = '60'>")
+                         "<a href='https://www.ed.ac.uk' target='_blank'><img src='logos/UoE.png' height = '60'>"),
+                         "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp",
+                         "<a href='https://github.com/uoe-digicat/DigiCAT' target='_blank'><img src='logos/github-mark.png' height = '60'>")
                        )
-                     )
-                     
-    ),
+                     ),
     
-    dashboardBody(
+    body = dashboardBody(
+      useShinyjs(),
       tabItems(
         tabItem(tabName = "analysis", tabsetPanel(
           id = "methods-tabs",

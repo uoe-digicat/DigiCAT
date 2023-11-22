@@ -14,13 +14,17 @@ get_R_script(
   covariates = NULL,
   weighting_variable = NULL,
   cluster_variable = NULL,
-  stratification_variable = NULL,
+  strata_variable = NULL,
   CF_approach,
-  missingness,
+  missing_method,
   balancing_model,
   matching_method = NULL,
   matching_ratio = NULL,
-  outcome_model
+  outcome_model,
+  DigiCAT_balanced_data,
+  DigiCAT_extracted_balanced_data,
+  DigiCAT_fitted_model,
+  DigiCAT_extracted_outcome_results
 )
 }
 \arguments{
@@ -40,7 +44,7 @@ get_R_script(
 
 \item{CF_approach}{Name of counterfactual appraoch being taken (character string)}
 
-\item{missingness}{Name of method of dealing with missingness being used (character string): \code{"mi"}, or \code{"complete"}}
+\item{missing_method}{Name of method of dealing with missingness being used (character string): \code{"mi"}, or \code{"complete"}}
 
 \item{balancing_model}{Name of balancing model being used (character string)}
 
@@ -49,6 +53,14 @@ get_R_script(
 \item{matching_ratio}{Name of balancing ratio being used (numeric)}
 
 \item{outcome_model}{Name of outcome model being used (character string)}
+
+\item{DigiCAT_balanced_data}{Balanced data object from tool}
+
+\item{DigiCAT_extracted_balanced_data}{Balanced data object from tool extracted for outcome model run}
+
+\item{DigiCAT_fitted_model}{Fitted outcome model from tool}
+
+\item{DigiCAT_extracted_outcome_results}{Extracted outcome model results from tool}
 
 \item{data}{Dataframe}
 }

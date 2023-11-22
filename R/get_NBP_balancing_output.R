@@ -12,7 +12,7 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   
   ## Observation Table ----
   
-  if(missing_method == "complete"){
+  if(missing_method == "complete" | missing_method == "weighting"){
     ## Factorize treatment variable in both matched and unmatched datasets
     estimation_model_object$propensity_scores[[treatment_variable]] <- as.factor(estimation_model_object$propensity_scores[[treatment_variable]])
     balanced_data$treatment <- as.factor(balanced_data$treatment)
@@ -41,7 +41,7 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   
   ## Balance Table ----
   
-  if(missing_method == "complete"){
+  if(missing_method == "complete" | missing_method == "weighting"){
     ## Get balance table
     balance_table <- bal.tab(balanced_data[,c(matching_variables)], treat = relevel(balanced_data[[treatment_variable]], ref = "low"), distance = balanced_data[["lp"]])
     balance_table <- as.data.frame(balance_table[[which(grepl("^Balance",names(balance_table)))]])
@@ -65,7 +65,7 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   
   ## Create data frame containing unmatched and matched mean differences in all matching variables
   
-  if(missing_method == "complete"){
+  if(missing_method == "complete" | missing_method == "weighting"){
     
     names(balance_table)[names(balance_table) %in% "Diff.Un"] <- "Matched"
     balance_table_matched <- balance_table

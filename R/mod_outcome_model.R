@@ -1,3 +1,6 @@
+#'@import rmarkdown
+#'@import knitr
+
 outcome_model_ui <- function(id) {
   ns <- NS(id)
   
@@ -31,7 +34,7 @@ outcome_model_ui <- function(id) {
            
            ## Outcome model selection ----
            div(style = "display: flex;",
-               div(style = "width: 49%;",
+               div(style = "width: 65.5%;",
                    class = "text_blocks",
                    radioButtons(NS(id, "outcome_model_radio"), label = h4("Choose an Outcome Model:"),
                                 choices = list(
@@ -49,22 +52,35 @@ outcome_model_ui <- function(id) {
                ),
                
                ## Outcome model output ----
-               div(style = "width: 49%; margin-left: 2%;",
-                   class = "text_blocks",
-                   ## Output of selected outcome_model model
-                   withSpinner(uiOutput(ns("outcome_model_output")))
-               )
-           ),
-           br(),
            
-           ## Downloadable Output ----
-           div(align="center",
-               uiOutput(ns("download_options"))
-           )
+           mainPanel(wellPanel(id = "well_panel",
+                               tabsetPanel(id = NS(id,"results_panel"),
+                                           tabPanel(title = "Outcome Model Output",
+                                                    value = NS(id,'outcome_model_results'),
+                                                    ## Output of selected outcome_model model
+                                                    withSpinner(uiOutput(ns("outcome_model_output"))),
+                                                    br(),
+                                                    div(align="center", uiOutput(ns("sensitivity_analysis_button")))
+                                                    ),
+                                           tabPanel(title = "Sensitivity Analysis",
+                                                    value = NS(id,'sensitivity_analysis'),
+                                                    br(),
+                                                    uiOutput(ns("sensitivity_analysis_output"))
+                                                    )
+                                               )
+                                   ))
+           ),
+               
+               br(),
+           
+               ## Downloadable Output ----
+               div(align="center",
+                   uiOutput(ns("download_options"))
+                   )
   )
 }
 
-outcome_model_server <- function(id, parent, data_source, file_path, categorical_variables, treatment_variable, outcome_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, matching_method, matching_ratio, estimation_stage_res, balancing_stage_res, descriptions) {
+outcome_model_server <- function(id, parent, data_source, file_path, raw_data, categorical_variables, treatment_variable, outcome_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, matching_method, matching_ratio, estimation_stage_res, balancing_stage_res, observation_table, common_support_plot, love_plot, balance_table, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -93,8 +109,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                    description_method = descriptions$outcome_model,
                    description_method_selected = NULL,
                    R_script = NULL,
+                   report = NULL,
                    output = p(h4("Output:"),
-                              p("Once you have selected your outcome model, press'Run' to get results."))
+                              p("Once you have selected your outcome model, press'Run' to get results.")),
+                   sensitivity_analysis_output = NULL
                  )
                  
                  ## Navigation ----
@@ -108,6 +126,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "get_results-tab")
                  })
                  
+                 ## Page setup ----
+                 
+                 ## Hide sensitivity analysis tab initially
+                 hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
                  
                  ## Update choice of outcome model when approach is changed
                  observeEvent(approach(),{
@@ -151,10 +173,9 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                    ## Remove missing parameter message if present
                    outcome_model_values$model_missing_message  <- NULL
                    
-                   
-                   
-                   ## If outcome model has already been run, give informative message about rerun and disable "Next" button to force rerun
-                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
+
+                   ## If outcome model has already been run, give informative message about rerun
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res$standardised_format)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                       p(
@@ -162,6 +183,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                      previous run."), "Once you have selected your outcome model, press 'Run' to get results."))
                      
                    }
+                   
+                   ## Hide sensitivity analysis button and tab
+                   hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
+                   output$sensitivity_analysis_button <- NULL
                  })
                  
                  
@@ -230,15 +255,15 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                          if(approach() == "psm" | approach() == "iptw"){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             descriptions$estimate,
-                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[1,1], 4)))),
+                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,1], 4)))),
                                                             br(),
                                                             descriptions$standard_error,
-                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[1,2], 4)))),
+                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,2], 4)))),
                                                             br(),
                                                             descriptions$p_value,
-                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[1,3], 4)))),
+                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,3], 4)))),
                                                             br(),
-                                                            strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res[1,5], 4))))
+                                                            strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,5], 4))))
 
                            )
                          }
@@ -246,13 +271,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                          if(approach() == "nbp"){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             descriptions$estimate,
-                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res[2,1], 4)))),
+                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,1], 4)))),
                                                             br(),
                                                             descriptions$standard_error,
-                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res[2,2], 4)))),
+                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,2], 4)))),
                                                             br(),
                                                             descriptions$p_value,
-                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res[2,4], 4))))
+                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,4], 4))))
                            )
                          }
                          
@@ -263,7 +288,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                          shinyjs::enable("run_outcome_model_btn")
                          
                          ## Generate R script
-                         
                          outcome_model_values$R_script <- get_R_script(
                            data_source = data_source(),
                            file_path = file_path(),
@@ -274,19 +298,38 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                            covariates = covariates(),
                            weighting_variable = survey_weight_var(),
                            cluster_variable = cluster_var(),
-                           stratification_variable = stratification_var(),
+                           strata_variable = stratification_var(),
                            CF_approach = approach(),
-                           missingness = missingness(),
+                           missing_method = missingness(),
                            balancing_model = balancing_model(),
                            matching_method = matching_method(),
                            matching_ratio = matching_ratio(),
-                           outcome_model = input$outcome_model_radio)
-                         
+                           outcome_model = input$outcome_model_radio,
+                           DigiCAT_balanced_data = balancing_stage_res(),
+                           DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
+                           DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
+                           DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results)
+
                          
                          ## Add download script button
                          output$download_options <- renderUI({
-                           downloadButton(session$ns("download_script"), "Download R Script", class = "default_button")
+                           div(
+                             downloadButton(session$ns("download_script"), "Download R Script", class = "default_button"),
+                             downloadButton(session$ns("download_report"), "Download Report", class = "default_button"))
                          })
+                         
+                         ## Add sensitivity analysis option
+                         # output$sensitivity_analysis_button <- renderUI({
+                         #   div(
+                         #     actionButton(session$ns("sensitivity_analysis_button"), "Run Sensitivity Analysis", class = "default_button"))
+                         # })
+                         
+                         ## If file path is NULL (when example data used), create new variable to record this
+                         if (is.null(file_path())){
+                           outcome_model_values$file_path <- "DigiCAT Example Data"
+                         }else{ ## If file path exists, get file name
+                           outcome_model_values$file_path <- basename(file_path())
+                         }
                        })
                      }
                    }
@@ -296,7 +339,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                  ## Remove outcome model output and force rerun if previous steps have changed since previous run
                  observeEvent(c(estimation_stage_res(), balancing_stage_res()), {
                    ## First check if outcome model has been run yet, if yes, print informative message in output
-                   if (!is.null(outcome_model_values$outcome_analysis_stage_res)){
+                   if (!is.null(outcome_model_values$outcome_analysis_stage_res$standardised_format)){
                      ## Replace balancing model output with explanation of why output has been deleted
                      outcome_model_values$output <- p(h4("Output:"),
                                                       p(
@@ -306,7 +349,26 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                      ## Remove download button
                      output$download_options <- NULL
                      
+                     ## Remove sensitivity analysis button
+                     output$sensitivity_analysis_button <- NULL
+                     
+                     ## Hide sensitivity analysis tab and button
+                     hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
+                     showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "outcome_model_results"), select = TRUE)
+                     output$sensitivity_analysis_button <- NULL
                    }
+                 })
+                 
+                 ## Sensitivity analysis ----
+                 observeEvent(input$sensitivity_analysis_button, {
+                   
+                   ## Show and swithc to sensitivity analysis tab
+                   showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"), select = TRUE)
+        
+                   outcome_model_values$sensitivity_analysis_output <- p("Coming Soon!")
+                   
+                   
+                   
                  })
                  
                  ## Download output ----
@@ -314,7 +376,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                    
                  })
                  
-                 ## Download script and analysis functions when download clicked
+                 ## Download script when "download R script" clicked
                  output$download_script <- downloadHandler(
                    
                    filename = function() {
@@ -330,6 +392,45 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                    }
                  )
                  
+                 ## Download report when "download report" clicked
+                 output$download_report <- 
+                   
+                   downloadHandler(
+                     filename = "DigiCAT_report.pdf",
+                     content =
+                       function(file) {
+                         shinyjs::disable("download_report")
+                         on.exit(shinyjs::enable("download_report"))
+                         output <- render(
+                           input = "report_template.Rmd",
+                           output_format = "pdf_document",
+                           params = list(n = 100,
+                                         data_name = outcome_model_values$file_path,
+                                         data = raw_data(),
+                                         outcome_variable = outcome_variable(),
+                                         treatment_variable = treatment_variable(),
+                                         matching_variables = matching_variables(),
+                                         covariates = covariates(),
+                                         weighting_variable = survey_weight_var(),
+                                         non_response_weight = validation_log()$non_response_weight_no_missingness,
+                                         cluster_variable = cluster_var(),
+                                         stratification_variable = stratification_var(),
+                                         CF_approach = approach(),
+                                         missingness = missingness(),
+                                         balancing_model = balancing_model(),
+                                         matching_method = matching_method(),
+                                         matching_ratio = matching_ratio(),
+                                         common_support_plot = common_support_plot(),
+                                         observation_table = observation_table(),
+                                         love_plot = love_plot(),
+                                         balance_table = balance_table(),
+                                         outcome_model = input$outcome_model_radio,
+                                         outcome_res = outcome_model_values$outcome_analysis_stage_res$standardised_format)
+                         )
+                         file.copy(output, file)
+                       }
+                   )
+                 
                  
                  ## Pass output to UI ----
                  ## Display information for choosing counterfactual approach, relevant parameters and model output
@@ -339,6 +440,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, categorical
                  output$outcome_model_rerun_message <- renderUI(outcome_model_values$model_rerun_message)
                  output$outcome_model_parameters_method <- renderUI(outcome_model_values$parameters_method)
                  output$outcome_model_output <- renderUI(outcome_model_values$output)
+                 output$sensitivity_analysis_output <- renderUI(outcome_model_values$sensitivity_analysis_output)
                  
                })
 }

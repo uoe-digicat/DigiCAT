@@ -1,7 +1,4 @@
-
-#' Counterfactual analysis balancing
-#' 
-#' This function balances datasets for counterfactual analysis in DigiCAT. 
+#' Function to balance datasets
 #'
 #' @param counterfactual_method Character string indicating your chosen approach `"psm"`, `"iptw"`, or `"nbp"`
 #' @param treatment_variable Character string matching column name of your treatment variable
@@ -15,28 +12,6 @@
 #' @import WeightIt
 #' @import MatchIt
 #' @import MatchThem
-#' 
-#' @return Balanced dataset
-#' @export
-#'
-#' @examples
-#' estimates <- estimation_stage(
-#' .data = DigiCAT::zp_eg,
-#' missing_method = "complete",
-#' model_type = "glm",
-#' treatment_variable = "Reading_age15",
-#' matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
-#' weighting_variable = NULL,
-#' cluster_variable = NULL,
-#' strata_variable = NULL
-#' )
-#' 
-#' balance_data(counterfactual_method = "psm",
-#' treatment_variable = "Reading_age15",
-#' matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
-#' PS_estimation_object = estimates,
-#' missing_method = "complete",
-#' )
 
 balance_data <- function(counterfactual_method, treatment_variable, matching_variable, PS_estimation_object,
                          missing_method,
@@ -66,15 +41,15 @@ balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
   
   if(missing_method=="mi" ) {
-     balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
-                     approach = "within", method = "ps",...)
+    balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
+                               approach = "within", method = "ps",...)
     
   } else if(missing_method=="complete"){
     balanced_data = weightit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, ps = PS_estimation_object$propensity_scores, estimand = "ATE", ...)
     
   } else if(missing_method=="weighting"){
     balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
-                            method = "ps", ...)
+                             method = "ps", ...)
   }
   
   return(balanced_data)
@@ -89,13 +64,13 @@ balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_o
     balanced_data = matchthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset, approach = "within", distance=PS_estimation_object$propensity_model_class, ...)
     
     
-   } else if(missing_method=="complete"){
+  } else if(missing_method=="complete"){
     balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, distance = PS_estimation_object$propensity_scores, ...)
     
-   } else if(missing_method=="weighting"){
-       balanced_data = matchit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
-                               ps = PS_estimation_object$propensity_score, ...)
-   }
+  } else if(missing_method=="weighting"){
+    balanced_data = matchit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
+                            ps = PS_estimation_object$propensity_score, ...)
+  }
   
   return(balanced_data)
   
@@ -103,9 +78,9 @@ balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_o
 
 balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_object, ...){ # ignore for now
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
-
+  
   balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, method = "cem")
-
+  
   return(balanced_data)
 }
 
@@ -114,24 +89,36 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
   
   if(missing_method == "complete"){
     
-  propensity_scores <- PS_estimation_object[[2]]
-  propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
-  created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
-                                             treatment_variable, missing_method,...) 
-  formatted_matrix <- distancematrix(created_distance_matrix,...) 
-  performed_matching <- nonbimatch(formatted_matrix) # threshold = 999999, precision = 7? 
-  matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
-  balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-  } 
-  
-  else if(missing_method == "mi"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
     created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
                                                treatment_variable, missing_method,...) 
     formatted_matrix <- distancematrix(created_distance_matrix,...) 
-    performed_matching <- nonbimatch(formatted_matrix, threshold = 999999,
-                                     precision = 7,...) # threshold = 999999, precision = 7? 
+    performed_matching <- nonbimatch(formatted_matrix) # threshold = 999999, precision = 7? 
+    matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
+    balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
+  } 
+  
+  else if(missing_method == "mi"){
+    propensity_scores <- PS_estimation_object[[2]]
+    propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
+    matched_data <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
+                                    treatment_variable, missing_method,...)
+    # #split_matrices <- split_matrix_to_array(created_distance_matrix, number_of_rows_per_split,...)
+    # formatted_matrix <- distancematrix(created_distance_matrix,...) 
+    # performed_matching <- nonbimatch(formatted_matrix, threshold = 999999,
+    #                                  precision = 7,...) # threshold = 999999, precision = 7? 
+    # matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
+    balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
+  }
+  
+  else if(missing_method == "weighting"){
+    propensity_scores <- PS_estimation_object[[2]]
+    propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
+    created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
+                                               treatment_variable, missing_method,...) 
+    formatted_matrix <- distancematrix(created_distance_matrix,...) 
+    performed_matching <- nonbimatch(formatted_matrix) # threshold = 999999, precision = 7? 
     matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
   }
@@ -139,3 +126,4 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
   return(balanced_data)
   
 }
+

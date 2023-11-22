@@ -33,7 +33,8 @@ server <- function(input, output, session) {
   ####
   
   DigiCAT:::home_server("home",
-                        parent = session)
+                        parent = session,
+                        enableLocal = enable_local_data)
   
   ####
   # Data upload ----
@@ -88,6 +89,7 @@ server <- function(input, output, session) {
   outcome_output <- DigiCAT:::outcome_model_server("outcome_model",  
                                                    parent = session,
                                                    data_source = reactive(data_upload_output$data_source),
+                                                   raw_data = reactive(data_upload_output$data),
                                                    file_path = reactive(data_upload_output$file_path),
                                                    categorical_variables = reactive(data_upload_output$categorical_vars),
                                                    treatment_variable = reactive(data_upload_output$treatment),
@@ -97,6 +99,7 @@ server <- function(input, output, session) {
                                                    survey_weight_var = reactive(data_upload_output$survey_weight_var),
                                                    cluster_var = reactive(data_upload_output$cluster_var),
                                                    stratification_var = reactive(data_upload_output$stratification_var),
+                                                   validation_log = reactive(data_upload_output$validation_log),
                                                    approach = reactive(CF_approach_output$CF_radio),
                                                    missingness = reactive(CF_approach_output$missingness),
                                                    balancing_model = reactive(CF_approach_output$balancing_model),
@@ -104,6 +107,10 @@ server <- function(input, output, session) {
                                                    matching_ratio = reactive(balancing_output$ratio_radio),
                                                    estimation_stage_res = reactive(balancing_output$estimation_stage_res),
                                                    balancing_stage_res = reactive(balancing_output$balancing_stage_res),
+                                                   common_support_plot = reactive(balancing_output$common_support_plot),
+                                                   observation_table = reactive(balancing_output$observation_table),
+                                                   love_plot = reactive(balancing_output$love_plot),
+                                                   balance_table = reactive(balancing_output$balance_table),
                                                    descriptions = desc_global)
   
 }
