@@ -67,6 +67,7 @@ data_upload_ui <- function(id) {
                           pickerInput(inputId= ns("treatment"), label ="Select your treatment variable *",
                                       choices=NULL,selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F) ## Multiple choices allowed but max set to 1 so input can be reset to NULL
                           ),
+                          uiOutput(ns("treatment_name_change")),
                           pickerInput(inputId= ns("matchvars"), label ="Select your matching variables *",
                                       choices=NULL,selected=NULL,multiple=TRUE, options = pickerOptions(dropupAuto = F)) %>%
                             shinyInput_label_embed(
@@ -85,6 +86,7 @@ data_upload_ui <- function(id) {
                               checkboxInput(ns("survey_weight_checkbox"), p("Select if data includes survey weights", tags$sup("†"))),
                               ## If check box selected, show picker input
                               uiOutput(ns("survey_weight_var")),
+                              uiOutput(ns("survey_weight_name_change")),
                               ## Add checkbox to see if weights compensates for non-response
                               checkboxInput(ns("non_response_weight_checkbox"), p("Select if survey weight variable above compensates for non-response", tags$sup("†")))
                           ),
@@ -193,6 +195,41 @@ data_upload_server <- function(id, parent, enableLocal) {
                    
                    ## Remove "no data" warning
                    output$no_data_warning <- NULL 
+                 })
+                 
+                 ## If treatment variable is labelled "treatment" flag and rename
+                 observeEvent(input$treatment, {
+                   
+                   if (input$treatment == "treatment"){
+                     ## Change treatment variable name in uploaded data
+                     data_upload_values$rawdata[, "uploaded_treatment"] <- data_upload_values$rawdata[, input$treatment]
+                     data_upload_values$treatment_name <- "uploaded_treatment"
+                     ## Flag change to user
+                     output$treatment_name_change <- renderUI({
+                       p("Will be refered to as 'uploaded_treatment' in DigiCAT analysis", style = "color:grey")
+                     })
+                   } else{
+                     data_upload_values$treatment_name <- input$treatment
+                     output$treatment_name_change <- NULL
+                   }
+                   
+                 })
+                 
+                 observeEvent(input$survey_weight_var, {
+                   
+                   if (input$survey_weight_var == "weights"){
+                     ## Change survey weights variable name in uploaded data
+                     data_upload_values$rawdata[, "uploaded_weights"] <- data_upload_values$rawdata[, input$survey_weight_var]
+                     data_upload_values$survey_weight_var <- "uploaded_weights"
+                     ## Flag change to user
+                     output$survey_weight_name_change <- renderUI({
+                       p("Will be refered to as 'uploaded_weights' in DigiCAT analysis", style = "color:grey")
+                     })
+                   } else{
+                     data_upload_values$survey_weight_var <- input$survey_weight_var
+                     output$survey_weight_name_change <- NULL
+                   }
+                   
                  })
                  
                  ## When categorical variable selection changed, update what can be selected as the outcome variable
@@ -482,8 +519,12 @@ data_upload_server <- function(id, parent, enableLocal) {
                          ## If survey design weight, clustering or stratification unsuitable (based on missingness or error in survey design), overwrite variable name with NULL or output
                          if (data_upload_values$validation$log$survey_weight_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
                            data_upload_values$survey_weight_var <- NULL
-                         } else{ ## otherwise, overwrite with survey weight variable name to be output
-                           data_upload_values$survey_weight_var <- input$survey_weight_var
+                         } else{ ## otherwise, overwrite with survey weight variable name to be output - check that variable name is not "weights", if it is, rename
+                           if (input$survey_weight_var == "weights"){
+                             data_upload_values$survey_weight_var <- "uploaded_weights"
+                           } else{
+                             data_upload_values$survey_weight_var <- input$survey_weight_var
+                           }
                          }
                          
                          if (data_upload_values$validation$log$clustering_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
@@ -539,12 +580,12 @@ data_upload_server <- function(id, parent, enableLocal) {
                                                       validation_log = NULL)
                  
                  observe({
-                   data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(input$treatment, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
+                   data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(data_upload_values$treatment_name, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- input$file1$datapath
                    data_upload_output$categorical_vars <- input$categorical_vars
                    data_upload_output$outcome <- input$outcome
-                   data_upload_output$treatment <- input$treatment
+                   data_upload_output$treatment <- data_upload_values$treatment_name
                    data_upload_output$matchvars <- input$matchvars
                    data_upload_output$covars <- input$covars
                    

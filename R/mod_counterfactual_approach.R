@@ -328,14 +328,28 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      else {
                        if (input$missingness_radio == "complete" | input$missingness_radio == "mi"){
                          
-                         output$balancing_model_selection <- renderUI(p(
-                           radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
-                                        choices = list(
-                                          "Generalized Boosted Models (GBM)" = "gbm",
-                                          "Random Forest" = "rf",
-                                          "Logistic Regression" = "glm"),
-                                        selected = character(0)))
-                         )
+                         ## If there are more than 50 or more rows in data, include GBM
+                         if (!validation_log()$no_GBM){
+                           
+                           output$balancing_model_selection <- renderUI(p(
+                             radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
+                                          choices = list(
+                                            "Generalized Boosted Models (GBM)" = "gbm",
+                                            "Random Forest" = "rf",
+                                            "Logistic Regression" = "glm"),
+                                          selected = character(0)))
+                           )
+                         }
+                         else{
+                           output$balancing_model_selection <- renderUI(p(
+                             radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
+                                          choices = list(
+                                            "Random Forest" = "rf",
+                                            "Logistic Regression" = "glm"),
+                                          selected = character(0)))
+                           )
+                           
+                         }
                        }
                        
                        if (input$missingness_radio == "weighting"){

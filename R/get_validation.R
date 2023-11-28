@@ -14,6 +14,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   ## Keep log of data validation
   validation_log <- list(
     treatment_variable_error = FALSE,
+    no_GBM = FALSE,
     survey_weight_available = FALSE,
     clustering_available = FALSE,
     stratification_available = FALSE,
@@ -58,7 +59,13 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## Print info on number of rows
     if((dim(.data)[1] > 10) & (dim(.data)[1] < 10000)){
       h5("Your data has an appropriate number of rows.", style = "color:green")
-    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.", style = "color:red")},  br(),
+    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.", style = "color:red")},
+    
+    ## Print message about GBM not being available if there are less than 50 rows
+    if(dim(.data)[1] < 50){
+      validation_log$no_GBM <- TRUE
+      h5("As your data contains fewer than 50 rows, Generalized Boosted Models (GBM) will not be available for generating propensity scores.", style = "color:grey")
+    },br(),
     
     ## Check outcome variable is continuous
     h4("Outcome Variable Type:"),
