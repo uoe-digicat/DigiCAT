@@ -1,20 +1,138 @@
 
 fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                               outcome_variable, treatment_variable, matching_variable,
-                              covariates = NULL, doubly = TRUE, psmodel_obj,
+                              covariates = NULL, outcome_formula, missing_method,
                               ...){
-  if(doubly){
-    if(!is.null(covariates)){
-      model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable,"*(",paste0(matching_variable, covariates, collapse="+"), ")"))
-    } else{
-      model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable,"*(",paste0(matching_variable, collapse="+"), ")"))
-    }
-  } else {
-    if(!is.null(covars)){
-      model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable,"*(",paste0(covariates, collapse="+"), ")"))
-    } else{
-      model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable))
-    }
+  
+  switch(outcome_formula,
+         
+         unadjusted = {
+           model_fit = outcome_unadjusted(balanced_data,
+                                          extracted_balanced_data,
+                                          outcome_variable,
+                                          treatment_variable,
+                                          matching_variable, covariates,
+                                          missing_method,...)
+         },
+         with_matching_variables = {
+           model_fit = outcome_with_matching_variables(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
+         },
+         marginal_effects = {
+           model_fit = outcome_marginal_effects(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
+         },
+         stop("Need a valid outcome formula (unadjusted, with matching variables, marginal effects)")
+  )
+  return(model_fit)
+}
+
+outcome_unadjusted <- function(balanced_data,
+                               extracted_balanced_data,
+                               outcome_variable,
+                               treatment_variable,
+                               matching_variable, covariates,
+                               missing_method,...){
+  
+  
+  if(!is.null(covariates)){
+    model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,covariates),collapse="+"))
+  } else{
+    model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable))
+  }
+  
+  if(extracted_balanced_data$process == "mi_psm"){
+    lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+      lm(model_formula, data = d,
+         weights = weights)
+    })
+    model_fit <- mice::pool(lm_model_fit)
+    
+  } else if(extracted_balanced_data$process == "cc_psm"){ 
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+    
+  } else if (extracted_balanced_data$process == "mi_iptw"){
+    lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+      lm(model_formula, data = d,
+         weights = weights)
+    })
+    model_fit <- mice::pool(lm_model_fit)
+    
+  } 
+  else if (extracted_balanced_data$process == "cc_iptw"){
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+    
+  } else if (extracted_balanced_data$process == "weighting_iptw"){
+    model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+    
+  } else if (extracted_balanced_data$process == "weighting_psm"){
+    model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+  }
+  else if (extracted_balanced_data$process == "cc_nbp"){
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]])
+    
+  }
+  return(model_fit)
+}
+
+
+with_matching_variables <- function(balanced_data,
+                                    extracted_balanced_data,
+                                    outcome_variable,
+                                    treatment_variable,
+                                    matching_variable, covariates = NULL, 
+                                    missing_method,...){
+  
+  
+  if(!is.null(covariates)){
+    model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,matching_variable,covariates),collapse="+"))
+  } else{
+    model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,matching_variable),collapse="+"))
+  }
+  
+  if(extracted_balanced_data$process == "mi_psm"){
+    lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+      lm(model_formula, data = d,
+         weights = weights)
+    })
+    model_fit <- mice::pool(lm_model_fit)
+    
+  } else if(extracted_balanced_data$process == "cc_psm"){ 
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+    
+  } else if (extracted_balanced_data$process == "mi_iptw"){
+    lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+      lm(model_formula, data = d,
+         weights = weights)
+    })
+    model_fit <- mice::pool(lm_model_fit)
+    
+  } 
+  else if (extracted_balanced_data$process == "cc_iptw"){
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+    
+  } else if (extracted_balanced_data$process == "weighting_iptw"){
+    model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+    
+  } else if (extracted_balanced_data$process == "weighting_psm"){
+    model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+  }
+  else if (extracted_balanced_data$process == "cc_nbp"){
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]])
+    
+  }
+  return(model_fit)
+}
+
+
+marginal_effects <- function(balanced_data,
+                             extracted_balanced_data,
+                             outcome_variable,
+                             treatment_variable,
+                             matching_variable, covariates = NULL, 
+                             missing_method,...){
+  if(!is.null(covariates)){
+    model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable,"*(",paste0(matching_variable, covariates, collapse="+"), ")"))
+  } else{
+    model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable,"*(",paste0(matching_variable, collapse="+"), ")"))
   }
   
   if(extracted_balanced_data$process == "mi_psm"){
@@ -66,20 +184,8 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
     model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
     
   }
-  else if (extracted_balanced_data$process == "cc_nbp"){
-    model_fit = lm(model_formula, data = extracted_balanced_data[[1]])
-    
-  } 
-  else if(extracted_balanced_data$process == "weighting_nbp"){
-    design_object2 = svydesign(ids = psmodel_obj$survey_design_object$cluster, # create design obj/update design obj with dose paired data
-                               weights = psmodel_obj$survey_design_object$weights,
-                               strata = psmodel_obj$survey_design_object$strata,
-                               data = extracted_balanced_data[[1]])
-    model_fit = svyglm(model_formula, design = design_object2)
-  }
   return(model_fit)
 }
-
 
 
 
