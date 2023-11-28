@@ -15,10 +15,20 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                                           missing_method,...)
          },
          with_matching_variables = {
-           model_fit = outcome_with_matching_variables(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
+           model_fit = outcome_matching_variables(balanced_data,
+                                                       extracted_balanced_data,
+                                                       outcome_variable,
+                                                       treatment_variable,
+                                                       matching_variable, covariates, 
+                                                       missing_method,...)
          },
          marginal_effects = {
-           model_fit = outcome_marginal_effects(treatment_variable, matching_variable, PS_estimation_object, missing_method,...)
+           model_fit = outcome_marginal_effects(balanced_data,
+                                                extracted_balanced_data,
+                                                outcome_variable,
+                                                treatment_variable,
+                                                matching_variable, covariates, 
+                                                missing_method,...)
          },
          stop("Need a valid outcome formula (unadjusted, with matching variables, marginal effects)")
   )
@@ -74,11 +84,11 @@ outcome_unadjusted <- function(balanced_data,
 }
 
 
-with_matching_variables <- function(balanced_data,
+outcome_matching_variables <- function(balanced_data,
                                     extracted_balanced_data,
                                     outcome_variable,
                                     treatment_variable,
-                                    matching_variable, covariates = NULL, 
+                                    matching_variable, covariates, 
                                     missing_method,...){
   
   
@@ -123,11 +133,11 @@ with_matching_variables <- function(balanced_data,
 }
 
 
-marginal_effects <- function(balanced_data,
+outcome_marginal_effects <- function(balanced_data,
                              extracted_balanced_data,
                              outcome_variable,
                              treatment_variable,
-                             matching_variable, covariates = NULL, 
+                             matching_variable, covariates, 
                              missing_method,...){
   if(!is.null(covariates)){
     model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable,"*(",paste0(matching_variable, covariates, collapse="+"), ")"))
