@@ -46,7 +46,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
                                        function(x) predict(gbm(as.formula(f), data = x, ...),
                                                            type = "response"))  
            } else {
-             propensity_score = predict(estimated_propensity_model)
+             propensity_score = predict(estimated_propensity_model, type = "response")
            }
          },
          

@@ -144,12 +144,10 @@ outcome_marginal_effects <- function(balanced_data,
                                        treatment_variable, " * (", 
                                        paste(c(matching_variable, covariates), collapse = " + "), ")"))
     
-    print(model_formula)
   } else{
     model_formula = as.formula(paste0(outcome_variable,
                                       "~",treatment_variable,
                                       "*(",paste0(matching_variable, collapse="+"), ")"))
-    print(model_formula)
   }
   if(extracted_balanced_data$process == "mi_psm"){
     lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
