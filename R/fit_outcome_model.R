@@ -154,7 +154,6 @@ outcome_marginal_effects <- function(balanced_data,
       lm(model_formula, data = d,
          weights = weights)
     })
-    print(lm_model_fit)
     model_fit <- lapply(lm_model_fit, function(fit) {
      marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
                                       variables = treatment_variable, wts = "weights", vcov = ~subclass)
