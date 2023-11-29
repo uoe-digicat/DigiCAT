@@ -140,11 +140,17 @@ outcome_marginal_effects <- function(balanced_data,
                              matching_variable, covariates, 
                              missing_method,...){
   if(!is.null(covariates)){
-    model_formula <- as.formula(paste0(outcome_variable, " ~ ", treatment_variable, " * (", matching_variable, " + ", paste(covariates, collapse = " + "), ")"))
+    model_formula <- as.formula(paste0(outcome_variable, " ~ ", 
+                                       treatment_variable, " * (", 
+                                       paste(c(matching_variable, covariates), collapse = " + "), ")"))
+    
+    print(model_formula)
   } else{
-    model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable,"*(",paste0(matching_variable, collapse="+"), ")"))
+    model_formula = as.formula(paste0(outcome_variable,
+                                      "~",treatment_variable,
+                                      "*(",paste0(matching_variable, collapse="+"), ")"))
+    print(model_formula)
   }
-  #print(model_formula)
   if(extracted_balanced_data$process == "mi_psm"){
     lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
       lm(model_formula, data = d,
@@ -152,8 +158,8 @@ outcome_marginal_effects <- function(balanced_data,
     })
     print(lm_model_fit)
     model_fit <- lapply(lm_model_fit, function(fit) {
-      marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
-                                       variables = treatment_variable, wts = "weights", vcov = ~subclass)
+     marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
+                                      variables = treatment_variable, wts = "weights", vcov = ~subclass)
     })
     model_fit <- mice::pool(model_fit)
     
