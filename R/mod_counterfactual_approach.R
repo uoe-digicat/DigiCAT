@@ -183,7 +183,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = "complete"),
                            br(),
-                           p("No missing data detected, please proceed with complete case")
+                           p("No missing data detected, please proceed with complete case", style = "color:gray;")
                          )
                          )
                        }
@@ -199,7 +199,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = character(0)),
                            br(),
-                           p("No missing data detected, please proceed with complete case or weighting")
+                           p("No missing data detected, please proceed with complete case or weighting", style = "color:gray;")
                          )
                          )
                        }
@@ -254,7 +254,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = "complete"),
                            br(),
-                           p("No missing data detected, please proceed with complete case")
+                           p("No missing data detected, please proceed with complete case", style = "color:gray;")
                          )
                          )
                        }
@@ -270,7 +270,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = character(0)),
                            br(),
-                           p("No missing data detected, please proceed with complete case or weighting")
+                           p("No missing data detected, please proceed with complete case or weighting", style = "color:gray;")
                          )
                          )
                        }
@@ -346,7 +346,9 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           choices = list(
                                             "Random Forest" = "rf",
                                             "Logistic Regression" = "glm"),
-                                          selected = character(0)))
+                                          selected = character(0)),
+                             br(),
+                             p("Generalized Boosted Models (GBM) not available for small datasets (< 50 rows)", style = "color:gray;"))
                            )
                            
                          }
