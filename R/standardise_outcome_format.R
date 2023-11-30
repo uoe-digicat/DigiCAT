@@ -39,6 +39,13 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     results_dataframe <- results_dataframe[2,]
     
     
+  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "with_matching_variables"){ # 
+    results_dataframe = as.data.frame(extracted_outcome_results[[1]])
+    results_dataframe <- results_dataframe[,-3]
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+    results_dataframe <- results_dataframe[2,]
+    
+    
   } else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "marginal_effects"){
     results_dataframe = as.data.frame(extracted_outcome_results)
     results_dataframe <- results_dataframe[,-c(2,5,7,10)]
