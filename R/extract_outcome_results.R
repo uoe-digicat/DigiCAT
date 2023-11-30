@@ -22,3 +22,4 @@ extract_outcome_results <- function(fitted_model, missing_method,...){
     
   }
 } 
+

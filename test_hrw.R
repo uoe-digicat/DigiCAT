@@ -23,7 +23,7 @@ evaluate_imputations(.data = df2$amp, evaluation_method = "LittleMCARtest")
 evaluate_imputations(.data = df2$amp, evaluation_method = "missing_pattern")
 evaluate_imputations(.data = df2$amp, evaluation_method = "influx_outflux")
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "glm",
+abc <- estimation_stage(.data = df2$amp, missing_method = "mi", model_type = "glm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_imputations(abc, "distributional_discrepancy", "strip")
 evaluate_imputations(abc, "convergence") # include guidance line as output maybe
@@ -32,7 +32,7 @@ evaluate_imputations(abc, "inspect_matrix")
 
 ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
-                    missing_method = "complete")
+                    missing_method = "mi")
 mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
