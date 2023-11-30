@@ -1,12 +1,12 @@
 standardise_outcome_format <- function(extracted_outcome_results, counterfactual_method, outcome_formula){
-  if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "marginal_effects"){ # may need to specify if ME or not
+  if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "marginal_effects"){ # ME MI with/without covs
     results_dataframe = extracted_outcome_results[[1]]
     results_dataframe <- results_dataframe[,-c(2, 5, 6)]
     colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
     rownames(results_dataframe) <- results_dataframe[,1]  
     results_dataframe <- results_dataframe[,-1]
     
-  } else if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "unadjusted"){ # unadjusted
+  } else if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "unadjusted"){ # unadjusted MI with/without covs
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     results_dataframe <- results_dataframe[,-c(4,5)]
     colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
@@ -15,7 +15,7 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     results_dataframe <- results_dataframe[2,]
     
     
-  } else if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "with_matching_variables"){ # matching variables
+  } else if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "with_matching_variables"){ # adjusted for matching variables with MI with/without covs
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     results_dataframe <- results_dataframe[,-c(4,5)]
     colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
@@ -25,21 +25,21 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     
     
     
-  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "marginal_effects"){ # and ME
+  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "marginal_effects"){ # ME CCA with/without covs
     results_dataframe = as.data.frame(extracted_outcome_results)
     results_dataframe <- results_dataframe[,-c(2,5,7,10)]
     colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
     rownames(results_dataframe) <- results_dataframe[,1]  
     results_dataframe <- results_dataframe[,-1]
     
-  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "unadjusted"){ # 
+  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "unadjusted"){ # unadjusted CCA with/without covs
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     results_dataframe <- results_dataframe[,-3]
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
     results_dataframe <- results_dataframe[2,]
     
     
-  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "with_matching_variables"){ # 
+  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "with_matching_variables"){ # adjusted for matching variables with CCA with/without covs
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     results_dataframe <- results_dataframe[,-3]
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
