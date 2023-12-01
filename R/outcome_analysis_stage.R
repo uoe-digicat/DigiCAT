@@ -52,7 +52,7 @@
 
 outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome_variable,
                                    treatment_variable, matching_variable, covariates, psmodel_obj,
-                                   cluster_variable, nonresponse_weights, sampling_weights,
+                                   cluster_variable, weighting_variable,
                                    missing_method, outcome_formula,...){
   extracted_balanced_data <- extract_balanced_data(balanced_data, psmodel_obj, 
                                                    missing_method, weighting_variable,
@@ -63,7 +63,7 @@ outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome
                                     ...) 
   extracted_outcome_results <- extract_outcome_results(fitted_model, missing_method,...) # 
   standardised_format <- standardise_outcome_format(extracted_outcome_results, counterfactual_method,
-                                                    outcome_formula,...) # 
+                                                    outcome_formula,fitted_model,...) # 
   return(list(standardised_format = standardised_format, extracted_balanced_data = extracted_balanced_data, fitted_model = fitted_model, extracted_outcome_results = extracted_outcome_results))
 }
 
