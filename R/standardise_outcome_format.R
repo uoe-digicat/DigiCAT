@@ -1,4 +1,4 @@
-standardise_outcome_format <- function(extracted_outcome_results, counterfactual_method, outcome_formula){
+standardise_outcome_format <- function(extracted_outcome_results, counterfactual_method, outcome_formula, fitted_model,...){
   if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "marginal_effects"){ # ME MI with/without covs
     results_dataframe = extracted_outcome_results[[1]]
     results_dataframe <- results_dataframe[,-c(2, 5, 6)]
@@ -59,6 +59,14 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
     rownames(results_dataframe) <- results_dataframe[,1]  
     results_dataframe <- results_dataframe[,-1]
+  }
+  else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "unadjusted"){
+    results_dataframe = as.data.frame(extracted_outcome_results[[1]]$coefficients)
+    results_dataframe <- results_dataframe[,-3]
+    Cis <- confint(fitted_model)
+    results_dataframe <- cbind(results_dataframe, Cis)
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+    results_dataframe <- results_dataframe[2,]
   }
   else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method == "nbp"){
     results_dataframe = as.data.frame(extracted_outcome_results[[1]][[4]])
