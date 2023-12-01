@@ -68,6 +68,30 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
     results_dataframe <- results_dataframe[2,]
   }
+  else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "iptw" & outcome_formula == "unadjusted"){
+    results_dataframe = as.data.frame(extracted_outcome_results[[1]]$coefficients)
+    results_dataframe <- results_dataframe[,-3]
+    Cis <- confint(fitted_model)
+    results_dataframe <- cbind(results_dataframe, Cis)
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+    results_dataframe <- results_dataframe[2,]
+  }
+  else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "iptw" & outcome_formula == "with_matching_variables"){
+    results_dataframe = as.data.frame(extracted_outcome_results[[1]]$coefficients)
+    results_dataframe <- results_dataframe[,-3]
+    Cis <- confint(fitted_model)
+    results_dataframe <- cbind(results_dataframe, Cis)
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+    results_dataframe <- results_dataframe[2,]
+  }
+  else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "with_matching_variables"){
+    results_dataframe = as.data.frame(extracted_outcome_results[[1]]$coefficients)
+    results_dataframe <- results_dataframe[,-3]
+    Cis <- confint(fitted_model)
+    results_dataframe <- cbind(results_dataframe, Cis)
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+    results_dataframe <- results_dataframe[2,]
+  }
   else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method == "nbp"){
     results_dataframe = as.data.frame(extracted_outcome_results[[1]][[4]])
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "T statistic", "P-value")
