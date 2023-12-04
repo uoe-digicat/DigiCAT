@@ -20,12 +20,35 @@ run_SA <- function(PS_object, balanced_data, missing_method, outcome_variable, S
 }
 
 
-perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outcome_variable,...){
-  if(missing_method == "complete"){
-  mpairs <- cbind(PS_object$missingness_treated_dataset[row.names(balanced_data$match.matrix), outcome_variable],
-                  PS_object$missingness_treated_dataset[balanced_data$match.matrix, outcome_variable])
-  SA_results <- rbounds::psens(x=mpairs[,1],y=mpairs[,2])
+
+perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outcome_variable, ...) {
+  if (missing_method == "complete") {
+    mpairs <- cbind(
+      PS_object$missingness_treated_dataset[row.names(balanced_data$match.matrix), outcome_variable, drop = FALSE],
+      PS_object$missingness_treated_dataset[balanced_data$match.matrix, outcome_variable, drop = FALSE]
+    )
+    SA_results <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
+  } else if (missing_method == "mi") {
+    matchit_list <- balanced_data$models
+    
+    imputed_data <- PS_object$missingness_treated_dataset
+    
+    SA_results <- vector("list", length = length(matchit_list))
+    
+    for (i in seq_along(matchit_list)) {
+      match_matrix <- matchit_list[[i]]$match.matrix
+      
+      comp <- complete(imputed_data, "all")
+      
+      mpairs <- cbind(
+        comp[[i]][row.names(match_matrix), outcome_variable, drop = FALSE],
+        comp[[i]][match_matrix, outcome_variable, drop = FALSE]
+      )
+      
+      SA_results[[i]] <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
+    }
   }
- return(SA_results)
+  
+  return(SA_results)
 }
 
