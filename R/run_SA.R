@@ -1,8 +1,8 @@
 #### Sensitivity Analysis ####
-run_SA <- function(matched_object, .data, SA_type){ # sensitivity analysis type
+run_SA <- function(PS_object, balanced_data, missing_method, outcome_variable, SA_type,...){ # sensitivity analysis type
   switch(SA_type,
          rosenbaum_SA = {
-           SA_results = perform_rosenbaum_SA(model_type, fitted_model, missing_method,...)
+           SA_results = perform_rosenbaum_SA(PS_object, balanced_data, missing_method, outcome_variable,...)
          },
          PS_calibration = {
            
@@ -12,13 +12,20 @@ run_SA <- function(matched_object, .data, SA_type){ # sensitivity analysis type
          },
          E_value = {
            
-         })
+         },
+         stop("Need a valid method to run the sensitivity analysis")
+  )
+  return(SA_results)
+  
 }
 
 
-### scrap
-mpairs <- cbind(abc$missingness_treated_dataset[row.names(ghi$match.matrix), 'y'],
-                abc$missingness_treated_dataset[ghi$match.matrix, 'y'])
-library(rbounds)
+perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outcome_variable,...){
+  if(missing_method == "complete"){
+  mpairs <- cbind(PS_object$missingness_treated_dataset[row.names(balanced_data$match.matrix), outcome_variable],
+                  PS_object$missingness_treated_dataset[balanced_data$match.matrix, outcome_variable])
+  SA_results <- rbounds::psens(x=mpairs[,1],y=mpairs[,2])
+  }
+ return(SA_results)
+}
 
-psens(x=mpairs[,1],y=mpairs[,2], Gamma = 6, GammaInc = 1) # x is Tr group outcomes, y is ctrl group outcomes
