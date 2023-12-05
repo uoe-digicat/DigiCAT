@@ -47,8 +47,14 @@ perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outco
       
       SA_results[[i]] <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
     }
+    # SA_results <- mean(sapply(SA_results, function(sa_result) sa_result$bounds[[3]])) # average
+    # preferably iterate to provide output averaged across Gamma rows to mirror that of CCA 
+    
   }
   
   return(SA_results)
 }
+
+
+
 
