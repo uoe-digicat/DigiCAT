@@ -109,7 +109,7 @@ home_server <- function(id, parent, enableLocal) {
                  ## If data upload is enabled, give warning about current developemnt
                  if(enableLocal==TRUE){
                    output$warning = renderUI({
-                     h3("Caution: This tool is under development; outputs may be incomplete or inaccurate.", style = "color:red")
+                     h3("Caution: This tool is under development; outputs may be incomplete or inaccurate. Non-bipartite matching (NBP) coming soon.", style = "color:red")
                    })
                  }
                  

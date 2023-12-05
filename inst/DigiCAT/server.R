@@ -50,6 +50,7 @@ server <- function(input, output, session) {
   
   CF_approach_output <- DigiCAT:::CF_approach_server("CF_approach",
                                                      parent = session,
+                                                     enableLocal = enable_local_data,
                                                      raw_data = reactive(data_upload_output$data),
                                                      categorical_variables = reactive(data_upload_output$categorical_vars),
                                                      outcome_variable = reactive(data_upload_output$outcome),

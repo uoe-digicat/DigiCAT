@@ -97,15 +97,28 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       meaning it cannot be used in the counterfactual analysis currently supported by DigiCAT. To proceed, please recode your treatment variable.", style = "color:red")
     },
     
+    # if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
+    #   h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
+    #   current counterfactual approaches offered by DigiCAT." , style = "color:green")
+    # },
+    
     if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
-      current counterfactual approaches offered by DigiCAT." , style = "color:green")
+      h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable. DigiCAT will soon support ordinal treatment types in
+          uploaded data." , style = "color:orange")
     },
     if(length(unique(.data[[treatment]])) > 5){
       validation_log$treatment_variable_error <- TRUE
       h5("You have selected ",treatment, " as your treatment variable. This has been detected as a continuous variable and cannot be used in the 
       current counterfactual approaches offered by DigiCAT. Please reselect or categorize your current treatment variable." , style = "color:red")
     },
+    br(),
+    
+    h4("Treatment Counts:"),
+    ## Print n for each treatment group
+    renderTable(data.frame('Group' = names(table(.data[[treatment]])), 'Count' = as.character(table(.data[[treatment]])))),
+    
+    h5("The above table shows the number of individuals in each treatment group."),
+    
     br(),
     
     ## Check multicollinearity between variables
