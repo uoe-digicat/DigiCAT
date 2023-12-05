@@ -12,7 +12,7 @@ run_SA <- function(PS_object, balanced_data, missing_method, outcome_variable, S
         #   
         # },
          VW_Evalue = { # typically for binary outcome
-           SA_results = perform_VW_Evalue(outcome_results, missing_method,...)
+           SA_results = perform_VW_Evalue(outcome_results, outcome_type, missing_method,...)
            
          },
          stop("Need a valid method to run the sensitivity analysis")
@@ -63,7 +63,7 @@ perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outco
 }
 
 
-VW_Evalue <- function(outcome_results, outcome_type,...){
+VW_Evalue <- function(outcome_results, outcome_type, missing_method,...){
   if(outcome_type == "continuous"){
   estimate <- outcome_results$standardised_format$`Coefficient Estimate`
   sd_est <- outcome_results$standardised_format$`Standard Error`
