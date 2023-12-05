@@ -20,20 +20,19 @@ run_SA <- function(PS_object, balanced_data, missing_method, outcome_variable, S
 }
 
 
-
 perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outcome_variable, ...) {
   if (missing_method == "complete") {
     mpairs <- cbind(
       PS_object$missingness_treated_dataset[row.names(balanced_data$match.matrix), outcome_variable, drop = FALSE],
       PS_object$missingness_treated_dataset[balanced_data$match.matrix, outcome_variable, drop = FALSE]
     )
-    SA_results <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
+    SA_result <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
   } else if (missing_method == "mi") {
     matchit_list <- balanced_data$models
     
     imputed_data <- PS_object$missingness_treated_dataset
     
-    SA_results <- vector("list", length = length(matchit_list))
+    avg_upper_bounds <- numeric(length = PS_object$missingness_treated_dataset$m)  
     
     for (i in seq_along(matchit_list)) {
       match_matrix <- matchit_list[[i]]$match.matrix
@@ -45,15 +44,37 @@ perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outco
         comp[[i]][match_matrix, outcome_variable, drop = FALSE]
       )
       
-      SA_results[[i]] <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
+      SA_result <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
+      
+      # Average Upper bound values across rows for each set
+      avg_upper_bounds <- avg_upper_bounds + SA_result$bounds[, "Upper bound", drop = FALSE]
     }
-    # SA_results <- mean(sapply(SA_results, function(sa_result) sa_result$bounds[[3]])) # average
-    # preferably iterate to provide output averaged across Gamma rows to mirror that of CCA 
-    
+
+    # Create a summary with the pooled values
+    avg_upper_bounds <- avg_upper_bounds / length(matchit_list)
+
+    # Replace Upper bound values with pooled values
+    SA_result$bounds$`Upper bound` <- avg_upper_bounds
   }
   
-  return(SA_results)
+  return(SA_result)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
