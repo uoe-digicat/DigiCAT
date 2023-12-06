@@ -66,7 +66,8 @@ ui <- fluidPage(
           DigiCAT:::data_upload_ui("data_upload"),  ## Load home tab
           DigiCAT:::CF_approach_ui("CF_approach", descriptions = desc_global), ## Load CF approach tab
           DigiCAT:::balancing_ui("balancing"), ## Load balancing tab
-          DigiCAT:::outcome_model_ui("outcome_model") ## Load outcome model tab
+          DigiCAT:::outcome_model_ui("outcome_model"), ## Load outcome model tab
+          DigiCAT:::sensitivity_analysis_ui("sensitivity_analysis") ## Load outcome model tab
         )),
         tabItem(tabName = "TC", DigiCAT:::TCs_page),
         tabItem(tabName = "about", DigiCAT:::about_page))
