@@ -7,6 +7,7 @@ CF_approach_ui <- function(id, descriptions) {
   ## Tab for choosing counterfactual analysis approach
   tabPanel(title = "",
            value = NS(id, 'tab'),
+           useShinyjs(),
            br(),
            
            ## Navigation bar ----
@@ -72,10 +73,12 @@ CF_approach_ui <- function(id, descriptions) {
   )
 }
 
-CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, descriptions) {
+CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, descriptions) {
   
   moduleServer(id,
                function(input, output, session) {
+                 
+                 ns <- NS(id)
                  
                  ## Navigation bar ----
                  
@@ -165,14 +168,17 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      }
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) > 2){
                        
-                       output$approach_selection <- renderUI(radioButtons(NS(id, "CF_radio"), 
-                                                                            label = h4("1. Choose a Counterfactual Approach:"), 
+                       if (enableLocal){
+                         output$approach_selection <- renderUI(p("Non-bipartite Matching (NBP) coming soon." ,style = "color:grey"))
+                       } else{
+                         output$approach_selection <- renderUI(radioButtons(ns("CF_radio"),
+                                                                            label = h4("1. Choose a Counterfactual Approach:"),
                                                                             choices = list("Non-bipartite Matching" = "nbp"),
-                                                                            selected = "nbp"))
+                                                                            selected = character(0)))
+                       }
                        
                        output$approach_description_general <- renderUI(descriptions$cfapproach_ordinal)
-                       
-                       
+
                        ## If no missingness detected and no non repose weight, only offer complete case
                        if(validation_log()$no_missingness_no_non_response){
                          
@@ -183,7 +189,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = "complete"),
                            br(),
-                           p("No missing data detected, please proceed with complete case")
+                           p("No missing data detected, please proceed with complete case", style = "color:gray;")
                          )
                          )
                        }
@@ -199,7 +205,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = character(0)),
                            br(),
-                           p("No missing data detected, please proceed with complete case or weighting")
+                           p("No missing data detected, please proceed with complete case or weighting", style = "color:gray;")
                          )
                          )
                        }
@@ -254,7 +260,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = "complete"),
                            br(),
-                           p("No missing data detected, please proceed with complete case")
+                           p("No missing data detected, please proceed with complete case", style = "color:gray;")
                          )
                          )
                        }
@@ -270,7 +276,7 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                                           "Complete Case" = "complete"),
                                         selected = character(0)),
                            br(),
-                           p("No missing data detected, please proceed with complete case or weighting")
+                           p("No missing data detected, please proceed with complete case or weighting", style = "color:gray;")
                          )
                          )
                        }
@@ -328,14 +334,30 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                      else {
                        if (input$missingness_radio == "complete" | input$missingness_radio == "mi"){
                          
-                         output$balancing_model_selection <- renderUI(p(
-                           radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
-                                        choices = list(
-                                          "Generalized Boosted Models (GBM)" = "gbm",
-                                          "Random Forest" = "rf",
-                                          "Logistic Regression" = "glm"),
-                                        selected = character(0)))
-                         )
+                         ## If there are more than 50 or more rows in data, include GBM
+                         if (!validation_log()$no_GBM){
+                           
+                           output$balancing_model_selection <- renderUI(p(
+                             radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
+                                          choices = list(
+                                            "Generalized Boosted Models (GBM)" = "gbm",
+                                            "Random Forest" = "rf",
+                                            "Logistic Regression" = "glm"),
+                                          selected = character(0)))
+                           )
+                         }
+                         else{
+                           output$balancing_model_selection <- renderUI(p(
+                             radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
+                                          choices = list(
+                                            "Random Forest" = "rf",
+                                            "Logistic Regression" = "glm"),
+                                          selected = character(0)),
+                             br(),
+                             p("Generalized Boosted Models (GBM) not available for small datasets (< 50 rows)", style = "color:gray;"))
+                           )
+                           
+                         }
                        }
                        
                        if (input$missingness_radio == "weighting"){

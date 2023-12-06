@@ -17,7 +17,6 @@
 #'
 #' @return Estimated effect of treatment on outcome
 #' @import marginaleffects
-#' @export
 #'
 #' @examples
 #' estimates <- estimation_stage(
