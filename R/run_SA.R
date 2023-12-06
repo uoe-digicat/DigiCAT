@@ -57,7 +57,23 @@ perform_rosenbaum_SA <- function(PS_object, balanced_data, missing_method, outco
 
     # Replace Upper bound values with pooled values
     SA_result$bounds$`Upper bound` <- avg_upper_bounds
-  }
+  } else if(missing_method == "weighting"){
+    mpairs <- cbind(
+      PS_object$missingness_treated_dataset$variable[row.names(balanced_data$match.matrix), outcome_variable, drop = FALSE],
+      PS_object$missingness_treated_dataset$variables[balanced_data$match.matrix, outcome_variable, drop = FALSE]
+    )
+    
+    # Remove rows with NA values
+    mpairs <- mpairs[complete.cases(mpairs), ]
+    
+    # Check if there are still valid pairs after removing NAs
+    if (nrow(mpairs) > 0) {
+      SA_result <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2])
+    } else {
+      warning("No valid pairs for sensitivity analysis after removing NAs.")
+      return(NULL)
+    }
+    }
   
   return(SA_result)
 }
