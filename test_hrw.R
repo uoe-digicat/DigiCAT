@@ -23,22 +23,22 @@ evaluate_imputations(.data = df2$amp, evaluation_method = "LittleMCARtest")
 evaluate_imputations(.data = df2$amp, evaluation_method = "missing_pattern")
 evaluate_imputations(.data = df2$amp, evaluation_method = "influx_outflux")
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "gbm",
+abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "glm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_imputations(abc, "distributional_discrepancy", "strip")
 evaluate_imputations(abc, "convergence") # include guidance line as output maybe
 evaluate_imputations(abc, "eventslog") # depending on logged events, recommend altering parameters xyz accordingly
 evaluate_imputations(abc, "inspect_matrix")
 
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
-                              missing_method = "complete",
+                              missing_method = "mi",
                               outcome_formula = "unadjusted",
                               covariates = NULL)
 
@@ -106,7 +106,7 @@ data_to_use <- df2$amp
 abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2"),
                         weighting_variable = "SW") 
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "A", 
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
                     missing_method = "weighting")
 
@@ -158,7 +158,9 @@ ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear",
                     missing_method = "complete")
 jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
                               outcome_variable = "mpg", treatment_variable = "gear",
-                              matching_variable = c("qsec", "hp", "disp"),
+                              #matching_variable = c("qsec", "hp", "disp"),
+                              covariates = NULL,
+                              outcome_formula = "unadjusted",
                               psmodel_obj = abc, missing_method = "complete")
 
 
@@ -189,3 +191,219 @@ sapply(paste0("R/",files.sources), source)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Load necessary libraries
+library(nbpMatching)
+library(MatchIt)  # for the matchit function
+library(MASS)  # for the truehist function
+
+# Set a seed for reproducibility
+set.seed(123)
+
+# Function to simulate data with a known treatment effect
+simulate_data <- function(n = 300) {
+  # Simulate data for a treatment group
+  treatment_data <- data.frame(
+    ID = 1:n,
+    age = rnorm(n, mean = 40, sd = 10),
+    income = rnorm(n, mean = 50000, sd = 10000),
+    treatment = as.factor(sample(1:3, n, replace = TRUE))
+  )
+  
+  # Simulate data for a control group
+  control_data <- data.frame(
+    ID = (n + 1):(2 * n),
+    age = rnorm(n, mean = 38, sd = 8),
+    income = rnorm(n, mean = 48000, sd = 12000),
+    treatment = as.factor(sample(1:3, n, replace = TRUE))
+  )
+  
+  # Combine the treatment and control groups into one dataset
+  simulated_data <- rbind(treatment_data, control_data)
+  
+  # Simulate a continuous outcome with a known treatment effect
+  simulated_data$continuous_outcome <- 50 + 5 * as.numeric(simulated_data$treatment) +
+    2 * simulated_data$age + rnorm(2 * n, mean = 0, sd = 10)
+  
+  return(simulated_data)
+}
+
+# Simulate data
+simulated_data <- simulate_data()
+
+un <- estimation_stage(.data = simulated_data, missing_method = "complete", model_type = "poly",
+                       treatment_variable = "treatment", matching_variable = c("age", "income"))
+deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
+                     matching_variable = c("age", "income"), PS_estimation_object = un,
+                     missing_method = "complete")
+contrasts(deux$treatment) <- contr.treatment(2, base = 2)
+trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
+                                outcome_variable = "continuous_outcome", treatment_variable = "treatment",
+                                matching_variable = c("age", "income"),
+                                covariates = NULL,
+                                outcome_formula = "unadjusted",
+                                psmodel_obj = un, missing_method = "complete")
+
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Number of simulations
+num_simulations <- 10
+
+# Storage for results
+results <- vector("list", length = num_simulations)
+
+# Run simulations
+for (i in 1:num_simulations) {
+  # Simulate data
+  n <- 500
+  weight <- rnorm(n, mean = 70, sd = 10)
+  true_effect <- 5
+  treatment <- sample(1:5, n, replace = TRUE)
+  
+  # Apply the true effect to the highest treatment level
+  weight[treatment == 3] <- weight[treatment == 3] + true_effect
+  
+  gender <- sample(c("Male", "Female"), n, replace = TRUE)
+  age <- rnorm(n, mean = 40, sd = 5)
+  
+  # Combine simulated data into a data frame
+  simulated_data <- data.frame(
+    weight = weight,
+    treatment = as.factor(treatment),
+    gender = as.factor(gender),
+    age = age)
+    
+    un <- estimation_stage(.data = simulated_data, missing_method = "complete", model_type = "poly",
+                           treatment_variable = "treatment", matching_variable = c("gender", "age"))
+    deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
+                       matching_variable = c("gender", "age"), PS_estimation_object = un,
+                       missing_method = "complete")
+    contrasts(deux$treatment) <- contr.treatment(2, base = 2)
+    trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
+                                 outcome_variable = "weight", treatment_variable = "treatment",
+                                 matching_variable = c("gender", "age"),
+                                 covariates = NULL,
+                                 outcome_formula = "unadjusted",
+                                 psmodel_obj = un, missing_method = "complete")
+  
+  # Perform analysis
+  model <- lm(weight ~ treatment + gender + age, data = deux)
+  print(summary(model))
+  
+  # Store results
+  results[[i]] <- coef(model)[2]  # Extract the coefficient for treatment (high)
+}
+
+# Analyze the distribution of results
+summary(unlist(results))
+hist(unlist(results), main = "Distribution of Treatment Effects", xlab = "Treatment Effect")
+
+
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Number of observations
+n <- 1000
+
+# Simulate continuous outcome (e.g., weight)
+weight <- rnorm(n, mean = 70, sd = 10)
+
+# True effect size for the treatment variable
+true_effect <- 3
+
+# Simulate ordinal treatment variable (e.g., drug dosage with 3 levels)
+treatment <- sample(1:3, n, replace = TRUE)
+
+# Apply the true effect to the highest treatment group
+weight[treatment == 3] <- weight[treatment == 3] + true_effect
+
+# Simulate binary matching variable (e.g., gender)
+gender <- sample(c("Male", "Female"), n, replace = TRUE)
+
+# Simulate continuous matching variable (e.g., age)
+age <- rnorm(n, mean = 40, sd = 5)
+
+# Combine simulated data into a data frame
+simulated_data <- data.frame(
+  weight = weight,
+  treatment = as.factor(treatment),
+  gender = as.factor(gender),
+  age = age
+)
+
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Number of observations
+n <- 200
+
+# Simulate continuous outcome (e.g., weight)
+weight <- rnorm(n, mean = 70, sd = 10)
+
+# True effect size for the treatment variable
+true_effect <- 7
+
+# Simulate ordinal treatment variable (e.g., drug dosage with 3 levels)
+treatment <- sample(1:3, n, replace = TRUE)
+
+# Apply the true effect to the treatment group
+weight[treatment == 2] <- weight[treatment == 2] + true_effect
+
+# Simulate matching variable (e.g., height)
+height <- rnorm(n, mean = 170, sd = 10)
+
+# Combine simulated data into a data frame
+simulated_data <- data.frame(
+  weight = weight,
+  treatment = as.factor(treatment),
+  height = height
+)
+
+# Display the first few rows of the simulated data
+head(simulated_data)
+
+un <- estimation_stage(.data = simulated_data, missing_method = "complete", model_type = "poly",
+                       treatment_variable = "treatment", matching_variable = "height")
+deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
+                     matching_variable = "height", PS_estimation_object = un,
+                     missing_method = "complete")
+contrasts(deux$treatment) <- contr.treatment(2, base = 2)
+trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
+                                outcome_variable = "weight", treatment_variable = "treatment",
+                                matching_variable = "height",
+                                covariates = NULL,
+                                outcome_formula = "unadjusted",
+                                psmodel_obj = un, missing_method = "complete")

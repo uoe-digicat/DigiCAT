@@ -94,15 +94,18 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
     created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
                                                treatment_variable, missing_method,...) 
     formatted_matrix <- distancematrix(created_distance_matrix,...) 
-    performed_matching <- nonbimatch(formatted_matrix) # threshold = 999999, precision = 7? 
+    performed_matching <- nonbimatch(formatted_matrix, threshold = 999999,
+                                     precision = 7) # threshold = 999999, precision = 7? 
+    performed_matching$halves <- performed_matching$halves[-(n + 1), ]
     matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-  } 
+    
+      } 
   
   else if(missing_method == "mi"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
-    matched_data <- make_matrix_nbp(propensity_data, 
+    balanced_data <- make_matrix_nbp(propensity_data, 
                                     estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
                                     PS_estimation_object = PS_estimation_object,
                                     treatment_variable, missing_method,...)
@@ -122,3 +125,29 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
   return(balanced_data)
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

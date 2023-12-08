@@ -113,7 +113,16 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
   
   
   
-  
+
+
+
+
+
+
+
+
+
+
   
   
   

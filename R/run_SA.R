@@ -8,9 +8,10 @@ run_SA <- function(PS_object, balanced_data, missing_method, outcome_variable, S
            SA_results = perform_PS_calibration(PS_object, unmeasured_confounder,...)
            
          },
-        # VW_A_formula = {
-        #   
-        # },
+        VW_A_formula = { # may require further tuning/checks
+          SA_results = perform_VW_A_formula(PS_object, balanced_data, missing_method, sensitivity_parameter,...)
+
+        },
          VW_Evalue = { # typically for binary outcome
            SA_results = perform_VW_Evalue(outcome_results, outcome_type, missing_method,...)
            
