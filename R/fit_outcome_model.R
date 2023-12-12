@@ -2,6 +2,8 @@
 fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                               outcome_variable, treatment_variable, matching_variable,
                               covariates = NULL, outcome_formula, missing_method,
+                              psmodel_obj, cluster_variable = NULL, weighting_variable = NULL,
+                              strata_variable = NULL,
                               ...){
   
   switch(outcome_formula,
@@ -12,23 +14,32 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                                           outcome_variable,
                                           treatment_variable,
                                           matching_variable, covariates,
-                                          missing_method,...)
+                                          missing_method,
+                                          psmodel_obj, cluster_variable,
+                                          weighting_variable = weighting_variable,
+                                          strata_variable = strata_variable,...)
          },
          with_matching_variables = {
            model_fit = outcome_matching_variables(balanced_data,
-                                                       extracted_balanced_data,
-                                                       outcome_variable,
-                                                       treatment_variable,
-                                                       matching_variable, covariates, 
-                                                       missing_method,...)
+                                                  extracted_balanced_data,
+                                                  outcome_variable,
+                                                  treatment_variable,
+                                                  matching_variable, covariates,
+                                                  missing_method,
+                                                  psmodel_obj, cluster_variable,
+                                                  weighting_variable = weighting_variable,
+                                                  strata_variable = strata_variable,...)
          },
          marginal_effects = {
            model_fit = outcome_marginal_effects(balanced_data,
                                                 extracted_balanced_data,
                                                 outcome_variable,
                                                 treatment_variable,
-                                                matching_variable, covariates, 
-                                                missing_method,...)
+                                                matching_variable, covariates,
+                                                missing_method,
+                                                psmodel_obj, cluster_variable,
+                                                weighting_variable = weighting_variable,
+                                                strata_variable = strata_variable,...)
          },
          stop("Need a valid outcome formula (unadjusted, with matching variables, marginal effects)")
   )
@@ -40,7 +51,10 @@ outcome_unadjusted <- function(balanced_data,
                                outcome_variable,
                                treatment_variable,
                                matching_variable, covariates,
-                               missing_method,...){
+                               missing_method,
+                               psmodel_obj, cluster_variable,
+                               weighting_variable = weighting_variable,
+                               strata_variable = strata_variable,...){
   
   
   if(!is.null(covariates)){
@@ -57,8 +71,17 @@ outcome_unadjusted <- function(balanced_data,
     model_fit <- mice::pool(lm_model_fit)
     
   } else if(extracted_balanced_data$process == "cc_psm"){ 
-    model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+    if(!is.null(psmodel_obj$survey_design_object)){
+      data_to_use <- extracted_balanced_data[[1]]
+      updated_design <- svydesign(ids = if (!is.null(cluster_variable)) data_to_use[[cluster_variable]] else ~1,
+                                  weights = if (!is.null(weighting_variable)) data_to_use[[weighting_variable]] else NULL,
+                                  strata = if (!is.null(strata_variable)) data_to_use[[strata_variable]] else NULL,
+                                  data = data_to_use)
     
+      model_fit = svyglm(model_formula, design = updated_design)
+    }else{
+    model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+    }
   } else if (extracted_balanced_data$process == "mi_iptw"){
     lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
       lm(model_formula, data = d,
@@ -85,11 +108,14 @@ outcome_unadjusted <- function(balanced_data,
 
 
 outcome_matching_variables <- function(balanced_data,
-                                    extracted_balanced_data,
-                                    outcome_variable,
-                                    treatment_variable,
-                                    matching_variable, covariates, 
-                                    missing_method,...){
+                                       extracted_balanced_data,
+                                       outcome_variable,
+                                       treatment_variable,
+                                       matching_variable, covariates,
+                                       missing_method,
+                                       psmodel_obj, cluster_variable,
+                                       weighting_variable = weighting_variable,
+                                       strata_variable = strata_variable,...){
   
   
   if(!is.null(covariates)){
@@ -106,8 +132,17 @@ outcome_matching_variables <- function(balanced_data,
     model_fit <- mice::pool(lm_model_fit)
     
   } else if(extracted_balanced_data$process == "cc_psm"){ 
-    model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
-    
+    if(!is.null(psmodel_obj$survey_design_object)){
+      data_to_use <- extracted_balanced_data[[1]]
+      updated_design <- svydesign(ids = if (!is.null(cluster_variable)) data_to_use[[cluster_variable]] else ~1,
+                                  weights = if (!is.null(weighting_variable)) data_to_use[[weighting_variable]] else NULL,
+                                  strata = if (!is.null(strata_variable)) data_to_use[[strata_variable]] else NULL,
+                                  data = data_to_use)
+      
+      model_fit = svyglm(model_formula, design = updated_design)
+    }else{
+      model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+}
   } else if (extracted_balanced_data$process == "mi_iptw"){
     lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
       lm(model_formula, data = d,
@@ -134,11 +169,14 @@ outcome_matching_variables <- function(balanced_data,
 
 
 outcome_marginal_effects <- function(balanced_data,
-                             extracted_balanced_data,
-                             outcome_variable,
-                             treatment_variable,
-                             matching_variable, covariates, 
-                             missing_method,...){
+                                     extracted_balanced_data,
+                                     outcome_variable,
+                                     treatment_variable,
+                                     matching_variable, covariates,
+                                     missing_method,
+                                     psmodel_obj, cluster_variable,
+                                     weighting_variable = weighting_variable,
+                                     strata_variable = strata_variable,...){
   if(!is.null(covariates)){
     model_formula <- as.formula(paste0(outcome_variable, " ~ ", 
                                        treatment_variable, " * (", 
@@ -161,15 +199,27 @@ outcome_marginal_effects <- function(balanced_data,
     model_fit <- mice::pool(model_fit)
     
   } else if(extracted_balanced_data$process == "cc_psm"){ 
-    lm_model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
-    
-    model_fit = marginaleffects::avg_comparisons(lm_model_fit, variables = treatment_variable,
+    if(!is.null(psmodel_obj$survey_design_object)){
+      data_to_use <- extracted_balanced_data[[1]]
+      updated_design <- svydesign(ids = if (!is.null(cluster_variable)) data_to_use[[cluster_variable]] else ~1,
+                                  weights = if (!is.null(weighting_variable)) data_to_use[[weighting_variable]] else NULL,
+                                  strata = if (!is.null(strata_variable)) data_to_use[[strata_variable]] else NULL,
+                                  data = data_to_use)
+      
+      model_fit = svyglm(model_formula, design = updated_design)
+      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
+      
+    }else{
+      model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+
+      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
                                                  vcov = ~subclass, 
                                                  newdata = subset(extracted_balanced_data[[1]], 
                                                                   extracted_balanced_data[[1]][[treatment_variable]] == 1),
                                                  wts = "weights")
     
-  } else if (extracted_balanced_data$process == "mi_iptw"){
+  } 
+    } else if (extracted_balanced_data$process == "mi_iptw"){
     lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
       lm(model_formula, data = d,
          weights = weights)
