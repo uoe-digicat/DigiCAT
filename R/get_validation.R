@@ -14,6 +14,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   ## Keep log of data validation
   validation_log <- list(
     treatment_variable_error = FALSE,
+    no_GBM = FALSE,
     survey_weight_available = FALSE,
     clustering_available = FALSE,
     stratification_available = FALSE,
@@ -58,7 +59,13 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## Print info on number of rows
     if((dim(.data)[1] > 10) & (dim(.data)[1] < 10000)){
       h5("Your data has an appropriate number of rows.", style = "color:green")
-    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.", style = "color:red")},  br(),
+    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.", style = "color:red")},
+    
+    ## Print message about GBM not being available if there are less than 50 rows
+    if(dim(.data)[1] < 50){
+      validation_log$no_GBM <- TRUE
+      h5("As your data contains fewer than 50 rows, Generalized Boosted Models (GBM) will not be available for generating propensity scores.", style = "color:grey")
+    },br(),
     
     ## Check outcome variable is continuous
     h4("Outcome Variable Type:"),
@@ -90,15 +97,28 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       meaning it cannot be used in the counterfactual analysis currently supported by DigiCAT. To proceed, please recode your treatment variable.", style = "color:red")
     },
     
+    # if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
+    #   h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
+    #   current counterfactual approaches offered by DigiCAT." , style = "color:green")
+    # },
+    
     if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
-      current counterfactual approaches offered by DigiCAT." , style = "color:green")
+      h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable. DigiCAT will soon support ordinal treatment types in
+          uploaded data." , style = "color:orange")
     },
     if(length(unique(.data[[treatment]])) > 5){
       validation_log$treatment_variable_error <- TRUE
       h5("You have selected ",treatment, " as your treatment variable. This has been detected as a continuous variable and cannot be used in the 
       current counterfactual approaches offered by DigiCAT. Please reselect or categorize your current treatment variable." , style = "color:red")
     },
+    br(),
+    
+    h4("Treatment Counts:"),
+    ## Print n for each treatment group
+    renderTable(data.frame('Group' = names(table(.data[[treatment]])), 'Count' = as.character(table(.data[[treatment]])))),
+    
+    h5("The above table shows the number of individuals in each treatment group."),
+    
     br(),
     
     ## Check multicollinearity between variables
