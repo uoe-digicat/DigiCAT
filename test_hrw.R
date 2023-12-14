@@ -55,7 +55,9 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
-                              missing_method = "complete")
+                              missing_method = "complete",
+                              outcome_formula = "unadjusted",
+                              covariates = NULL)
 
 #### Weighting testing ####
 
@@ -156,10 +158,13 @@ abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type 
 ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear", 
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
                     missing_method = "complete")
+
 jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
                               outcome_variable = "mpg", treatment_variable = "gear",
                               matching_variable = c("qsec", "hp", "disp"),
-                              psmodel_obj = abc, missing_method = "complete")
+                              psmodel_obj = abc, missing_method = "complete",
+                              outcome_formula = "unadjusted",
+                              covariates = NULL)
 
 
 

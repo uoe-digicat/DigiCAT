@@ -38,9 +38,9 @@ outcome_model_ui <- function(id) {
                    class = "text_blocks",
                    radioButtons(NS(id, "outcome_model_radio"), label = h4("Choose an Outcome Model:"),
                                 choices = list(
-                                  "Linear Regression (Outcome ~ Treatment * Matching Variables)" = "linear_regression_w_mvars_interactions",
-                                  "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "linear_regression_w_mvars",
-                                  "Linear Regression (Outcome ~ Treatment)" = "linear_regression_wo_mvars"),
+                                  "Linear Regression (Outcome ~ Treatment * Matching Variables)" = "marginal_effects",
+                                  "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "with_matching_variables",
+                                  "Linear Regression (Outcome ~ Treatment)" = "unadjusted"),
                                 selected = character(0),
                                 width = "200%"),
                    uiOutput(ns("outcome_model_missing_message"), style = "color: red;"), ## If no model selected when "Run" pressed, give warning
@@ -57,7 +57,7 @@ outcome_model_ui <- function(id) {
                                tabsetPanel(id = NS(id,"results_panel"),
                                            tabPanel(title = "Outcome Model Output",
                                                     value = NS(id,'outcome_model_results'),
-                                                    ## Output of selected outcome_model model
+                                                    ## Output of selected outcome_formula model
                                                     withSpinner(uiOutput(ns("outcome_model_output")))
                                                     )
                                                )
@@ -101,7 +101,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Define reactives ----
                  ## Create reactive value for approach description
                  outcome_model_values <- reactiveValues(
-                   description_method = descriptions$outcome_model,
+                   description_method = descriptions$outcome_formula,
                    description_method_selected = NULL,
                    R_script = NULL,
                    report = NULL,
@@ -131,8 +131,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      updateRadioButtons(session, 
                                         inputId = "outcome_model_radio", 
                                         choices = list(
-                                          "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "linear_regression_w_mvars",
-                                          "Linear Regression (Outcome ~ Treatment)" = "linear_regression_wo_mvars"),
+                                          "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "with_matching_variables",
+                                          "Linear Regression (Outcome ~ Treatment)" = "unadjusted"),
                                         selected = character(0))
                    }
                    ## Give choice with interaction for other approaches
@@ -140,9 +140,9 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      updateRadioButtons(session, 
                                         inputId = "outcome_model_radio", 
                                         choices = list(
-                                          "Linear Regression (Outcome ~ Treatment * Matching Variables)" = "linear_regression_w_mvars_interactions",
-                                          "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "linear_regression_w_mvars",
-                                          "Linear Regression (Outcome ~ Treatment)" = "linear_regression_wo_mvars"),
+                                          "Linear Regression (Outcome ~ Treatment * Matching Variables)" = "marginal_effects",
+                                          "Linear Regression (Outcome ~ Treatment + Matching Variables)" = "with_matching_variables",
+                                          "Linear Regression (Outcome ~ Treatment)" = "unadjusted"),
                                         selected = character(0))
                    }
                  })
@@ -150,15 +150,15 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Update descriptions and rerun message when input changes ----
                  observeEvent(input$outcome_model_radio,{
                    
-                   if(input$outcome_model_radio == "linear_regression_w_mvars_interactions"){
+                   if(input$outcome_model_radio == "marginal_effects"){
                      outcome_model_values$description_method_selected <- descriptions$linear_regression_w_mvars_interactions
                    }
                    
-                   if(input$outcome_model_radio == "linear_regression_w_mvars"){
+                   if(input$outcome_model_radio == "with_matching_variables"){
                      outcome_model_values$description_method_selected <- descriptions$linear_regression_w_mvars
                    }
                    
-                   if(input$outcome_model_radio == "linear_regression_wo_mvars"){
+                   if(input$outcome_model_radio == "unadjusted"){
                      outcome_model_values$description_method_selected <- descriptions$linear_regression_wo_mvars
                    }
                    
@@ -203,13 +203,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            counterfactual_method = approach(),
                            outcome_variable = outcome_variable(),
                            treatment_variable = treatment_variable(),
-                           matching_variable = matching_variables(), 
+                           matching_variable = matching_variables(),
+                           covariates = covariates(),
                            psmodel_obj = estimation_stage_res(),
                            cluster_variable = cluster_var(),
-                           nonresponse_weights = survey_weight_var(),
-                           sampling_weights = survey_weight_var(),
                            missing_method = missingness(),
-                           weighting_variable = survey_weight_var())
+                           weighting_variable = survey_weight_var(),
+                           outcome_formula = input$outcome_model_radio)
                        }
                        
                        if(approach() == "nbp"){
@@ -219,8 +219,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            outcome_variable = outcome_variable(),
                            treatment_variable = treatment_variable(),
                            matching_variable = matching_variables(), 
+                           covariates = covariates(),
                            psmodel_obj = estimation_stage_res(),
-                           missing_method = missingness())
+                           missing_method = missingness(),
+                           outcome_formula = input$outcome_model_radio)
                          
                          
                        }
@@ -243,15 +245,15 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          if(approach() == "psm" | approach() == "iptw"){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             descriptions$estimate,
-                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,1], 4)))),
+                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
                                                             br(),
                                                             descriptions$standard_error,
-                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,2], 4)))),
+                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                             br(),
                                                             descriptions$p_value,
-                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,3], 4)))),
+                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
                                                             br(),
-                                                            strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,4], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,5], 4))))
+                                                            strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
 
                            )
                          }
@@ -259,13 +261,15 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          if(approach() == "nbp"){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             descriptions$estimate,
-                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,1], 4)))),
+                                                            strong(p(paste0("Estimate: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
                                                             br(),
                                                             descriptions$standard_error,
-                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,2], 4)))),
+                                                            strong(p(paste0("Standard Error: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                             br(),
                                                             descriptions$p_value,
-                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[2,4], 4))))
+                                                            strong(p(paste0("P-value: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                            br(),
+                                                            strong(p(paste0("95% Confidence Interval: ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                            )
                          }
                          
@@ -292,7 +296,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            balancing_model = balancing_model(),
                            matching_method = matching_method(),
                            matching_ratio = matching_ratio(),
-                           outcome_model = input$outcome_model_radio,
+                           outcome_formula = input$outcome_model_radio,
                            DigiCAT_balanced_data = balancing_stage_res(),
                            DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
                            DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
@@ -409,7 +413,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                          observation_table = observation_table(),
                                          love_plot = love_plot(),
                                          balance_table = balance_table(),
-                                         outcome_model = input$outcome_model_radio,
+                                         outcome_formula = input$outcome_model_radio,
                                          outcome_res = outcome_model_values$outcome_analysis_stage_res$standardised_format)
                          )
                          file.copy(output, file)
@@ -429,11 +433,11 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  
                  ## Return outcome model output to server ----
                  
-                 outcome_model_output <- reactiveValues(outcome_model = NULL
+                 outcome_model_output <- reactiveValues(outcome_formula = NULL
                  )
                  
                  observe({
-                   outcome_model_output$outcome_model <- input$outcome_model_radio
+                   outcome_model_output$outcome_formula <- input$outcome_model_radio
                  })
                  
                  return(outcome_model_output)
