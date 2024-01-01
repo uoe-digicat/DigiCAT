@@ -53,6 +53,8 @@ extract_outcome_results <- function(fitted_model, missing_method,...){
     extracted_outcome_results = summary(fitted_model)
     return(list(extracted_outcome_results, process = "weighting"))
     
+  } else if("comparisons" %in% class(fitted_model[[1]]) & missing_method == "mi"){
+    summary(fitted_model, conf.int = T)
   }
 } 
 

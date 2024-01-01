@@ -55,8 +55,7 @@ outcome_unadjusted <- function(balanced_data,
                                psmodel_obj, cluster_variable = NULL,
                                weighting_variable = NULL,
                                strata_variable = NULL,...){
- # browser()
-  
+
   if(!is.null(covariates)){
     model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,covariates),collapse="+"))
   } else{
@@ -450,7 +449,7 @@ outcome_marginal_effects <- function(balanced_data,
                                         variables = treatment_variable, wts = "weights", vcov = ~subclass)
      })
 
-
+    model_fit = mice::pool(model_fit)
     
   } else if(extracted_balanced_data$process == "cc_psm"){ 
     if(!is.null(psmodel_obj$survey_design_object)){
