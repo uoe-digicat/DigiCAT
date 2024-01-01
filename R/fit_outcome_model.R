@@ -6,7 +6,6 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                               strata_variable = NULL,
                               ...){
   
-   #browser()
    switch(outcome_formula,
          
          unadjusted = {
@@ -412,26 +411,42 @@ outcome_marginal_effects <- function(balanced_data,
                                       "*(",paste0(matching_variable, collapse="+"), ")"))
   }
   if(extracted_balanced_data$process == "mi_psm"){
-    # lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
-    #   lm(model_formula, data = d,
-    #      weights = weights)
-    # })
-    # model_fit <- lapply(lm_model_fit, function(fit) {
-    #  marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
-    #                                   variables = treatment_variable, wts = "weights", vcov = ~subclass)
-    # })
-    # model_fit <- mice::pool(model_fit)
-    
+
     data_to_use <- extracted_balanced_data[[1]]
-    mi_matched_design <- svydesign(ids = if (!is.null(cluster_variable)) data_to_use[[cluster_variable]] else ~1,
-                                   weights = if (!is.null(weighting_variable)) data_to_use[[weighting_variable]] else NULL,
-                                   strata = if (!is.null(strata_variable)) data_to_use[[strata_variable]] else NULL,
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")  
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    mi_matched_design <- svydesign(ids = cluster_formula,
+                                   weights = weighting_formula,
+                                   strata = strata_formula,
                                    data = imputationList(data_to_use))
 
     model_fit = with(mi_matched_design, svyglm(model_formula))
-
+    
     model_fit = lapply(model_fit, function(fit){
-       marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
+       marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, get(treatment_variable) == 1),
                                         variables = treatment_variable, wts = "weights", vcov = ~subclass)
      })
 
