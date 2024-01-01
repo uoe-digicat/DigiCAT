@@ -531,14 +531,14 @@ outcome_marginal_effects <- function(balanced_data,
                                      strata = strata_formula,
                                      data = imputationList(data_to_use))
       
-      model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
+      model_fit = with(mi_matched_design, svyglm(model_formula)) 
     
-     #  model_fit = lapply(model_fit, function(fit){
-     #  marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
-     #                                   variables = treatment_variable, wts = "weights", vcov = "HC3")
-     # })
-     # 
-    # model_fit <- mice::pool(model_fit)
+     model_fit = lapply(model_fit, function(fit){
+     marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, get(treatment_variable) == 1),
+                                      variables = treatment_variable, wts = "weights", vcov = "HC3")
+    })
+
+    model_fit <- mice::pool(model_fit)
   } 
   else if (extracted_balanced_data$process == "cc_iptw"){
     
