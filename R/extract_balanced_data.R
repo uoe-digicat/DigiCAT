@@ -32,7 +32,7 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     ## to do: change below design obj - ids = subclass, strata as is first entered?
     
   } else if(missing_method=="weighting" & "weightit" %in% class(balanced_data)){
-    survey_data = psmodel_obj$survey_design_object$variables
+    survey_data = psmodel_obj$estimated_propensity_model$survey.design$variables
     survey_data = cbind(survey_data,balanced_data$weights)
     colnames(survey_data)[colnames(survey_data) == "balanced_data$weights"] <- "weights"
     extracted_balanced_data = svydesign(ids=~1, weights = (survey_data[[weighting_variable]]*survey_data$weights), 
