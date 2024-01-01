@@ -12,7 +12,40 @@ extract_outcome_results <- function(fitted_model, missing_method,...){
     extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
     return(list(extracted_outcome_results, process = "mi"))
     
-  }else if("lm" %in% class(fitted_model) & missing_method == "complete"){ # LM no ME, complete
+  } else if("list" %in% class(fitted_model) & missing_method == "mi"){
+    df_residuals <- sapply(fitted_model, function(model) {
+      if (!is.null(model$df.residual)) {
+        return(model$df.residual)
+      } else {
+        warning("Degrees of freedom for residuals not available.")
+        return(NA)
+      }
+    })
+    mean_df <- mean(df_residuals, na.rm = TRUE)
+    total_variance <- var(df_residuals, na.rm = TRUE)
+    between_imputation_variance <- mean((df_residuals - mean_df)^2, na.rm = TRUE)
+    within_imputation_variance <- total_variance - between_imputation_variance
+    df_combined <- mean_df + (between_imputation_variance / (within_imputation_variance + 1))
+    combined_results <- MIcombine(fitted_model)
+    standard_errors <- sqrt(diag(vcov(combined_results)))
+    t_stat <- coef(combined_results) / standard_errors
+    p_value <- 2 * (1 - pt(abs(t_stat), df = df_combined))
+    coefficients <- coef(combined_results)
+    conf_int <- confint(combined_results)
+    
+    # Create a data frame with the extracted information
+    extracted_outcome_results <- data.frame(
+      Coefficient = coefficients,
+      StandardError = standard_errors,
+      PValue = p_value,
+      LowerCI = conf_int[, 1],
+      UpperCI = conf_int[, 2]
+    )
+    
+    return(list(extracted_outcome_results, process = "mi"))
+    
+  }
+  else if("lm" %in% class(fitted_model) & missing_method == "complete"){ # LM no ME, complete
     extracted_outcome_results =as.data.frame(dplyr::bind_cols(coef(summary(fitted_model)), confint(fitted_model)))
     return(list(extracted_outcome_results, process = "cc"))
     
@@ -22,4 +55,30 @@ extract_outcome_results <- function(fitted_model, missing_method,...){
     
   }
 } 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -96,7 +96,7 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
     formatted_matrix <- distancematrix(created_distance_matrix,...) 
     performed_matching <- nonbimatch(formatted_matrix, threshold = 999999,
                                      precision = 7) # threshold = 999999, precision = 7? 
-    performed_matching$halves <- performed_matching$halves[-(n + 1), ]
+    #performed_matching$halves <- performed_matching$halves[-(n + 1), ]
     matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
     
