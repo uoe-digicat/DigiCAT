@@ -56,7 +56,8 @@ outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome
                                    missing_method, outcome_formula,...){
   extracted_balanced_data <- extract_balanced_data(balanced_data, psmodel_obj, 
                                                    missing_method, weighting_variable,
-                                                   counterfactual_method,...)
+                                                   counterfactual_method, cluster_variable,
+                                                   strata_variable,...)
   fitted_model <- fit_outcome_model(balanced_data,extracted_balanced_data,
                                     outcome_variable, treatment_variable, matching_variable,
                                     covariates, outcome_formula, missing_method,
