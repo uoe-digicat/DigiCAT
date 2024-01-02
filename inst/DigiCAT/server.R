@@ -33,7 +33,8 @@ server <- function(input, output, session) {
   ####
   
   DigiCAT:::home_server("home",
-                        parent = session)
+                        parent = session,
+                        enableLocal = enable_local_data)
   
   ####
   # Data upload ----
@@ -49,6 +50,7 @@ server <- function(input, output, session) {
   
   CF_approach_output <- DigiCAT:::CF_approach_server("CF_approach",
                                                      parent = session,
+                                                     enableLocal = enable_local_data,
                                                      raw_data = reactive(data_upload_output$data),
                                                      categorical_variables = reactive(data_upload_output$categorical_vars),
                                                      outcome_variable = reactive(data_upload_output$outcome),
@@ -85,7 +87,7 @@ server <- function(input, output, session) {
   # Outcome Model ----
   ####
   
-  outcome_output <- DigiCAT:::outcome_model_server("outcome_model",  
+  outcome_model_output <- DigiCAT:::outcome_model_server("outcome_model",  
                                                    parent = session,
                                                    data_source = reactive(data_upload_output$data_source),
                                                    raw_data = reactive(data_upload_output$data),
@@ -111,6 +113,24 @@ server <- function(input, output, session) {
                                                    love_plot = reactive(balancing_output$love_plot),
                                                    balance_table = reactive(balancing_output$balance_table),
                                                    descriptions = desc_global)
+  
+  ####
+  # Sensitivity Analysis ----
+  ####
+  
+  sensitivity_analysis_output <- DigiCAT:::sensitivity_analysis_server("sensitivity_analysis",  
+                                                   parent = session,
+                                                   treatment_variable = reactive(data_upload_output$treatment),
+                                                   outcome_variable = reactive(data_upload_output$outcome),
+                                                   approach = reactive(CF_approach_output$CF_radio),
+                                                   missingness = reactive(CF_approach_output$missingness),
+                                                   balancing_model = reactive(CF_approach_output$balancing_model),
+                                                   matching_method = reactive(balancing_output$method_radio),
+                                                   matching_ratio = reactive(balancing_output$ratio_radio),
+                                                   outcome_output = reactive(outcome_model_output$outcome_model)
+                                                   )
+  
+  
   
 }
 

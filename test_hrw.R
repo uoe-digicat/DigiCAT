@@ -162,6 +162,52 @@ jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp"
 
 
 
+df <- read.csv("~/Desktop/WT_data_prize/bin/DigiCAT/data/zp_eg.csv")
+
+
+abc <- estimation_stage(.data = df, missing_method = "weighting", model_type = "poly",
+                        treatment_variable = "ReadingO_age15", matching_variable = names(df)[-c(2:4, 6)], 
+                        weighting_variable = "Trust_age13")
+
+ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "ReadingO_age15", 
+                    matching_variable = names(df)[-c(2:4, 6)], PS_estimation_object = abc,
+                    missing_method = "weighting")
+
+jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
+                              outcome_variable = "Anxiety_age17",
+                              treatment_variable = "ReadingO_age15",
+                              matching_variable = names(df)[-c(2:4, 6)],
+                              psmodel_obj = abc, missing_method = "weighting", 
+                              nonresponse_weights = "Trust_age13")
+
+
+
+ps <- estimation_stage(
+  .data = ,
+  missing_method = "weighting",
+  model_type = "poly",
+  treatment_variable = "gear",
+  matching_variable = c("qsec", "hp", "disp"),
+  weighting_variable = "wt",
+  cluster_variable = NULL,
+  strata_variable = NULL
+)
+
+
+bal <- balance_data(
+  counterfactual_method = "nbp",
+  treatment_variable = "gear",
+  matching_variable = c("qsec", "hp", "disp"),
+  PS_estimation_object = ps,
+  missing_method = "weighting")
+
+test <- get_NBP_balancing_output(
+  estimation_model_object = abc,
+  balanced_data = bal,
+  treatment_variable = "gear",
+  matching_variables =  c("qsec", "hp", "disp"),
+  missing_method = "weighting")
+
 
 # setwd("~/Desktop/WT_data_prize/bin/DigiCAT/R")
 # files.sources = list.files()

@@ -125,7 +125,7 @@ if (params$balancing_model == "glm"){
 }
 
 if (params$balancing_model == "gbm"){
-  CF_approach <- c(CF_approach, paste0("Gradient boosting machine (GBM) was used to calculate propensity scores in the sample."))
+  CF_approach <- c(CF_approach, paste0("Generalized boosted model (GBM) was used to calculate propensity scores in the sample."))
 }
 
 if (params$balancing_model == "rf"){

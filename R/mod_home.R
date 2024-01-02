@@ -52,12 +52,13 @@ home_ui <- function(id) {
                    h4("4. Outcome model:", style = "text-align: left;"),
                    p("Run your outcome model to estimate the effect of the treatment on the outcome."))
            ),
-           br(),br(),br(),
+           br(),br(),
            
            ## Navigation ----
-           div(style="text-align: center;",
+           div(style="text-align: center; position: relative;",
+               uiOutput(ns("warning")),
                actionButton(ns("start_btn"),label="Get Started!", class = "default_button")),
-           br(),br(),br(),
+           br(),br(),
            
            ## Tool description ----
            fluidRow(
@@ -100,10 +101,17 @@ home_ui <- function(id) {
   
 }
 
-home_server <- function(id, parent) {
+home_server <- function(id, parent, enableLocal) {
   
   moduleServer(id,
                function(input, output, session) {
+                 
+                 ## If data upload is enabled, give warning about current developemnt
+                 if(enableLocal==TRUE){
+                   output$warning = renderUI({
+                     h3("Caution: This tool is under development; outputs may be incomplete or inaccurate. Non-bipartite matching (NBP) coming soon.", style = "color:red")
+                   })
+                 }
                  
                  ## Start and terms of use ----
                  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
@@ -112,6 +120,7 @@ home_server <- function(id, parent) {
                    ## If user has already agreed to T&Cs, proceed to upload page
                    if (isTruthy(input$Btn_agree) | isTruthy(input$Btn_agree_TCs)){
                      updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "data_upload-tab")
+                     addClass(selector = "body", class = "sidebar-collapse") ## Collapse NavBar
                    } else{ ## If they have not yet agreed, ask (again)
                      
                      ## Pop up agreement
@@ -142,6 +151,7 @@ home_server <- function(id, parent) {
                  ## T&Cs agreement: If 'Yes, I agree', continue to data upload page
                  observeEvent(input$Btn_agree, {
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "data_upload-tab")
+                   addClass(selector = "body", class = "sidebar-collapse") ## Collapse NavBar
                    removeModal() ## remove modal
                  })
                })
