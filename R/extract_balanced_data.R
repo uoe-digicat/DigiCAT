@@ -14,8 +14,6 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     return(list(extracted_balanced_data, process = "cc_psm"))
     
     
-    ## to do: change below design obj - ids = subclass, strata as is first entered?
-    
   } else if(missing_method =="weighting" & "matchit" %in% class(balanced_data)){
     extracted_balanced_data = match.data(balanced_data)
     extracted_balanced_design = svydesign(ids=~subclass, weights = (extracted_balanced_data[[weighting_variable]]*extracted_balanced_data$weights), 
@@ -28,8 +26,6 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     colnames(psmodel_obj$missingness_treated_dataset)[colnames(psmodel_obj$missingness_treated_dataset) == "balanced_data$weights"] <- "weights"
     return(list(psmodel_obj$missingness_treated_dataset, process = "cc_iptw"))
     
-    
-    ## to do: change below design obj - ids = subclass, strata as is first entered?
     
   } else if(missing_method=="weighting" & "weightit" %in% class(balanced_data)){
     survey_data = psmodel_obj$estimated_propensity_model$survey.design$variables
