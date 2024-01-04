@@ -50,7 +50,7 @@ outcome_unadjusted <- function(balanced_data,
                                extracted_balanced_data,
                                outcome_variable,
                                treatment_variable,
-                               matching_variable, covariates,
+                               matching_variable, covariates = NULL,
                                missing_method,
                                psmodel_obj, cluster_variable = NULL,
                                weighting_variable = NULL,
@@ -97,6 +97,12 @@ outcome_unadjusted <- function(balanced_data,
       
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
 
+  } else if(extracted_balanced_data$process == "mi_nbp"){
+      data_to_use <- extracted_balanced_data[[1]]
+      
+      model_fit <- lapply(data_to_use, function(x)
+        lm(model_formula, data = x))
+  
     } else if(extracted_balanced_data$process == "cc_psm"){ 
       data_to_use <- extracted_balanced_data[[1]]
       
@@ -221,7 +227,7 @@ outcome_matching_variables <- function(balanced_data,
                                        extracted_balanced_data,
                                        outcome_variable,
                                        treatment_variable,
-                                       matching_variable, covariates,
+                                       matching_variable, covariates = NULL,
                                        missing_method,
                                        psmodel_obj, cluster_variable = NULL,
                                        weighting_variable = NULL,
@@ -269,7 +275,13 @@ outcome_matching_variables <- function(balanced_data,
     
     model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     
-  } else if(extracted_balanced_data$process == "cc_psm"){ 
+  } else if(extracted_balanced_data$process == "mi_nbp"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    model_fit <- lapply(data_to_use, function(x)
+      lm(model_formula, data = x))
+    
+    } else if(extracted_balanced_data$process == "cc_psm"){ 
       data_to_use <- extracted_balanced_data[[1]]
       
       # Check if cluster_variable is provided

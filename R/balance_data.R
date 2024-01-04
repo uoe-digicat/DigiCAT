@@ -131,7 +131,8 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
                                     treatment_variable, missing_method,...)
     formatted_matrix <- lapply(created_distance_matrix, function(x) distancematrix(x))
     performed_matching <- lapply(formatted_matrix, function(x) nonbimatch(x))
-    balanced_data <- lapply(performed_matching, function(x) x$halves[x$halves$Distance != 999999,])
+    matched_data <- lapply(performed_matching, function(x) x$halves[x$halves$Distance != 999999,])
+    balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
   }
   
   else if(missing_method == "weighting"){
