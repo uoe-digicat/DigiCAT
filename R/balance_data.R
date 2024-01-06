@@ -36,7 +36,6 @@
 balance_data <- function(counterfactual_method, treatment_variable, matching_variable, PS_estimation_object,
                          missing_method,
                          eff, ...){
-  
   switch(counterfactual_method,
          
          psm = {
@@ -65,7 +64,10 @@ balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_
                                approach = "within", method = "ps",...)
     
   } else if(missing_method=="complete"){
-    balanced_data = weightit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, ps = PS_estimation_object$propensity_scores, estimand = "ATE", ...)
+    balanced_data = weightit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, 
+                             ps = PS_estimation_object$propensity_scores, 
+                             estimand = "ATE", 
+                             method = PS_estimation_object$propensity_model_class,...)
     
   } else if(missing_method=="weighting"){
     balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
@@ -106,7 +108,6 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
 
 
 balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_method,...){ 
-  
   if(missing_method == "complete"){
     
     propensity_scores <- PS_estimation_object[[2]]
@@ -115,17 +116,23 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
                                                treatment_variable, missing_method,...) 
     formatted_matrix <- distancematrix(created_distance_matrix,...) 
     performed_matching <- nonbimatch(formatted_matrix) # threshold = 999999, precision = 7? 
+    #performed_matching$halves <- performed_matching$halves[-(n + 1), ]
     matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-  } 
+    
+      } 
   
   else if(missing_method == "mi"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
-    matched_data <- make_matrix_nbp(propensity_data, 
+    created_distance_matrix <- make_matrix_nbp(propensity_data, 
                                     estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
                                     PS_estimation_object = PS_estimation_object,
                                     treatment_variable, missing_method,...)
+    formatted_matrix <- lapply(created_distance_matrix, function(x) distancematrix(x))
+    performed_matching <- lapply(formatted_matrix, function(x) nonbimatch(x))
+    matched_data <- lapply(performed_matching, function(x) x$halves[x$halves$Distance != 999999,])
+    balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
   }
   
   else if(missing_method == "weighting"){
@@ -142,3 +149,29 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
   return(balanced_data)
   
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

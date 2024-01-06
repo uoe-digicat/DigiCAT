@@ -23,24 +23,25 @@ evaluate_imputations(.data = df2$amp, evaluation_method = "LittleMCARtest")
 evaluate_imputations(.data = df2$amp, evaluation_method = "missing_pattern")
 evaluate_imputations(.data = df2$amp, evaluation_method = "influx_outflux")
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "gbm",
-                        treatment_variable = "t", matching_variable = c("a", "b")) 
+abc <- estimation_stage(.data = df2$amp, missing_method = "mi", model_type = "glm",
+                        treatment_variable = "t", matching_variable = c("a", "b"), weighting_variable = "e") 
 evaluate_imputations(abc, "distributional_discrepancy", "strip")
 evaluate_imputations(abc, "convergence") # include guidance line as output maybe
 evaluate_imputations(abc, "eventslog") # depending on logged events, recommend altering parameters xyz accordingly
 evaluate_imputations(abc, "inspect_matrix")
 
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
-                    missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
+                    missing_method = "mi")
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
-                              missing_method = "complete",
+                              missing_method = "mi",
                               outcome_formula = "unadjusted",
-                              covariates = NULL)
+                              covariates = "d",
+                              weighting_variable = "e")
 
 #### cc
 
@@ -56,8 +57,7 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
                               missing_method = "complete",
-                              outcome_formula = "unadjusted",
-                              covariates = NULL)
+                              outcome_formula = "unadjusted")
 
 #### Weighting testing ####
 
@@ -105,22 +105,21 @@ df2 = mice::ampute(d,
 data_to_use <- df2$amp
 
 
-abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
+abc <- estimation_stage(.data = data_to_use, missing_method = "mi", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2"),
                         weighting_variable = "SW") 
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "A", 
+ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
-                    missing_method = "weighting")
+                    missing_method = "mi")
 
-## TO DO - edit design object in extract_balanced_data
-
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", # outcome format needs changing for weighting approach
+pqr <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", # outcome format needs changing for weighting approach
                               outcome_variable = "Y_C",
                               treatment_variable = "A", 
                               matching_variable = c("X1", "X2"), 
                               psmodel_obj = abc,
-                              missing_method = "weighting",
-                              weighting_variable = "SW")
+                              missing_method = "mi",
+                              #weighting_variable = "SW",
+                              outcome_formula = "marginal_effects")
 
 # testing weights with example sets 
 
@@ -146,10 +145,6 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm"
 
 evaluate_propensity_stage(abc, "support", missing_method = "weighting")
 
-### I think something is off with the weighting calculation in extract_balanced_data
-# when svy object is re-incorporated
-# Look into
-
 #### NBP testing ####
 # random data - ignore
 data(mtcars)
@@ -158,13 +153,12 @@ abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type 
 ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear", 
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
                     missing_method = "complete")
-
 jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
                               outcome_variable = "mpg", treatment_variable = "gear",
-                              matching_variable = c("qsec", "hp", "disp"),
-                              psmodel_obj = abc, missing_method = "complete",
+                              #matching_variable = c("qsec", "hp", "disp"),
+                              covariates = NULL,
                               outcome_formula = "unadjusted",
-                              covariates = NULL)
+                              psmodel_obj = abc, missing_method = "complete")
 
 
 
@@ -215,10 +209,52 @@ test <- get_NBP_balancing_output(
   missing_method = "weighting")
 
 
-setwd("~/Desktop/WT_data_prize/bin/DigiCAT/R")
-files.sources = list.files()
-setwd("~/Desktop/WT_data_prize/bin/DigiCAT/")
-sapply(paste0("R/",files.sources), source)
+# setwd("~/Desktop/WT_data_prize/bin/DigiCAT/R")
+# files.sources = list.files()
+# setwd("~/Desktop/WT_data_prize/bin/DigiCAT/")
+# sapply(paste0("R/",files.sources), source)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

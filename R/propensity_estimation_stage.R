@@ -30,21 +30,31 @@
 #' strata_variable = NULL
 #' )
 #' 
+
+
 estimation_stage <- function(.data, missing_method, model_type, 
                              treatment_variable, matching_variable,
                              weighting_variable = NULL, cluster_variable = NULL,
                              strata_variable = NULL,
                              ...){
-  design_object <- create_design(.data, weighting_variable, cluster_variable, strata_variable,...)
-  handled_missingness <- handle_missingness(.data, missing_method,design_object,...)
+  #browser()
+  handled_missingness_objects <- handle_missingness(.data, missing_method,
+                                            counterfactual_method,
+                                            cluster_variable, weighting_variable,
+                                            strata_variable,
+                                            ...)
+  handled_missingness <- handled_missingness_objects[[1]]
+  design_object <- handled_missingness_objects[[2]]
   propensity_model <- estimate_model(handled_missingness, model_type, treatment_variable, matching_variable,
                                      missing_method,...)
   prop_scores <- get_propensity(estimated_propensity_model = propensity_model, model_type, 
                                 treatment_variable, matching_variable,
                                 handled_missingness, missing_method, .data,...)
+
   return(list(missingness_treated_dataset = handled_missingness, 
               propensity_scores = prop_scores, 
               estimated_propensity_model = propensity_model,
               propensity_model_class = model_type, # nb: want to alter to class(propensity_model) or use indicator
-              survey_design_object = propensity_model$survey.design)) # note if weighting, this is the object containing data, not missingness_treated_dataset
+              survey_design_object = design_object)) # note if weighting, this is the object containing data, not missingness_treated_dataset
 }
+
