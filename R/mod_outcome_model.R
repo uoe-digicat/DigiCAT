@@ -306,7 +306,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          ## Add download script button
                          output$download_options <- renderUI({
                            div(
-                             downloadButton(session$ns("download_script"), "Download R Script", class = "default_button"),
+                             #downloadButton(session$ns("download_script"), "Download R Script", class = "default_button"),
                              downloadButton(session$ns("download_report"), "Download Report", class = "default_button"))
                          })
                          
