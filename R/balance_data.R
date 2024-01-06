@@ -1,10 +1,10 @@
 #' Function to balance datasets
 #'
-#' @param counterfactual_method Character string indicating your chosen approach `"psm"`, `"iptw"`, or `"nbp"`
-#' @param treatment_variable Character string matching column name of your treatment variable
-#' @param matching_variable Character vector matching column name(s) of your matching variable(s)
-#' @param PS_estimation_object Propensity score estimation object
-#' @param missing_method Character string indicating your chosen method of dealing with missingness `"complete"`, `"mi"`, or `"weighting"`
+#' @param counterfactual_method 
+#' @param treatment_variable 
+#' @param matching_variable 
+#' @param PS_estimation_object 
+#' @param missing_method 
 #' @param eff 
 #' @param ... 
 #'
@@ -122,14 +122,10 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
   else if(missing_method == "mi"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
-    matched_data <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
+    matched_data <- make_matrix_nbp(propensity_data, 
+                                    estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
+                                    PS_estimation_object = PS_estimation_object,
                                     treatment_variable, missing_method,...)
-    # #split_matrices <- split_matrix_to_array(created_distance_matrix, number_of_rows_per_split,...)
-    # formatted_matrix <- distancematrix(created_distance_matrix,...) 
-    # performed_matching <- nonbimatch(formatted_matrix, threshold = 999999,
-    #                                  precision = 7,...) # threshold = 999999, precision = 7? 
-    # matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
-    balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
   }
   
   else if(missing_method == "weighting"){
@@ -146,4 +142,3 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
   return(balanced_data)
   
 }
-

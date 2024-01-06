@@ -13,8 +13,7 @@
 #' @param missing_method Name of method of dealing with missingness being used (character string): `"mi"`, or `"complete"`
 #' @param matching_method Name of balancing method being used (character string): `"nearest"` or `"optimal"`
 #' @param matching_ratio Name of balancing ratio being used (numeric)
-#' @param outcome_model Name of outcome model being used (character string)
-#' @param outcome_model Name of outcome model being used (character string)
+#' @param outcome_formula Name of outcome model being used (character string)
 #' @param DigiCAT_balanced_data Balanced data object from tool
 #' @param DigiCAT_extracted_balanced_data Balanced data object from tool extracted for outcome model run
 #' @param DigiCAT_fitted_model Fitted outcome model from tool
@@ -40,7 +39,7 @@ get_R_script <- function(
   matching_method = NULL,
   matching_ratio = NULL, 
   ## Outcome model
-  outcome_model,
+  outcome_formula,
   ## DigiCAT output
   DigiCAT_balanced_data,
   DigiCAT_extracted_balanced_data,
@@ -60,9 +59,6 @@ library(mice)
 library(moments)
 library(nbpMatching)
 library(rmarkdown)
-library(shiny)
-library(shinyFeedback)
-library(shinycssloaders)
 library(survey)
 library(gbm)
 library(randomForest)"
@@ -227,10 +223,18 @@ library(randomForest)"
   }
   
   ## Propensity score estimation----
-  ## From estimate_model.R
-  propensity_score_model_code <- paste0("\n","\n", 
-                                        "## Get propensity scores \n",
-                                        "f = paste0(treatment_variable,'~',paste0(matching_variable, collapse='+'))")
+  ### estimate_model.R----
+  propensity_score_model_code <- paste0("\n\n## Get propensity scores")
+  
+  if (balancing_model != "poly"){
+    propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                          'f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))'
+    )
+  } else {
+    propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                          'f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))'
+    )
+  }
   
   if (balancing_model == "glm"){
     if (missing_method == "complete"){
@@ -281,8 +285,19 @@ library(randomForest)"
       estimated_propensity_model = MASS::polr(f, data = handled_missingness, Hess = T)")
     }
   }
-    
-  ## From get_propensity.R
+  
+  ### get_propensity.R----
+  
+  if (balancing_model != "poly"){
+    propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                          'f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))'
+    )
+  } else {
+    propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
+                                          'f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))'
+    )
+  }
+  
   if (balancing_model == "glm"){
     if(missing_method == "mi"){
       propensity_score_model_code <- paste0(propensity_score_model_code,"\n\n",
@@ -470,8 +485,7 @@ balanced_data = dose_paired_data")
   
   ## Outcome model ----
   outcome_model_code <- paste0("\n\n ##Outcome model")
-  
-  ## From extract_balanced_data.R
+  ### extract_balanced_data.R----
   if( "mimids" %in% class(DigiCAT_balanced_data)) {
     outcome_model_code <- paste0(outcome_model_code, "\n",
                                  "extracted_balanced_data = MatchThem::complete(balanced_data, 'all', all = FALSE)
@@ -508,75 +522,213 @@ extracted_balanced_data <- list(extracted_balanced_data, process = 'weighting_ip
       outcome_model_code <- paste0(outcome_model_code,"\n",
                                    "extracted_balanced_data = balanced_data
 extracted_balanced_data <- list(extracted_balanced_data, process = 'cc_nbp')")
+    } else if(CF_approach == "nbp" & missing_method == "weighting"){
+      outcome_model_code <- paste0(outcome_model_code,"\n",
+                                   "extracted_balanced_data = balanced_data
+extracted_balanced_data <- list(extracted_balanced_data, process = 'weighting_nbp')")
     }
   
-  ## From fit_outcome_model
-  if(!is.null(covariates)){
-    outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                 "model_formula = as.formula(paste0(outcome_variable,'~',treatment_variable,'*(',paste0(matching_variable, covariates, collapse='+'), ')'))")
-  }  else{
-    outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                 "model_formula = as.formula(paste0(outcome_variable,'~',treatment_variable,'*(',paste0(matching_variable, collapse='+'), ')'))")
+  ### fit_outcome_model.R----
+
+  if(outcome_formula == "unadjusted"){
+      
+      outcome_model_code <- paste0(outcome_model_code, "\n\n",
+      'outcome_unadjusted <- function(balanced_data,
+                                     extracted_balanced_data,
+                                     outcome_variable,
+                                     treatment_variable,
+                                     matching_variable, covariates,
+                                     missing_method,...){
+        
+    if(!is.null(covariates)){
+      model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,covariates),collapse="+"))
+    } else{
+      model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable))
+    }
+    
+    if(extracted_balanced_data$process == "mi_psm"){
+      lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+        lm(model_formula, data = d,
+           weights = weights)
+      })
+      model_fit <- mice::pool(lm_model_fit)
+      
+    } else if(extracted_balanced_data$process == "cc_psm"){ 
+      model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+      
+    } else if (extracted_balanced_data$process == "mi_iptw"){
+      lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+        lm(model_formula, data = d,
+           weights = weights)
+      })
+      model_fit <- mice::pool(lm_model_fit)
+      
+    } 
+    else if (extracted_balanced_data$process == "cc_iptw"){
+      model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+      
+    } else if (extracted_balanced_data$process == "weighting_iptw"){
+      model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+      
+    } else if (extracted_balanced_data$process == "weighting_psm"){
+      model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+    }
+    else if (extracted_balanced_data$process == "cc_nbp"){
+      model_fit = lm(model_formula, data = extracted_balanced_data[[1]])
+      
+    }
+    return(model_fit)
   }
   
-  if(DigiCAT_extracted_balanced_data$process == "mi_psm"){
-    outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                 "lm_model_fit <- lapply(complete(balanced_data, 'all'), function(d) {
-lm(model_formula, data = d,
-     weights = weights)
-})
-model_fit <- lapply(lm_model_fit, function(fit) {
-  marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
-                                   variables = treatment_variable, wts = 'weights', vcov = ~subclass)
-})
-model_fit <- mice::pool(model_fit)")
+  model_fit = outcome_unadjusted(balanced_data,
+                                        extracted_balanced_data,
+                                        outcome_variable,
+                                        treatment_variable,
+                                        matching_variable, covariates,
+                                        missing_method)'
+      )
+  }
+
+  if(outcome_formula == "with_matching_variables"){
     
-    } else if(DigiCAT_extracted_balanced_data$process == "cc_psm"){ 
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "lm_model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
-                                   
-model_fit = marginaleffects::avg_comparisons(lm_model_fit, variables = treatment_variable,
-  vcov = ~subclass, 
-  newdata = subset(extracted_balanced_data[[1]], 
-  extracted_balanced_data[[1]][[treatment_variable]] == 1),
-  wts = 'weights')")
-      
-    } else if (DigiCAT_extracted_balanced_data$process == 'mi_iptw'){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "lm_model_fit <- lapply(complete(balanced_data, 'all'), function(d) {
-lm(model_formula, data = d,
-   weights = weights)
-})
-model_fit <- lapply(lm_model_fit, function(fit) {
-marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
-                                 variables = treatment_variable, wts = 'weights', vcov = 'HC3')
-})
-model_fit <- mice::pool(model_fit)")
-      
-    } else if (DigiCAT_extracted_balanced_data$process == "cc_iptw"){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
-model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
-                                             vcov = 'HC3',
-                                             newdata = subset(extracted_balanced_data[[1]], 
-                                             extracted_balanced_data[[1]][[treatment_variable]] == 1),
-                                             wts = 'weights')")
-      
-    } else if (DigiCAT_extracted_balanced_data$process == "weighting_iptw"){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
-      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)")
-      
-    } else if (DigiCAT_extracted_balanced_data$process == "weighting_psm"){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-      "model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
-      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)")
-      
-    } else if (DigiCAT_extracted_balanced_data$process == "cc_nbp"){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-      "model_fit = lm(model_formula, data = extracted_balanced_data[[1]])")
-      
-    }
+    outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                 'outcome_matching_variables <- function(balanced_data,
+                                      extracted_balanced_data,
+                                      outcome_variable,
+                                      treatment_variable,
+                                      matching_variable, covariates, 
+                                      missing_method,...){
+    
+    
+if(!is.null(covariates)){
+  model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,matching_variable,covariates),collapse="+"))
+} else{
+  model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,matching_variable),collapse="+"))
+}
+
+if(extracted_balanced_data$process == "mi_psm"){
+  lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+    lm(model_formula, data = d,
+       weights = weights)
+  })
+  model_fit <- mice::pool(lm_model_fit)
+  
+} else if(extracted_balanced_data$process == "cc_psm"){ 
+  model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+  
+} else if (extracted_balanced_data$process == "mi_iptw"){
+  lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+    lm(model_formula, data = d,
+       weights = weights)
+  })
+  model_fit <- mice::pool(lm_model_fit)
+  
+} 
+else if (extracted_balanced_data$process == "cc_iptw"){
+  model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+  
+} else if (extracted_balanced_data$process == "weighting_iptw"){
+  model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+  
+} else if (extracted_balanced_data$process == "weighting_psm"){
+  model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+}
+else if (extracted_balanced_data$process == "cc_nbp"){
+  model_fit = lm(model_formula, data = extracted_balanced_data[[1]])
+  
+}
+return(model_fit)
+}
+                               
+model_fit = outcome_matching_variables(balanced_data,
+                                      extracted_balanced_data,
+                                      outcome_variable,
+                                      treatment_variable,
+                                      matching_variable, covariates, 
+                                      missing_method)'
+    )
+  }
+    
+  if(outcome_formula == "with_matching_variables"){
+  
+  outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                               'outcome_marginal_effects <- function(balanced_data,
+                             extracted_balanced_data,
+                             outcome_variable,
+                             treatment_variable,
+                             matching_variable, covariates, 
+                             missing_method){
+if(!is.null(covariates)){
+  model_formula <- as.formula(paste0(outcome_variable, " ~ ", 
+                                     treatment_variable, " * (", 
+                                     paste(c(matching_variable, covariates), collapse = " + "), ")"))
+  
+} else{
+  model_formula = as.formula(paste0(outcome_variable,
+                                    "~",treatment_variable,
+                                    "*(",paste0(matching_variable, collapse="+"), ")"))
+}
+if(extracted_balanced_data$process == "mi_psm"){
+  lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+    lm(model_formula, data = d,
+       weights = weights)
+  })
+  model_fit <- lapply(lm_model_fit, function(fit) {
+   marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
+                                    variables = treatment_variable, wts = "weights", vcov = ~subclass)
+  })
+  model_fit <- mice::pool(model_fit)
+  
+} else if(extracted_balanced_data$process == "cc_psm"){ 
+  lm_model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+  
+  model_fit = marginaleffects::avg_comparisons(lm_model_fit, variables = treatment_variable,
+                                               vcov = ~subclass, 
+                                               newdata = subset(extracted_balanced_data[[1]], 
+                                                                extracted_balanced_data[[1]][[treatment_variable]] == 1),
+                                               wts = "weights")
+  
+} else if (extracted_balanced_data$process == "mi_iptw"){
+  lm_model_fit <- lapply(complete(balanced_data, "all"), function(d) {
+    lm(model_formula, data = d,
+       weights = weights)
+  })
+  model_fit <- lapply(lm_model_fit, function(fit) {
+    marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, treatment_variable == 1),
+                                     variables = treatment_variable, wts = "weights", vcov = "HC3")
+  })
+  model_fit <- mice::pool(model_fit)
+  
+} 
+else if (extracted_balanced_data$process == "cc_iptw"){
+  model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
+  model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
+                                               vcov = "HC3",
+                                               newdata = subset(extracted_balanced_data[[1]], 
+                                                                extracted_balanced_data[[1]][[treatment_variable]] == 1),
+                                               wts = "weights")
+  
+} else if (extracted_balanced_data$process == "weighting_iptw"){
+  model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+  model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
+  
+} else if (extracted_balanced_data$process == "weighting_psm"){
+  model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
+  model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
+  
+}
+return(model_fit)
+}
+                             
+model_fit = outcome_marginal_effects(balanced_data,
+              extracted_balanced_data,
+              outcome_variable,
+              treatment_variable,
+              matching_variable, covariates, 
+              missing_method)'
+  )
+}
+
   outcome_model_code <- paste0(outcome_model_code, "\n\n",
                                "fitted_model <- model_fit")
   
@@ -590,60 +742,91 @@ extracted_outcome_results <-  list(extracted_outcome_results, process = 'weighti
     } else if("comparisons" %in% class(DigiCAT_fitted_model) & missing_method == "complete"){
       
       outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
-extracted_outcome_results <- list(extracted_outcome_results, process = 'cc')")
+                                   '    extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
+extracted_outcome_results <- list(extracted_outcome_results, process = "cc")'
+                                   )
       } else if("mipo" %in% class(DigiCAT_fitted_model) & missing_method == "mi"){
-        
         outcome_model_code <- paste0(outcome_model_code, "\n\n",
                                      "extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
-extracted_outcome_results <- list(extracted_outcome_results, process = 'mi')")
-      
+extracted_outcome_results <- list(extracted_outcome_results, process = 'mi')"
+                                     )
     }else if("lm" %in% class(DigiCAT_fitted_model) & missing_method == "complete"){
       
       outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "extracted_outcome_results = summary(fitted_model)
-extracted_outcome_results <- list(extracted_outcome_results, process = 'cc')")
+                                   'extracted_outcome_results =as.data.frame(dplyr::bind_cols(coef(summary(fitted_model)), confint(fitted_model)))
+extracted_outcome_results <- list(extracted_outcome_results, process = "cc")'
+                                   )
+    }else if("svyglm" %in% class(DigiCAT_fitted_model) & missing_method == "weighting"){
+      outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                   'extracted_outcome_results = summary(fitted_model)
+extracted_outcome_results <- list(extracted_outcome_results, process = "weighting")'
+      )
     }
+
+  ### standardise_outcome_format.R ----
   
-  ## From standardise_outcome_format.R
-  
-    if(DigiCAT_extracted_outcome_results$process == "mi"){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-      "results_dataframe = as.data.frame(extracted_outcome_results)
-results_dataframe <- results_dataframe[,-c(2,5,6,10)]
-colnames(results_dataframe) <- c('Term','Coefficient Estimate', 'Standard Error', 'P-value', 'Lower CI (2.5%)', 'Upper CI (97.5%)')
+  if(DigiCAT_extracted_outcome_results$process == "mi" & outcome_formula == "marginal_effects"){ # ME MI with/without covs
+    outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                 'results_dataframe = extracted_outcome_results[[1]]
+results_dataframe <- results_dataframe[,-c(2, 5, 6)]
+colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
 rownames(results_dataframe) <- results_dataframe[,1]  
-results_dataframe <- results_dataframe[,-1]")
-      
-    } else if(DigiCAT_extracted_outcome_results$process == 'cc' & CF_approach != 'nbp'){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "results_dataframe = as.data.frame(extracted_outcome_results)
+results_dataframe <- results_dataframe[,-1]'
+    )
+  }else if((DigiCAT_extracted_outcome_results$process == "mi" & outcome_formula == "unadjusted")|# ME MI with/without covs
+           (DigiCAT_extracted_outcome_results$process == "mi" & outcome_formula == "unadjusted")){ # adjusted for matching variables with MI with/without covs
+    outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                 'results_dataframe = as.data.frame(extracted_outcome_results[[1]])
+results_dataframe <- results_dataframe[,-c(4,5)]
+colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+rownames(results_dataframe) <- results_dataframe[,1]  
+results_dataframe <- results_dataframe[,-1]
+results_dataframe <- results_dataframe[2,]'
+    )
+  } else if(DigiCAT_extracted_outcome_results$process == "cc" & CF_approach != "nbp" & outcome_formula == "marginal_effects"){ # ME CCA with/without covs
+    outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                 'results_dataframe = as.data.frame(extracted_outcome_results)
 results_dataframe <- results_dataframe[,-c(2,5,7,10)]
-colnames(results_dataframe) <- c('Term','Coefficient Estimate', 'Standard Error', 'P-value', 'Lower CI (2.5%)', 'Upper CI (97.5%)')
+colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
 rownames(results_dataframe) <- results_dataframe[,1]  
-results_dataframe <- results_dataframe[,-1]")
-      
-    } else if(DigiCAT_extracted_outcome_results$process == 'weighting' & CF_approach == 'psm'){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "results_dataframe = as.data.frame(extracted_outcome_results)
+results_dataframe <- results_dataframe[,-1]'
+    )
+  } else if((DigiCAT_extracted_outcome_results$process == "cc" & CF_approach != "nbp" & outcome_formula == "unadjusted") | # unadjusted CCA with/without covs
+            (DigiCAT_extracted_outcome_results$process == "cc" & CF_approach != "nbp" & outcome_formula == "with_matching_variables")){ # adjusted for matching variables with CCA with/without covs
+    outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                 'results_dataframe = as.data.frame(extracted_outcome_results[[1]])
+results_dataframe <- results_dataframe[,-3]
+colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+results_dataframe <- results_dataframe[2,]'
+    )
+  } else if((DigiCAT_extracted_outcome_results$process == "weighting" & CF_approach != "psm" & outcome_formula == "marginal_effects") | 
+            (DigiCAT_extracted_outcome_results$process == "weighting" & CF_approach != "iptw" & outcome_formula == "marginal_effects")){ 
+    outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                 'results_dataframe = as.data.frame(extracted_outcome_results)
 results_dataframe <- results_dataframe[,-c(2,5,7,10)]
-colnames(results_dataframe) <- c('Term','Coefficient Estimate', 'Standard Error', 'P-value', 'Lower CI (2.5%)', 'Upper CI (97.5%)')
+colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
 rownames(results_dataframe) <- results_dataframe[,1]  
-results_dataframe <- results_dataframe[,-1]")
-    } else if(DigiCAT_extracted_outcome_results$process == 'weighting' & CF_approach == 'iptw'){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "results_dataframe = as.data.frame(extracted_outcome_results)
-results_dataframe <- results_dataframe[,-c(2,5,7,10)]
-colnames(results_dataframe) <- c('Term','Coefficient Estimate', 'Standard Error', 'P-value', 'Lower CI (2.5%)', 'Upper CI (97.5%)')
-rownames(results_dataframe) <- results_dataframe[,1]  
-results_dataframe <- results_dataframe[,-1]")
-    } else if(DigiCAT_extracted_outcome_results$process == 'cc' & CF_approach == 'nbp'){
-      outcome_model_code <- paste0(outcome_model_code, "\n\n",
-                                   "results_dataframe = as.data.frame(extracted_outcome_results[[1]][[4]])
-colnames(results_dataframe) <- c('Coefficient Estimate', 'Standard Error', 'T statistic', 'P-value')
-results_dataframe <- results_dataframe[c(1,2),]")
-    }
-  
+results_dataframe <- results_dataframe[,-1]'
+    )
+  } else if((DigiCAT_extracted_outcome_results$process == "weighting" & CF_approach != "psm" & outcome_formula == "unadjusted") |
+             (DigiCAT_extracted_outcome_results$process == "weighting" & CF_approach != "iptw" & outcome_formula == "unadjusted") |
+             (DigiCAT_extracted_outcome_results$process == "weighting" & CF_approach != "psm" & outcome_formula == "with_matching_variables") | 
+            (DigiCAT_extracted_outcome_results$process == "weighting" & CF_approach != "iptw" & outcome_formula == "with_matching_variables")){ 
+    outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                 'results_dataframe = as.data.frame(extracted_outcome_results[[1]]$coefficients)
+results_dataframe <- results_dataframe[,-3]
+Cis <- confint(fitted_model)
+results_dataframe <- cbind(results_dataframe, Cis)
+colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+results_dataframe <- results_dataframe[2,]'
+    )
+  } else if(DigiCAT_extracted_outcome_results$process == "cc" & CF_approach == "nbp"){
+              outcome_model_code <- paste0(outcome_model_code, "\n\n",
+                                           'results_dataframe = as.data.frame(extracted_outcome_results[[1]])
+colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "T statistic", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+results_dataframe <- results_dataframe[2,]'
+              )
+  }
   
   ## Create R script ----
   r_script <- c(library_code, data_source_code, variable_input_code, reduce_data_code, design_matrix_code, handled_missingness_code, propensity_score_model_code, balancing_code, outcome_model_code)
@@ -671,4 +854,3 @@ results_dataframe <- results_dataframe[c(1,2),]")
 #              DigiCAT_fitted_model = mno$fitted_model,
 #              DigiCAT_extracted_outcome_results  = mno$extracted_outcome_results
 #              )
-

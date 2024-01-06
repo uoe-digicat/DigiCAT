@@ -23,22 +23,24 @@ evaluate_imputations(.data = df2$amp, evaluation_method = "LittleMCARtest")
 evaluate_imputations(.data = df2$amp, evaluation_method = "missing_pattern")
 evaluate_imputations(.data = df2$amp, evaluation_method = "influx_outflux")
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "mi", model_type = "glm",
+abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "gbm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_imputations(abc, "distributional_discrepancy", "strip")
 evaluate_imputations(abc, "convergence") # include guidance line as output maybe
 evaluate_imputations(abc, "eventslog") # depending on logged events, recommend altering parameters xyz accordingly
 evaluate_imputations(abc, "inspect_matrix")
 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
-                    missing_method = "mi")
+                    missing_method = "complete")
 mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
-                              missing_method = "mi")
+                              missing_method = "complete",
+                              outcome_formula = "unadjusted",
+                              covariates = NULL)
 
 #### cc
 
@@ -53,7 +55,9 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
-                              missing_method = "complete")
+                              missing_method = "complete",
+                              outcome_formula = "unadjusted",
+                              covariates = NULL)
 
 #### Weighting testing ####
 
@@ -154,10 +158,13 @@ abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type 
 ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear", 
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
                     missing_method = "complete")
+
 jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
                               outcome_variable = "mpg", treatment_variable = "gear",
                               matching_variable = c("qsec", "hp", "disp"),
-                              psmodel_obj = abc, missing_method = "complete")
+                              psmodel_obj = abc, missing_method = "complete",
+                              outcome_formula = "unadjusted",
+                              covariates = NULL)
 
 
 

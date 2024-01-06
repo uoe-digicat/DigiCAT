@@ -1,26 +1,32 @@
-rowMaxs <- function(df, na.rm=TRUE) {
+calculate_ordered_logistic_linear_predictor <- function(formula, data,
+                                                        design_object) {
+  # Fit ordered logistic regression model 
+  model <- svyolr(formula, design = design_object)
   
-  if (is.matrix(df)) {df <- data.frame(df, stringsAsFactors=FALSE, drop = FALSE)}
+  # Extract coefficients
+  coefficients <- coef(model)
   
-  valid.cols <- sapply(df, function(x) { is.numeric(x) || is.logical(x) || is.character(x)})
-  stopifnot(any(valid.cols))
-  # or could just return NA?:
-  # if (!any(valid.cols)) {return(NA)}
-  if (any(!valid.cols) ) {warning('using only numeric (double or integer) or logical or character columns -- ignoring other columns ')}
+  # Initialise linear predictor
+  propensity_score <- 0  # Zero for the intercept
   
-  result <- do.call(pmax.int, c(df[ , valid.cols, drop = FALSE], na.rm=na.rm))
+  # Extract predictor variables from df
+  predictors <- all.vars(formula)[-1]  # Exclude the outcome variable
   
-  result[nononmissing <- rowSums(!is.na(df[ , valid.cols, drop = FALSE]))==0] <- -Inf
-  if (any(nononmissing)) {warning('where no non-missing arguments, returning -Inf')}
-  return(result)
+  # Calculate linear predictor
+  for (predictor in predictors) {
+    propensity_score <- propensity_score + coefficients[predictor] * data[[predictor]]
+  }
   
-  # df = data.frame of numeric values, i.e. a list of vectors passed to pmax
-  # Value returned is vector, each element is max of a row of df
+  return(propensity_score)
 }
 
 get_propensity <- function(estimated_propensity_model, model_type, treatment_variable, matching_variable, 
-                           handled_missingness, missing_method, ...){
-  f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
+                           handled_missingness, missing_method,.data,...){
+  if(model_type != "poly"){
+    f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
+  } else {
+    f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
+  }
   
   switch(model_type, 
          
@@ -40,7 +46,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
                                        function(x) predict(gbm(as.formula(f), data = x, ...),
                                                            type = "response"))  
            } else {
-             propensity_score = predict(estimated_propensity_model)
+             propensity_score = predict(estimated_propensity_model, type = "response")
            }
          },
          
@@ -56,12 +62,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
          
          poly = { 
            if(missing_method == "mi" & model_type == "poly"){
-             # imputed.dfs <- complete(handled_missingness, "all")
-             # imputed.dfs <- lapply(imputed.dfs, function(x) data.frame(x, lp=estimated_propensity_model[[1]]$lp))
-             # propensity_score <- lapply(imputed.dfs, function(x) data.frame(x, model=estimated_propensity_model[[1]]$model))
-             
              propensity_score <- estimated_propensity_model
-             # names(propensity_score)[names(propensity_score) == 'polly$lp'] <- 'lp'
              
            } else if (missing_method == "complete" & model_type == "poly"){
              
@@ -71,22 +72,17 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
                                                     estimated_propensity_model$lp))
              names(propensity_score)[names(propensity_score) == "polly$lp"] <- "lp"
              
-           } else if(missing_method == "weighting"){
-             propensity_score = estimated_propensity_model$fitted.values 
-             propensity_score = rowMaxs(propensity_score)
+           } else if(missing_method == "weighting" & model_type == "poly"){
              
-             propensity_score = cbind(handled_missingness$variables, propensity_score)
-             # nb: will need to iterate to calculate lp as in polr - this is temporary for ps
+             propensity_score <- calculate_ordered_logistic_linear_predictor(formula = f, 
+                                                                             data = handled_missingness$variables,
+                                                                             design_object = handled_missingness)
+             propensity_score <- cbind(handled_missingness$variables, propensity_score)
            }
          },
-         stop("I need a valid model! (glm, gbm, rforest, poly)")
+         stop("I need a valid model! (glm, gbm, rf, poly)")
          
   )
   return(propensity_score)
 }
-
-
-
-
-
 

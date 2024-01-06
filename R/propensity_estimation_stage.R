@@ -39,12 +39,12 @@ estimation_stage <- function(.data, missing_method, model_type,
   handled_missingness <- handle_missingness(.data, missing_method,design_object,...)
   propensity_model <- estimate_model(handled_missingness, model_type, treatment_variable, matching_variable,
                                      missing_method,...)
-  prop_scores <- get_propensity(propensity_model, model_type, 
+  prop_scores <- get_propensity(estimated_propensity_model = propensity_model, model_type, 
                                 treatment_variable, matching_variable,
-                                handled_missingness, missing_method,...)
+                                handled_missingness, missing_method, .data,...)
   return(list(missingness_treated_dataset = handled_missingness, 
               propensity_scores = prop_scores, 
               estimated_propensity_model = propensity_model,
-              propensity_model_class = "glm", # nb: want to alter to class(propensity_model) or use indicator
+              propensity_model_class = model_type, # nb: want to alter to class(propensity_model) or use indicator
               survey_design_object = propensity_model$survey.design)) # note if weighting, this is the object containing data, not missingness_treated_dataset
 }
