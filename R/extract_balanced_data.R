@@ -96,20 +96,19 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     
     extracted_balanced_data = extracted_balanced_design
     
-    # extracted_balanced_data = svydesign(ids=~1, weights = (survey_data[[weighting_variable]]*survey_data$weights), 
-    #                                     data = survey_data)
-    # extracted_balanced_data = extracted_balanced_data
     return(list(extracted_balanced_data, process = "weighting_iptw"))
     
   } else if(counterfactual_method == "nbp" & missing_method == "complete"){
     extracted_balanced_data = balanced_data
-    # replace treatment variable with dose
     return(list(extracted_balanced_data, process = "cc_nbp"))
   }
   else if(counterfactual_method == "nbp" & missing_method == "weighting"){
     extracted_balanced_data = balanced_data
-    # replace treatment variable with dose
     return(list(extracted_balanced_data, process = "weighting_nbp"))
+  }
+  else if(counterfactual_method == "nbp" & missing_method == "mi"){
+    extracted_balanced_data = balanced_data
+    return(list(extracted_balanced_data, process = "mi_nbp"))
   }
   
 }

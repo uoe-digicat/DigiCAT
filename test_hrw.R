@@ -45,7 +45,7 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm"
 
 #### cc
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "glm",
+abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "gbm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_propensity_stage(abc, evaluation_method = "support")
 ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
@@ -105,21 +105,21 @@ df2 = mice::ampute(d,
 data_to_use <- df2$amp
 
 
-abc <- estimation_stage(.data = data_to_use, missing_method = "mi", model_type = "glm",
+abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2"),
                         weighting_variable = "SW") 
 ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
-                    missing_method = "mi")
+                    missing_method = "weighting")
 
 pqr <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", # outcome format needs changing for weighting approach
                               outcome_variable = "Y_C",
                               treatment_variable = "A", 
                               matching_variable = c("X1", "X2"), 
                               psmodel_obj = abc,
-                              missing_method = "mi",
-                              #weighting_variable = "SW",
-                              outcome_formula = "marginal_effects")
+                              missing_method = "weighting",
+                              weighting_variable = "SW",
+                              outcome_formula = "with_matching_variables")
 
 # testing weights with example sets 
 
@@ -146,13 +146,63 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm"
 evaluate_propensity_stage(abc, "support", missing_method = "weighting")
 
 #### NBP testing ####
+
+# Set a seed for reproducibility
+set.seed(577)
+
+# Function to simulate data with a known treatment effect
+simulate_data <- function(n = 300) {
+  # Simulate data for a treatment group
+  treatment_data <- data.frame(
+    ID = 1:n,
+    age = rnorm(n, mean = 40, sd = 10),
+    income = rnorm(n, mean = 50000, sd = 10000),
+    treatment = as.factor(sample(1:3, n, replace = TRUE))
+  )
+  
+  # Simulate data for a control group
+  control_data <- data.frame(
+    ID = (n + 1):(2 * n),
+    age = rnorm(n, mean = 38, sd = 8),
+    income = rnorm(n, mean = 48000, sd = 12000),
+    treatment = as.factor(sample(1:3, n, replace = TRUE))
+  )
+  
+  # Combine the treatment and control groups into one dataset
+  simulated_data <- rbind(treatment_data, control_data)
+  
+  # Simulate a continuous outcome with a known treatment effect
+  simulated_data$continuous_outcome <- 50 + 5 * as.numeric(simulated_data$treatment) +
+    2 * simulated_data$age + rnorm(2 * n, mean = 0, sd = 10)
+  
+  return(simulated_data)
+}
+
+# Simulate data
+simulated_data <- simulate_data()
+simulated_data = mice::ampute(simulated_data,
+                              prop = 0.05)
+simulated_data$amp <- as.integer(simulated_data)
+
+un <- estimation_stage(.data = simulated_data$amp, missing_method = "mi", model_type = "poly",
+                       treatment_variable = "treatment", matching_variable = c("age", "income"))
+deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
+                     matching_variable = c("age", "income"), PS_estimation_object = un,
+                     missing_method = "mi")
+trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
+                                outcome_variable = "continuous_outcome", treatment_variable = "treatment",
+                                matching_variable = c("age", "income"),
+                                covariates = NULL,
+                                outcome_formula = "unadjusted",
+                                psmodel_obj = un, missing_method = "mi")
+
 # random data - ignore
 data(mtcars)
-abc <- estimation_stage(.data = mtcars, missing_method = "complete", model_type = "poly",
+abc <- estimation_stage(.data = mtcars, missing_method = "mi", model_type = "poly",
                          treatment_variable = "gear", matching_variable = c("qsec", "hp", "disp")) 
 ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "gear", 
                     matching_variable = c("qsec", "hp", "disp"), PS_estimation_object = abc,
-                    missing_method = "complete")
+                    missing_method = "mi")
 jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
                               outcome_variable = "mpg", treatment_variable = "gear",
                               #matching_variable = c("qsec", "hp", "disp"),
@@ -161,52 +211,6 @@ jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp"
                               psmodel_obj = abc, missing_method = "complete")
 
 
-
-df <- read.csv("~/Desktop/WT_data_prize/bin/DigiCAT/data/zp_eg.csv")
-
-
-abc <- estimation_stage(.data = df, missing_method = "weighting", model_type = "poly",
-                        treatment_variable = "ReadingO_age15", matching_variable = names(df)[-c(2:4, 6)], 
-                        weighting_variable = "Trust_age13")
-
-ghi <- balance_data(counterfactual_method = "nbp", treatment_variable = "ReadingO_age15", 
-                    matching_variable = names(df)[-c(2:4, 6)], PS_estimation_object = abc,
-                    missing_method = "weighting")
-
-jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp",
-                              outcome_variable = "Anxiety_age17",
-                              treatment_variable = "ReadingO_age15",
-                              matching_variable = names(df)[-c(2:4, 6)],
-                              psmodel_obj = abc, missing_method = "weighting", 
-                              nonresponse_weights = "Trust_age13")
-
-
-
-ps <- estimation_stage(
-  .data = ,
-  missing_method = "weighting",
-  model_type = "poly",
-  treatment_variable = "gear",
-  matching_variable = c("qsec", "hp", "disp"),
-  weighting_variable = "wt",
-  cluster_variable = NULL,
-  strata_variable = NULL
-)
-
-
-bal <- balance_data(
-  counterfactual_method = "nbp",
-  treatment_variable = "gear",
-  matching_variable = c("qsec", "hp", "disp"),
-  PS_estimation_object = ps,
-  missing_method = "weighting")
-
-test <- get_NBP_balancing_output(
-  estimation_model_object = abc,
-  balanced_data = bal,
-  treatment_variable = "gear",
-  matching_variables =  c("qsec", "hp", "disp"),
-  missing_method = "weighting")
 
 
 # setwd("~/Desktop/WT_data_prize/bin/DigiCAT/R")
