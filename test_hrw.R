@@ -193,8 +193,9 @@ trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "n
                                 outcome_variable = "continuous_outcome", treatment_variable = "treatment",
                                 matching_variable = c("age", "income"),
                                 covariates = NULL,
-                                outcome_formula = "unadjusted",
-                                psmodel_obj = un, missing_method = "mi")
+                                outcome_formula = "with_matching_variables",
+                                psmodel_obj = un, missing_method = "mi",
+                                weighting_variable = "income")
 
 # random data - ignore
 data(mtcars)
