@@ -186,9 +186,11 @@ simulated_data$amp <- as.integer(simulated_data)
 
 un <- estimation_stage(.data = simulated_data$amp, missing_method = "mi", model_type = "poly",
                        treatment_variable = "treatment", matching_variable = c("age", "income"))
+
 deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
                      matching_variable = c("age", "income"), PS_estimation_object = un,
                      missing_method = "mi")
+
 trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
                                 outcome_variable = "continuous_outcome", treatment_variable = "treatment",
                                 matching_variable = c("age", "income"),

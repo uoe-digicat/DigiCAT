@@ -7,6 +7,7 @@
 #'
 #' @import mice
 #' @import parallel
+#' @import mitools
 
 handle_missingness <- function(.data, missing_method = NULL,
                                counterfactual_method = NULL,
