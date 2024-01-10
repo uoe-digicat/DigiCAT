@@ -182,7 +182,19 @@ simulate_data <- function(n = 300) {
 simulated_data <- simulate_data()
 simulated_data = mice::ampute(simulated_data,
                               prop = 0.05)
-simulated_data$amp <- as.integer(simulated_data)
+
+un <- estimation_stage(.data = simulated_data$amp, missing_method = "complete", model_type = "poly",
+                       treatment_variable = "treatment", matching_variable = c("age", "income"))
+deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
+                     matching_variable = c("age", "income"), PS_estimation_object = un,
+                     missing_method = "complete")
+trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
+                                outcome_variable = "continuous_outcome", treatment_variable = "treatment",
+                                matching_variable = c("age", "income"),
+                                covariates = NULL,
+                                outcome_formula = "with_matching_variables",
+                                psmodel_obj = un, missing_method = "complete",
+                                weighting_variable = "income")
 
 un <- estimation_stage(.data = simulated_data$amp, missing_method = "mi", model_type = "poly",
                        treatment_variable = "treatment", matching_variable = c("age", "income"))

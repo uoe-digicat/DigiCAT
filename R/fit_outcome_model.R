@@ -5,7 +5,6 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                               psmodel_obj, cluster_variable = NULL, weighting_variable = NULL,
                               strata_variable = NULL,
                               ...){
-  
    switch(outcome_formula,
          
          unadjusted = {
@@ -259,7 +258,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~", weighting_variable))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- NULL  
@@ -275,7 +274,7 @@ outcome_unadjusted <- function(balanced_data,
     
     updated_design <- svydesign(ids = cluster_formula,
                                 weights = weighting_formula,
-                                strata = strat_formula,
+                                strata = strata_formula,
                                 data = data_to_use)
     
     
@@ -502,7 +501,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~", weighting_variable))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- NULL 
@@ -518,7 +517,7 @@ outcome_matching_variables <- function(balanced_data,
     
     updated_design <- svydesign(ids = cluster_formula,
                                 weights = weighting_formula,
-                                strata = strat_formula,
+                                strata = strata_formula,
                                 data = data_to_use)
     
     

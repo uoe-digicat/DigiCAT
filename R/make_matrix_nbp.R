@@ -1,6 +1,5 @@
 make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatment_variable, missing_method,
                             PS_estimation_object,...){
-  
   if(missing_method == "complete"){
     eps = 1*10^-100 
     result = matrix(ncol = nrow(propensity_data), nrow = nrow(propensity_data))
@@ -26,6 +25,7 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
     
     distance_matrix_nbp = res_squared
     row.names(distance_matrix_nbp) <- propensity_data$ID
+    distance_matrix_nbp
     
   }
   
@@ -110,9 +110,7 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
   }
 }
     
-#   }
-#   return(matches_list)
-# }
+
 
 
   
