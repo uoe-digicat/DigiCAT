@@ -476,7 +476,7 @@ outcome_matching_variables <- function(balanced_data,
     
     updated_design <- svydesign(ids = cluster_formula,
                                 weights = weighting_formula,
-                                strata = strat_formula,
+                                strata = strata_formula,
                                 data = data_to_use)
     
     
@@ -710,7 +710,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     updated_design <- svydesign(ids = cluster_formula,
                                 weights = weighting_formula,
-                                strata = strat_formula,
+                                strata = strata_formula,
                                 data = data_to_use)
     
     
