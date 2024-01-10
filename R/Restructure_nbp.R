@@ -34,12 +34,17 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
   
   else if(missing_method == "mi"){
     
+    propensity_data <- propensity_data %>% select(unique(colnames(.)))
+
     # Assuming propensity_data is a data frame
+    unique_impsets <- unique(propensity_data$impset)
+    
+    # Now you can use it in your lapply function
     propensity_data_list <- lapply(unique_impsets, function(impset_value) {
-      slice(propensity_data, which(propensity_data$impset == impset_value))
+      subset(propensity_data, impset == impset_value)
     })
     
-    matched_data <- lapply(balanced_data, function(df) {
+    matched_data <- lapply(matched_data, function(df) {
       df$pairID <- paste("p", 1:length(df$Group1.ID), sep = "")
       tibble(df)
     })
