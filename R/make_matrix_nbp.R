@@ -1,6 +1,5 @@
 make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatment_variable, missing_method,
                             PS_estimation_object,...){
-  
   if(missing_method == "complete"){
     eps = 1*10^-100 
     result = matrix(ncol = nrow(propensity_data), nrow = nrow(propensity_data))
@@ -26,6 +25,7 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
     
     distance_matrix_nbp = res_squared
     row.names(distance_matrix_nbp) <- propensity_data$ID
+    distance_matrix_nbp
     
   }
   
@@ -66,6 +66,8 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
     
     distance_matrix_nbp = matrix(ncol = (nrow(PS_estimation_object[[1]][[1]])+1), nrow = (nrow(PS_estimation_object[[1]][[1]]))*multiply_by) # OG prop data not stacked
     
+    distance_matrix_nbp_list <- list()
+    
     for (i in 1:length(comp)) {
       
       data_for_this_iteration <- subset(propensity_data, impset == i) # select all rows where impset is for this imputation
@@ -91,17 +93,26 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
       res_squared[!lp_logical] <- 10^11
       res_squared[lp_logical] <- 10^11 * (lp_res_squared_plus_eps[lp_logical]) / res_squared[lp_logical]
       
-      distance_matrix_nbp <- distancematrix(res_squared)
-      performed_matching <- nonbimatch(distance_matrix_nbp) # threshold = 999999, precision = 7? 
-      matches <-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
+      
+      distance_matrix_nbp_list[[i]] <- res_squared
+      
     }
     
-    
+    if (missing_method %in% c("complete", "weighting")) {
+      # If complete case or weighting is selected, return distance_matrix_nbp
+      return(distance_matrix_nbp)
+    } else if (missing_method == "mi") {
+      # If mi is selected, return matches_list
+      return(distance_matrix_nbp_list)
+    } else {
+      stop("Invalid missing_method. Supported values: 'complete', 'weighting', 'mi'")
+    }
   }
-  return(distance_matrix_nbp)
 }
+    
 
 
+
   
   
   
@@ -113,7 +124,16 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
   
   
   
-  
+
+
+
+
+
+
+
+
+
+
   
   
   

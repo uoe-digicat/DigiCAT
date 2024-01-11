@@ -7,16 +7,54 @@
 #'
 #' @import mice
 #' @import parallel
+#' @import mitools
 
 handle_missingness <- function(.data, missing_method = NULL,
-                               design_object = NULL,
                                counterfactual_method = NULL,
+                               cluster_variable = NULL, weighting_variable = NULL,
+                               strata_variable = NULL,
                                ...){
+ # browser()
   switch(missing_method, 
          
          complete = {
            
            handled_missingness = na.omit(.data)
+           
+           if (!is.null(cluster_variable)) {
+             cluster_formula <- as.formula(paste("~", cluster_variable))
+           } else {
+             # Set cluster_formula to ~1 if cluster_variable is not provided
+             cluster_formula <- as.formula("~1")
+           }
+           
+           # Check if weighting_variable is provided
+           if (!is.null(weighting_variable)) {
+             # Convert weighting_variable to a formula
+             weighting_formula <- as.formula(paste("~", weighting_variable))
+           } else {
+             # Use another variable as the default if weighting_variable is not provided
+             weighting_formula <- NULL
+           }
+           
+           # Check if strata_variable is provided
+           if (!is.null(strata_variable)) {
+             strata_formula <- as.formula(paste("~", strata_variable))
+           } else {
+             # Set strata_formula to NULL if strata_variable is not provided
+             strata_formula <- NULL
+           }
+           
+           design_object <- svydesign(ids = cluster_formula,
+                                      weights = weighting_formula,
+                                      strata = strata_formula,
+                                      data = handled_missingness)
+ 
+          # design_object <- svydesign(ids = if (!is.null(cluster_variable)) handled_missingness[[cluster_variable]] else ~1,
+          #                                weights = if (!is.null(weighting_variable)) handled_missingness[[weighting_variable]] else NULL,
+          #                                strata = if (!is.null(strata_variable)) handled_missingness[[strata_variable]] else NULL,
+          #                                data = handled_missingness)
+           
          },
          
          mi = {
@@ -30,16 +68,75 @@ handle_missingness <- function(.data, missing_method = NULL,
            # cannot reliably obtain congeniality -> default is random forest imputation
            # add condition - if weighting, using MI-bootstrap approach?
            # switch to ML/RF method to remove need to consider functional form of imp model
+           
+           complete_imps <- complete(handled_missingness, "all")
+
+           # Check if cluster_variable is provided
+           if (!is.null(cluster_variable)) {
+             cluster_formula <- as.formula(paste("~", cluster_variable))
+           } else {
+             # Set cluster_formula to ~1 if cluster_variable is not provided
+             cluster_formula <- as.formula("~1")
+           }
+           
+           # Check if weighting_variable is provided
+           if (!is.null(weighting_variable)) {
+             # Convert weighting_variable to a formula
+             weighting_formula <- as.formula(paste("~", weighting_variable))
+           } else {
+             # Use another variable as the default if weighting_variable is not provided
+            weighting_formula <- NULL
+           }
+           
+           # Check if strata_variable is provided
+           if (!is.null(strata_variable)) {
+             strata_formula <- as.formula(paste("~", strata_variable))
+           } else {
+             # Set strata_formula to NULL if strata_variable is not provided
+             strata_formula <- NULL
+           }
+           
+           design_object <- svydesign(ids = cluster_formula,
+                                          weights = weighting_formula,
+                                          strata = strata_formula,
+                                          data = imputationList(complete_imps))
          }, 
-         # else if(counterfactual_method == "iptw"){
-         #   handled_missingness = mice(.data, m = 5, maxit = 20,
-         #                              method = "norm.boot") # default options
-         #  }
-         # },
+        
          
          weighting = {
+           if (!is.null(cluster_variable)) {
+             cluster_formula <- as.formula(paste("~", cluster_variable))
+           } else {
+             # Set cluster_formula to ~1 if cluster_variable is not provided
+             cluster_formula <- as.formula("~1")
+           }
            
-           handled_missingness = design_object # currently treats non-response and sampling the same
+           # Check if weighting_variable is provided
+           if (!is.null(weighting_variable)) {
+             # Convert weighting_variable to a formula
+             weighting_formula <- as.formula(paste("~", weighting_variable))
+           } else {
+             # Use another variable as the default if weighting_variable is not provided
+             weighting_formula <- NULL
+           }
+           
+           # Check if strata_variable is provided
+           if (!is.null(strata_variable)) {
+             strata_formula <- as.formula(paste("~", strata_variable))
+           } else {
+             # Set strata_formula to NULL if strata_variable is not provided
+             strata_formula <- NULL
+           }
+           
+           .data = subset(.data, (!is.na(.data[[weighting_variable]])))
+           
+           design_object <- svydesign(ids = cluster_formula,
+                                       weights = weighting_formula,
+                                       strata = strata_formula,
+                                       data = .data)
+           
+           handled_missingness = design_object 
+           design_object = design_object
          },
          
          parallel_mi = {
@@ -51,11 +148,17 @@ handle_missingness <- function(.data, missing_method = NULL,
            cores_2_use <- detectCores() - 1
            handled_missingness = futuremice(.data, m = 5, maxit = 20, # maybe add parallel seed etc
                                             method = "rf", n.core = cores_2_use) 
+           
+           complete_imps <- complete(handled_missingness, "all")
+           design_object <- svydesign(ids = if (!is.null(cluster_variable)) handled_missingness[[cluster_variable]] else ~1,
+                                      weights = if (!is.null(weighting_variable)) handled_missingness[[weighting_variable]] else NULL,
+                                      strata = if (!is.null(strata_variable)) handled_missingness[[strata_variable]] else NULL,
+                                      data = imputationList(complete_imps))
            # if n cores exceeds m, cores used will be set to equal m
          },
          stop("How should i deal with missingness? Should be one of 'mi', 'complete', 'weighting', 'parallel_mi'")
   )
-  return(handled_missingness) 
+  return(list(handled_missingness, design_object))
   
 }
 

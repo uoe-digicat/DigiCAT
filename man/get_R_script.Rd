@@ -20,7 +20,7 @@ get_R_script(
   balancing_model,
   matching_method = NULL,
   matching_ratio = NULL,
-  outcome_model,
+  outcome_formula,
   DigiCAT_balanced_data,
   DigiCAT_extracted_balanced_data,
   DigiCAT_fitted_model,
@@ -52,7 +52,7 @@ get_R_script(
 
 \item{matching_ratio}{Name of balancing ratio being used (numeric)}
 
-\item{outcome_model}{Name of outcome model being used (character string)}
+\item{outcome_formula}{Name of outcome model being used (character string)}
 
 \item{DigiCAT_balanced_data}{Balanced data object from tool}
 
