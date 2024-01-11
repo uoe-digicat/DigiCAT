@@ -15,10 +15,10 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   if(missing_method == "complete" | missing_method == "weighting"){
     ## Factorize treatment variable in both matched and unmatched datasets
     estimation_model_object$propensity_scores[[treatment_variable]] <- as.factor(estimation_model_object$propensity_scores[[treatment_variable]])
-    balanced_data$treatment <- as.factor(balanced_data$treatment)
+    balanced_data$treatment_old <- as.factor(balanced_data$treatment_old)
     ## Count frequency of observations in each treatment group
     observation_table_all <- as.data.frame(t(table(estimation_model_object$propensity_scores[[treatment_variable]]))) ## Original treatment groups before matching
-    observation_table_unmatched <- as.data.frame(t(table(balanced_data$treatment))) ## Original treatment groups after matching (unmathed subjects excluded)
+    observation_table_unmatched <- as.data.frame(t(table(balanced_data$treatment_old))) ## Original treatment groups after matching (unmathed subjects excluded)
     observation_table_matched <- as.data.frame(t(table(balanced_data[[treatment_variable]]))) ## Treatment groups after matching
     
     ## Get difference between observation counts before and after matching in original treatment groups
@@ -36,12 +36,12 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
     
     ## Factorize treatment variable in both matched and unmatched datasets
     estimation_model_object$propensity_scores$`as.factor(treatment)`[estimation_model_object$propensity_scores$impset == 1] <- as.factor(estimation_model_object$propensity_scores$`as.factor(treatment)`[estimation_model_object$propensity_scores$impset == 1])
-    balanced_data[[1]]$treatment <- as.factor(balanced_data[[1]]$treatment)
+    balanced_data[[1]][[treatment_variable]] <- as.factor(balanced_data[[1]][[treatment_variable]])
     
     ## Count frequency of observations in each treatment group
-    observation_table_all <- as.data.frame(t(table(estimation_model_object$propensity_scores$`as.factor(treatment)`[estimation_model_object$propensity_scores$impset == 1]))) ## Original treatment groups before matching
-    observation_table_unmatched <- as.data.frame(t(table(balanced_data[[1]]$`as.factor(treatment)`))) ## Original treatment groups after matching (unmathed subjects excluded)
-    observation_table_matched <- as.data.frame(t(table(balanced_data[[1]]$treatment))) ## Treatment groups after matching
+    observation_table_all <- as.data.frame(t(table(estimation_model_object$propensity_scores[[treatment_variable]][estimation_model_object$propensity_scores$impset == 1]))) ## Original treatment groups before matching
+    observation_table_unmatched <- as.data.frame(t(table(balanced_data[[1]]$treatment_old))) ## Original treatment groups after matching (unmathed subjects excluded)
+    observation_table_matched <- as.data.frame(t(table(balanced_data[[1]][[treatment_variable]]))) ## Treatment groups after matching
     
     ## Get difference between observation counts before and after matching in original treatment groups
     observation_table_unmatched$Freq <- observation_table_all$Freq - observation_table_unmatched$Freq
@@ -57,16 +57,23 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   ## Balance Table ----
   
   if(missing_method == "complete" | missing_method == "weighting"){
-    ## Get balance table
-    balance_table <- bal.tab(balanced_data[,c(matching_variables)], treat = relevel(balanced_data[[treatment_variable]], ref = "low"), distance = balanced_data[["lp"]])
-    balance_table <- as.data.frame(balance_table[[which(grepl("^Balance",names(balance_table)))]])
+    ## Get balance tables
+    balance_table_adjusted <- bal.tab(balanced_data[,c(matching_variables)], 
+                                      treat = relevel(balanced_data[[treatment_variable]], ref = "low"), 
+                                      distance = balanced_data$`estimated_propensity_model$lp`)
     
-    ## Remove empty columns from balance table
-    balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
+    balance_table_unajusted <- bal.tab(estimation_model_object$propensity_scores[,c(matching_variables)], 
+                                      treat = relevel(as.factor(estimation_model_object$propensity_scores[[treatment_variable]]), ref = 1), 
+                                      distance = estimation_model_object$propensity_scores$`estimated_propensity_model$lp`)
+    
+    balance_table_unajusted$Balance.Across.Pairs$Max.Diff.Adj <-  balance_table_adjusted$Balance$Diff.Un
+    balance_table <- balance_table_unajusted$Balance.Across.Pairs
+
     ## Round numbers in balance table to 4 decimals
     names_temp <- as.factor(row.names(balance_table))
     balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 4) else x))
     row.names(balance_table) <- names_temp
+    names(balance_table) <- c("Type", "Diff.Un", "Diff.Adj")
   }
   
   
@@ -78,7 +85,7 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
       
       ## Get pooled distance between treatment groups - maximum distance between groups
       balance_table_unadjusted <- bal.tab(estimation_model_object$propensity_scores[estimation_model_object$propensity_scores$impset == i,c(matching_variables)],
-                               treat = relevel(estimation_model_object$propensity_scores$`as.factor(treatment)`[estimation_model_object$propensity_scores$impset == 1], ref = 1),
+                               treat = relevel(estimation_model_object$propensity_scores[[treatment_variable]][estimation_model_object$propensity_scores$impset == 1], ref = 1),
       distance = estimation_model_object$propensity_scores$`polly$lp`[estimation_model_object$propensity_scores$impset == i])
       
       balance_table_adjusted <- bal.tab(balanced_data[[i]][,c(matching_variables)],
@@ -95,9 +102,9 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
     balance_table_unls <- do.call("rbind", balance_table_ls)
     balance_table <- data.frame(matrix(NA, nrow = length(matching_variables) + 1, ncol = 7))
     names(balance_table) <- c('Type', 'Min.Diff.Un', 'Mean.Diff.Un', 'Max.Diff.Un', 'Min.Diff.Adj', 'Mean.Diff.Adj', 'Max.Diff.Adj')
-    row.names(balance_table) <- c("distance", matching_variables)
+    row.names(balance_table) <-  row.names(balance_table_adjusted$Balance)
     
-    for(i in c("distance", matching_variables)){
+    for(i in row.names(balance_table_adjusted$Balance)){
       
       balance_table[i,"Type"] <- balance_table_unls[balance_table_unls$matching_var == i,"Type"][1]
       balance_table[i,"Min.Diff.Un"] <- min(balance_table_unls[balance_table_unls$matching_var == i,"Max.Diff.Un"])
@@ -116,49 +123,29 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   
   ## Love plot ----
   
-  ## Create data frame containing unmatched and matched mean differences in all matching variables
-  
   if(missing_method == "complete" | missing_method == "weighting"){
-    
-    names(balance_table)[names(balance_table) %in% "Diff.Un"] <- "Matched"
-    balance_table_matched <- balance_table
-    
-    ## Get unmatched balance table
-    balance_table_unmatched_ls <- bal.tab(as.data.frame(estimation_model_object$propensity_scores[,c(matching_variables)]), treat = as.factor(estimation_model_object$propensity_scores[[treatment_variable]]), distance = estimation_model_object$propensity_scores[["lp"]], which.treat = .all)
-    balance_table_unmatched_ls <- unlist(balance_table_unmatched_ls, recursive = F, use.names = TRUE)
-    balance_table_unmatched_ls <- map(balance_table_unmatched_ls, ~.x$Balance)
-    
-    ## Get average difference across all pairwise comparisons
-    balance_table_unmatched <- data.frame(
-      Unmatched = rowMeans(sapply(balance_table_unmatched_ls, "[[", "Diff.Un"))
-    )
-    row.names(balance_table_unmatched) <- row.names(balance_table_matched)
-    
-    ## Merge balance tables
-    balance_table_unmatched$id  <- 1:nrow(balance_table_unmatched)
-    balance_table_compare <- merge(balance_table_unmatched, balance_table_matched, by = 'row.names', all = TRUE)
-    balance_table_compare <- balance_table_compare[order(balance_table_compare$id), ]
-    
     
     ## Plot love plot
     
+    balance_table$Row.names <- row.names(balance_table)
+    
     # lock in factor level order
-    balance_table_compare$Row.names <- factor(balance_table_compare$Row.names, levels = balance_table_compare$Row.names, )
+    balance_table$Row.names <- factor(balance_table$Row.names, levels = balance_table$Row.names, )
     colors <- c("Matched" = "blue", "Unmatched" = "red")
     
-    love_plot <- ggplot(balance_table_compare) +
-      geom_point( aes(x=as.factor(Row.names), y=Unmatched, color="Unmatched"), size=2, alpha = 0.7) +
-      geom_point( aes(x=as.factor(Row.names), y=Matched, color="Matched"), size=2, alpha = 0.7) +
+    love_plot <- ggplot(balance_table) +
+      geom_point( aes(x=as.factor(Row.names), y=Diff.Un, color="Unmatched"), size=2, alpha = 0.7) +
+      geom_point( aes(x=as.factor(Row.names), y=Diff.Adj, color="Matched"), size=2, alpha = 0.7) +
       geom_hline(yintercept = 0, size=0.5) +
       coord_flip()+
-      scale_x_discrete(limits = rev(levels(balance_table_compare$Row.names))) +
+      scale_x_discrete(limits = rev(levels(balance_table$Row.names))) +
       theme_classic() +
       theme(panel.background = element_rect(colour = "black", size=1)) +
       labs(color = "Sample") +
       scale_color_manual(values = colors) + 
       ggtitle("Covariate Balance") +
       xlab("") +
-      ylab("Mean Differences (Unmatched = Averaged across pairwise comparisons, Matched = Low vs high-exposure)")
+      ylab("Mean Differences (Unmatched = Largest distance between pairwise groups, Matched = Low vs high-exposure)")
     
   }
   
@@ -166,6 +153,9 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
   if(missing_method == "mi"){
     
     balance_table$Row.names <- row.names(balance_table)
+    balance_table$Row.names <- factor(balance_table$Row.names, levels = balance_table$Row.names, )
+    
+    # lock in factor level order
     balance_table$Row.names <- factor(balance_table$Row.names, levels = balance_table$Row.names, )
     colors <- c("Matched" = "blue", "Unmatched" = "red")
     
@@ -183,9 +173,13 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
       scale_color_manual(values = colors) + 
       ggtitle("Covariate Balance") +
       xlab("") +
-      ylab("Mean Differences (Unmatched = Averaged across pairwise comparisons, Matched = Low vs high-exposure)")
+      ylab("Mean Differences (Unmatched = Largest distance between pairwise groups, Matched = Low vs high-exposure)")
     
   }
+  
+  ## Remove "Row.names" column from balance_table
+  balance_table <- balance_table %>%
+    select(-Row.names)
   
   return(list(observation_table = observation_table,
               balance_table = balance_table,
