@@ -10,11 +10,13 @@ outcome_analysis_stage(
   outcome_variable,
   treatment_variable,
   matching_variable,
+  covariates = NULL,
   psmodel_obj,
-  cluster_variable,
-  nonresponse_weights,
-  sampling_weights,
+  cluster_variable = NULL,
+  weighting_variable = NULL,
+  strata_variable = NULL,
   missing_method,
+  outcome_formula,
   ...
 )
 }
@@ -33,13 +35,13 @@ outcome_analysis_stage(
 
 \item{cluster_variable}{Character string matching column name of your clustering variable}
 
-\item{nonresponse_weights}{Character string matching column name of your non-response weight variable}
-
-\item{sampling_weights}{Character string matching column name of your sampling weight variable}
-
 \item{missing_method}{Character string indicating your chosen method of dealing with missingness \code{"complete"}, \code{"mi"}, or \code{"weighting"}}
 
 \item{...}{}
+
+\item{nonresponse_weights}{Character string matching column name of your non-response weight variable}
+
+\item{sampling_weights}{Character string matching column name of your sampling weight variable}
 }
 \value{
 Estimated effect of treatment on outcome

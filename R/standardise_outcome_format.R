@@ -92,6 +92,12 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
     results_dataframe <- results_dataframe[-1,]
     return(results_dataframe)
+  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method == "nbp" & outcome_formula == "with_matching_variables"){
+    results_dataframe = extracted_outcome_results[[1]]
+    results_dataframe = results_dataframe[,-3]
+    colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
+    results_dataframe <- results_dataframe[-1,]
+    return(results_dataframe)
   }
 }
 

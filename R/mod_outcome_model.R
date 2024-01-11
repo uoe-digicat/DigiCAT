@@ -280,27 +280,27 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          shinyjs::enable("run_outcome_model_btn")
                          
                          ## Generate R script
-                         outcome_model_values$R_script <- get_R_script(
-                           data_source = data_source(),
-                           file_path = file_path(),
-                           categorical_variables = categorical_variables(),
-                           outcome_variable = outcome_variable(),
-                           treatment_variable = treatment_variable(),
-                           matching_variables = matching_variables(),
-                           covariates = covariates(),
-                           weighting_variable = survey_weight_var(),
-                           cluster_variable = cluster_var(),
-                           strata_variable = stratification_var(),
-                           CF_approach = approach(),
-                           missing_method = missingness(),
-                           balancing_model = balancing_model(),
-                           matching_method = matching_method(),
-                           matching_ratio = matching_ratio(),
-                           outcome_formula = input$outcome_model_radio,
-                           DigiCAT_balanced_data = balancing_stage_res(),
-                           DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
-                           DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
-                           DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results)
+                         # outcome_model_values$R_script <- get_R_script(
+                         #   data_source = data_source(),
+                         #   file_path = file_path(),
+                         #   categorical_variables = categorical_variables(),
+                         #   outcome_variable = outcome_variable(),
+                         #   treatment_variable = treatment_variable(),
+                         #   matching_variables = matching_variables(),
+                         #   covariates = covariates(),
+                         #   weighting_variable = survey_weight_var(),
+                         #   cluster_variable = cluster_var(),
+                         #   strata_variable = stratification_var(),
+                         #   CF_approach = approach(),
+                         #   missing_method = missingness(),
+                         #   balancing_model = balancing_model(),
+                         #   matching_method = matching_method(),
+                         #   matching_ratio = matching_ratio(),
+                         #   outcome_formula = input$outcome_model_radio,
+                         #   DigiCAT_balanced_data = balancing_stage_res(),
+                         #   DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
+                         #   DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
+                         #   DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results)
 
                          
                          ## Add download script button

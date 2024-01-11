@@ -218,6 +218,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                         label = h4("2. Choose a Method of Dealing with Missingess:"),
                                         choices = list(
                                           "Weighting" = "weighting",
+                                          "Multiple Imputation" = "mi",
                                           "Complete Case" = "complete"),
                                         selected = character(0))
                          )
@@ -230,7 +231,8 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                            radioButtons(NS(id, "missingness_radio"), 
                                         label = h4("2. Choose a Method of Dealing with Missingess:"),
                                         choices = list(
-                                          "Complete Case" = "complete"),
+                                          "Complete Case" = "complete",
+                                          "Multiple Imputation" = "mi"),
                                         selected = character(0))
                          ))
                        }
