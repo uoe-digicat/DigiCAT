@@ -50,6 +50,10 @@ balance_data <- function(counterfactual_method, treatment_variable, matching_var
          nbp = {
            balanced_data = balancing_nbp(treatment_variable, PS_estimation_object, missing_method,...)
          },
+         cbps = {
+           balanced_data = balancing_cbps(treatment_variable, matching_variable, PS_estimation_object, 
+                                          missing_method,...)
+         },
          stop("Need a valid method to balance (psm, iptw, cem, nbp)")
   )
   return(balanced_data)
@@ -148,6 +152,19 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
   
   return(balanced_data)
   
+}
+
+balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_object, 
+                           missing_method,...){
+  f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
+  if(missing_method == "complete"){
+    data_to_use = cbind(PS_estimation_object$missingness_treated_dataset, PS_estimation_object$propensity_scores)
+    balanced_data = weightit(as.formula(f), data = data_to_use, method = "cbps",
+                             cbps.args = list(model = PS_estimation_object$estimated_propensity_model))
+  } else {
+    
+  }
+  return(balanced_data)
 }
 
 
