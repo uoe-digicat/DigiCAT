@@ -161,8 +161,6 @@ balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_
     data_to_use = cbind(PS_estimation_object$missingness_treated_dataset, PS_estimation_object$propensity_scores)
     balanced_data = weightit(as.formula(f), data = data_to_use, method = "cbps",
                              cbps.args = list(model = PS_estimation_object$estimated_propensity_model))
-  } else {
-    
   }
   return(balanced_data)
 }

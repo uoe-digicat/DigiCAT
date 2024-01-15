@@ -282,6 +282,41 @@ outcome_unadjusted <- function(balanced_data,
     
 
   }
+  else if(extracted_balanced_data$process == "cc_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")   
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    updated_design <- svydesign(ids = cluster_formula,
+                                weights = weighting_formula,
+                                strata = strata_formula,
+                                data = data_to_use)
+    
+    
+    model_fit = svyglm(model_formula, design = updated_design)
+  }
   return(model_fit)
 }
 
@@ -524,6 +559,41 @@ outcome_matching_variables <- function(balanced_data,
     model_fit = svyglm(model_formula, design = updated_design)
 
     
+  }
+  else if(extracted_balanced_data$process == "cc_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")   
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    updated_design <- svydesign(ids = cluster_formula,
+                                weights = weighting_formula,
+                                strata = strata_formula,
+                                data = data_to_use)
+    
+    
+    model_fit = svyglm(model_formula, design = updated_design)
   }
   return(model_fit)
 }
