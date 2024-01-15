@@ -7,11 +7,16 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     extracted_balanced_data = MatchThem::complete(balanced_data, "all", all = FALSE) 
     return(list(extracted_balanced_data, process = "mi_psm"))
     
-  } else if ( "wimids" %in% class(balanced_data)){
+  } else if ( "wimids" %in% class(balanced_data) & counterfactual_method == "iptw"){
     extracted_balanced_data = MatchThem::complete(balanced_data, "all", all = FALSE) 
     return(list(extracted_balanced_data, process = "mi_iptw"))
     
-  } else if ( "matchit" %in% class(balanced_data) & missing_method == "complete"){
+  } else if ( "wimids" %in% class(balanced_data) & counterfactual_method == "cbps"){
+    extracted_balanced_data = MatchThem::complete(balanced_data, "all", all = FALSE) 
+    return(list(extracted_balanced_data, process = "mi_cbps"))
+    
+  } 
+  }else if ( "matchit" %in% class(balanced_data) & missing_method == "complete"){
     extracted_balanced_data = match.data(balanced_data)
     return(list(extracted_balanced_data, process = "cc_psm"))
     
