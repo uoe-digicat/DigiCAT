@@ -49,7 +49,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   
   print_validation <- p(
     h4("Data Dimensions:"),
-    h5("Data contains ", dim(.data)[2], " columns and ", dim(.data)[1], " rows."),
+    h5("Columns:", dim(.data)[2]),
+    h5("Rows:", dim(.data)[1]),
     
     ## Print info on number of columns
     if((dim(.data)[2] > 2) & (dim(.data)[2] < 100)){
@@ -70,8 +71,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## Check outcome variable is continuous
     h4("Outcome Variable Type:"),
     if(length(unique(.data[[outcome]])) < 5){
-      h5("There are ", length(unique(.data[[outcome]])), " unique observations in your chosen outcome variable:", outcome,". This seems a bit low for a continuous variable. We recommend you double check this before continuing." , style = "color:red")
-    } else{h5("There are ", length(unique(.data[[outcome]])), " unique observations in your chosen outcome variable.", style = "color:green")}, br(),
+      h5(length(unique(.data[[outcome]])), " unique observations are in your chosen outcome variable. This seems a bit low for a continuous variable. We recommend you double check this before continuing." , style = "color:red")
+    } else{h5(length(unique(.data[[outcome]])), " unique observations are in your chosen outcome variable.", style = "color:green")}, br(),
     
     ## Check outcome variable is normally distributed
     h4("Outcome Variable Skewness:"),
@@ -88,27 +89,23 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## Check treatment variable is binary/ordinal
     h4("Treatment Variable Type:"),
     if(length(unique(.data[[treatment]])) == 2 & all(.data[[treatment]]%in% 0:1)){
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a binary variable and can be used in the 
+      h5(treatment, " is your selected treatment variable. This has been detected as a binary variable and can be used in the 
       current counterfactual approaches offered by DigiCAT." , style = "color:green")
     }, 
     if(length(unique(.data[[treatment]])) == 2 & !all(.data[[treatment]]%in% 0:1)){
       validation_log$treatment_variable_error <- TRUE
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a binary variable but contains values other than 1 and 0,
+      h5(treatment, " is your selected treatment variable. This has been detected as a binary variable but contains values other than 1 and 0,
       meaning it cannot be used in the counterfactual analysis currently supported by DigiCAT. To proceed, please recode your treatment variable.", style = "color:red")
     },
     
-    # if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
-    #   h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
-    #   current counterfactual approaches offered by DigiCAT." , style = "color:green")
-    # },
-    
     if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable. DigiCAT will soon support ordinal treatment types in
-          uploaded data." , style = "color:orange")
+      h5(treatment, " is your selected treatment variable. This has been detected as an ordinal variable and can be used in the
+      current counterfactual approaches offered by DigiCAT." , style = "color:green")
     },
+
     if(length(unique(.data[[treatment]])) > 5){
       validation_log$treatment_variable_error <- TRUE
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a continuous variable and cannot be used in the 
+      h5(treatment, " is your selected treatment variable. This has been detected as a continuous variable and cannot be used in the 
       current counterfactual approaches offered by DigiCAT. Please reselect or categorize your current treatment variable." , style = "color:red")
     },
     br(),
@@ -141,7 +138,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       if (any(is.na(data_Nas[[survey_weight_var]]))){
         
         p(h4("Survey Weight Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight.
+          h5(paste0(survey_weight_var, " has been selected as your survey weight.
                   As this includes missing data it will not be used in counterfactual analysis."), 
              style = 'color:red'), br())
         
@@ -153,7 +150,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         validation_log$survey_weight_no_missingness <- TRUE
         
         p(h4("Survey Weight Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight. No missingness has been detected in this variable."), 
+          h5(paste0(survey_weight_var, " has been selected as your survey weight. No missingness has been detected in this variable."), 
              style = 'color:green'), br())
       }
     },
@@ -163,7 +160,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       if (any(is.na(data_Nas[[survey_weight_var]]))){
         
         p(h4("Non-response Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response.
+          h5(paste0(survey_weight_var, " has been selected as your survey weight and have indicated that this compensates for non-response.
                   As this includes missing data it won't be used as a weight when accounting for missingness"), 
              style = 'color:red'), br())
         
@@ -173,7 +170,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         validation_log$non_response_weight_no_missingness <- TRUE
         
         p(h4("Non-response Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response. No missingness has been detected in this variable."), 
+          h5(paste0(survey_weight_var, " has been selected as your survey weight and have indicated that this compensates for non-response. No missingness has been detected in this variable."), 
              style = 'color:green'), br())
         
       }
@@ -189,7 +186,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       if (any(is.na(data_Nas[[clustering_var]]))){
         
         p(h4("Clustering Variable Missingness:"),
-          h5(paste0("You have selected ", clustering_var, " as your clustering variable.
+          h5(paste0(clustering_var, " has been selected as your clustering variable.
                   As this includes missing data it will not be used in counterfactual analysis."), 
              style = 'color:red'), br())
         
@@ -201,7 +198,7 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         validation_log$clustering_no_missingness <- TRUE
         
         p(h4("Clustering Variable Missingness:"),
-          h5(paste0("You have selected ", clustering_var, " as your clustering variable. No missingness has been detected in this variable."), 
+          h5(paste0(clustering_var, " has been selected as your clustering variable. No missingness has been detected in this variable."), 
              style = 'color:green'), br())
         
         
@@ -250,8 +247,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         error = function(cond) {
           ## Output error message
           design_matrix_error <- p(h4("Design Matrix Creation:"),
-                                   p(paste0("Design matrix cannot be created with the provided input and will not be used in counterfactual analysis.
-                   Error: ", conditionMessage(cond)) , style = "color:red"), br())
+                                   p(paste0("Error: Design matrix cannot be created with the provided input and will not be used in counterfactual analysis.",
+                                            conditionMessage(cond)) , style = "color:red"), br())
           
         })
       
