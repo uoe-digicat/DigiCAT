@@ -164,6 +164,9 @@ balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_
   } else if(missing_method == "mi"){
     balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
                                approach = "within", method = "cbps")
+  } else if(missing_method == "weighting"){
+    balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
+                             method = "cbps", ...)
   }
   return(balanced_data)
 }

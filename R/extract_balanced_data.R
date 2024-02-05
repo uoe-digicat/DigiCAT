@@ -15,7 +15,7 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     extracted_balanced_data = MatchThem::complete(balanced_data, "all", all = FALSE) 
     return(list(extracted_balanced_data, process = "mi_cbps"))
     
-  } 
+   
   }else if ( "matchit" %in% class(balanced_data) & missing_method == "complete"){
     extracted_balanced_data = match.data(balanced_data)
     return(list(extracted_balanced_data, process = "cc_psm"))
@@ -24,27 +24,21 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
   } else if(missing_method =="weighting" & "matchit" %in% class(balanced_data)){
     extracted_balanced_data = match.data(balanced_data)
     
-    # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
       cluster_formula <- as.formula(paste("~", cluster_variable))
     } else {
-      # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
     }
     
-    # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
       weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
     } else {
-      # Use another variable as the default if weighting_variable is not provided
-      weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
+      weighting_formula <- as.formula("~ weights")  
     }
     
-    # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
       strata_formula <- as.formula(paste("~", strata_variable))
     } else {
-      # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
     }
     
@@ -69,27 +63,21 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     colnames(survey_data)[colnames(survey_data) == "balanced_data$weights"] <- "weights"
     
     
-    # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
       cluster_formula <- as.formula(paste("~", cluster_variable))
     } else {
-      # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
     }
     
-    # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
       weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
     } else {
-      # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
     }
     
-    # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
       strata_formula <- as.formula(paste("~", strata_variable))
     } else {
-      # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
     }
     

@@ -18,7 +18,6 @@ df2 = mice::ampute(df,
 
 #### mi
 # observe before mi handling
-# to do - edit argument input
 evaluate_imputations(.data = df2$amp, evaluation_method = "LittleMCARtest")
 evaluate_imputations(.data = df2$amp, evaluation_method = "missing_pattern")
 evaluate_imputations(.data = df2$amp, evaluation_method = "influx_outflux")
@@ -30,10 +29,10 @@ evaluate_imputations(abc, "convergence") # include guidance line as output maybe
 evaluate_imputations(abc, "eventslog") # depending on logged events, recommend altering parameters xyz accordingly
 evaluate_imputations(abc, "inspect_matrix")
 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "cbps", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "mi")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "cbps", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
@@ -48,16 +47,16 @@ mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm"
 abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "gbm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_propensity_stage(abc, evaluation_method = "support")
-ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "cbps", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "cbps", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
                               missing_method = "complete",
-                              outcome_formula = "unadjusted")
+                              outcome_formula = "with_matching_variables")
 
 #### Weighting testing ####
 
@@ -108,11 +107,11 @@ data_to_use <- df2$amp
 abc <- estimation_stage(.data = data_to_use, missing_method = "weighting", model_type = "glm",
                         treatment_variable = "A", matching_variable = c("X1", "X2"),
                         weighting_variable = "SW") 
-ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "A", 
+ghi <- balance_data(counterfactual_method = "cbps", treatment_variable = "A", 
                     matching_variable = c("X1", "X2"), PS_estimation_object = abc,
                     missing_method = "weighting")
 
-pqr <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", # outcome format needs changing for weighting approach
+pqr <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "cbps", # outcome format needs changing for weighting approach
                               outcome_variable = "Y_C",
                               treatment_variable = "A", 
                               matching_variable = c("X1", "X2"), 
@@ -121,7 +120,6 @@ pqr <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm"
                               weighting_variable = "SW",
                               outcome_formula = "with_matching_variables")
 
-# testing weights with example sets 
 
 data(nhanes) 
 # nb: model/variable choice makes no sense due to variable types
@@ -134,7 +132,6 @@ ghi <- balance_data(counterfactual_method = "psm", treatment_variable = "HI_CHOL
                     matching_variable = c("race"), PS_estimation_object = abc,
                     missing_method = "weighting")
 
-## TO DO - edit design object in extract_balanced_data
 mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "psm", 
                               outcome_variable = "RIAGENDR",
                               treatment_variable = "HI_CHOL", 
@@ -209,7 +206,6 @@ trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "n
                                 psmodel_obj = un, missing_method = "mi",
                                 weighting_variable = "income")
 
-# random data - ignore
 data(mtcars)
 abc <- estimation_stage(.data = mtcars, missing_method = "mi", model_type = "poly",
                          treatment_variable = "gear", matching_variable = c("qsec", "hp", "disp")) 
@@ -226,27 +222,16 @@ jkl <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "nbp"
 
 
 
+
+
+
+
+
+
 # setwd("~/Desktop/WT_data_prize/bin/DigiCAT/R")
 # files.sources = list.files()
 # setwd("~/Desktop/WT_data_prize/bin/DigiCAT/")
 # sapply(paste0("R/",files.sources), source)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
