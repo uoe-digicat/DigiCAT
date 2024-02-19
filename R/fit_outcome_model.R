@@ -761,7 +761,10 @@ outcome_marginal_effects <- function(balanced_data,
                                   data = data_to_use)
       
       model_fit = svyglm(model_formula, design = updated_design)
-      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
+      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
+                                                   vcov = ~subclass,
+                                                   newdata = subset(extracted_balanced_data[[1]], 
+                                                                    extracted_balanced_data[[1]][[treatment_variable]] == 1))
       
     }else{
       model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
@@ -809,7 +812,7 @@ outcome_marginal_effects <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) 
     
      model_fit = lapply(model_fit, function(fit){
-     marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, get(treatment_variable) == 1),
+     marginaleffects::avg_comparisons(fit, newdata = fit$data,
                                       variables = treatment_variable, wts = "weights", vcov = "HC3")
     })
 
@@ -853,8 +856,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
                                                  vcov = "HC3",
-                                                 newdata = subset(extracted_balanced_data[[1]], 
-                                                                  extracted_balanced_data[[1]][[treatment_variable]] == 1),
+                                                 newdata = extracted_balanced_data[[1]], 
                                                  wts = "weights")
     
   } else if (extracted_balanced_data$process == "weighting_iptw"){
