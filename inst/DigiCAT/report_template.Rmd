@@ -267,10 +267,10 @@ outcome_model <- paste0(outcome_model," From this analysis, the estimated effect
 
 `r outcome_model`
 
-\newpage
+<!-- \newpage -->
 
-## R session information:
+<!-- ## R session information: -->
 
-```{r session info, echo=FALSE, include=TRUE, }
-sessionInfo()
-```
+<!-- ```{r session info, echo=FALSE, include=TRUE, } -->
+<!-- sessionInfo() -->
+<!-- ``` -->

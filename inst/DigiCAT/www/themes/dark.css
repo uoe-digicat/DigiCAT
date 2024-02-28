@@ -28,6 +28,11 @@ color: #ffffff;
   color: #73d7f4;
 }
 
+/* Select language label colour  */
+.selected_language{
+  color: #ffffff;
+}
+
 /* toggle button color  */
 .skin-blue .main-header .navbar .sidebar-toggle{
 background-color: #170344;
