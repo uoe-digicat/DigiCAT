@@ -13,7 +13,8 @@ get_validation(
   survey_weight_var,
   non_response_weight,
   clustering_var,
-  stratification_var
+  stratification_var,
+  i18n
 )
 }
 \arguments{

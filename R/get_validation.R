@@ -9,7 +9,7 @@
 #' @param non_response_weight Is there a non-response weight variable?
 #' @param clustering_var Name of clustering variable.
 #' @param stratification_var Name of stratification variable.
-get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight, clustering_var, stratification_var){
+get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight, clustering_var, stratification_var, i18n){
   
   ## Keep log of data validation
   validation_log <- list(
@@ -47,89 +47,88 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   w <- which(abs(cor_dat)>0.80 & row(cor_dat)<col(cor_dat), arr.ind=TRUE)
   high_cor <- matrix(colnames(cor_dat)[w],ncol=2)
   
+  ## Get treatment counts
+  df <- data.frame(x = names(table(.data[[treatment]])),
+                   y  = as.character(table(.data[[treatment]])))
+  
+  names(df) <- c(i18n$t("Upload Validation treatment counts group"), i18n$t("Upload Validation treatment counts count"))
+  
   print_validation <- p(
-    h4("Data Dimensions:"),
-    h5("Data contains ", dim(.data)[2], " columns and ", dim(.data)[1], " rows."),
+    h4(i18n$t("Upload Validation dimensions")),
+    h5(i18n$t("Upload Validation dimensions columns"), dim(.data)[2]),
+    h5(i18n$t("Upload Validation dimensions rows"), dim(.data)[1]),
     
     ## Print info on number of columns
     if((dim(.data)[2] > 2) & (dim(.data)[2] < 100)){
-      h5("Your data has an appropriate number of columns.", style = "color:green")
-    }else{h5("It is recommended that data has between 2 and 100 columns, please reconsider that data you are using.", style = "color:red")},
+      h5(i18n$t("Upload Validation dimensions correct columns"), style = "color:green")
+    }else{h5(i18n$t("Upload Validation dimensions incorrect columns"), style = "color:red")},
     
     ## Print info on number of rows
     if((dim(.data)[1] > 10) & (dim(.data)[1] < 10000)){
-      h5("Your data has an appropriate number of rows.", style = "color:green")
-    }else{h5("It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.", style = "color:red")},
+      h5(i18n$t("Upload Validation dimensions correct rows"), style = "color:green")
+    }else{h5(i18n$t("Upload Validation dimensions incorrect rows"), style = "color:red")},
     
     ## Print message about GBM not being available if there are less than 50 rows
     if(dim(.data)[1] < 50){
       validation_log$no_GBM <- TRUE
-      h5("As your data contains fewer than 50 rows, Generalized Boosted Models (GBM) will not be available for generating propensity scores.", style = "color:grey")
+      h5(i18n$t("Upload Validation no GBM"), style = "color:grey")
     },br(),
     
     ## Check outcome variable is continuous
-    h4("Outcome Variable Type:"),
+    h4(i18n$t("Upload Validation outcome type")),
     if(length(unique(.data[[outcome]])) < 5){
-      h5("There are ", length(unique(.data[[outcome]])), " unique observations in your chosen outcome variable:", outcome,". This seems a bit low for a continuous variable. We recommend you double check this before continuing." , style = "color:red")
-    } else{h5("There are ", length(unique(.data[[outcome]])), " unique observations in your chosen outcome variable.", style = "color:green")}, br(),
+      h5(length(unique(.data[[outcome]])), i18n$t("Upload Validation outcome type incorrect") , style = "color:red")
+    } else{h5(length(unique(.data[[outcome]])), i18n$t("Upload Validation outcome type correct"), style = "color:green")}, br(),
     
     ## Check outcome variable is normally distributed
-    h4("Outcome Variable Skewness:"),
+    h4(i18n$t("Upload Validation skewness")),
     
     if (abs(skewness(.data[[outcome]])) <= 0.8){
-      h5("Your outcome variable does not appear highly skewed, skewness: ", round(skewness(.data[[outcome]]), 2), style = "color:green")
-    } else{h5("Your outcome variable appears to be highly skewed, skewness: ", round(skewness(.data[[outcome]]), 2), style = "color:red")},
+      h5(i18n$t("Upload Validation skewness correct"), round(skewness(.data[[outcome]]), 2), style = "color:green")
+    } else{h5(i18n$t("Upload Validation skewness incorrect"), round(skewness(.data[[outcome]]), 2), style = "color:red")},
     
     renderPlot(hist(.data[[outcome]], 
-                    main = paste("Histogram of ", outcome),
+                    main = paste(i18n$t("Upload Validation histogram"), outcome),
                     xlab = "",
                     col = "#76b9f5")), br(),
     
     ## Check treatment variable is binary/ordinal
-    h4("Treatment Variable Type:"),
+    h4(i18n$t("Upload Validation treatment")),
     if(length(unique(.data[[treatment]])) == 2 & all(.data[[treatment]]%in% 0:1)){
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a binary variable and can be used in the 
-      current counterfactual approaches offered by DigiCAT." , style = "color:green")
+      h5(treatment, i18n$t("Upload Validation treatment binary correct") , style = "color:green")
     }, 
     if(length(unique(.data[[treatment]])) == 2 & !all(.data[[treatment]]%in% 0:1)){
       validation_log$treatment_variable_error <- TRUE
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a binary variable but contains values other than 1 and 0,
-      meaning it cannot be used in the counterfactual analysis currently supported by DigiCAT. To proceed, please recode your treatment variable.", style = "color:red")
+      h5(treatment, i18n$t("Upload Validation treatment binary incorrect"), style = "color:red")
     },
-    
-    # if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
-    #   h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable and can be used in the 
-    #   current counterfactual approaches offered by DigiCAT." , style = "color:green")
-    # },
     
     if((length(unique(.data[[treatment]])) > 2) & (length(unique(.data[[treatment]])) < 6)){
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as an ordinal variable. DigiCAT will soon support ordinal treatment types in
-          uploaded data." , style = "color:orange")
+      h5(treatment, i18n$t("Upload Validation treatment ordinal correct") , style = "color:green")
     },
+
     if(length(unique(.data[[treatment]])) > 5){
       validation_log$treatment_variable_error <- TRUE
-      h5("You have selected ",treatment, " as your treatment variable. This has been detected as a continuous variable and cannot be used in the 
-      current counterfactual approaches offered by DigiCAT. Please reselect or categorize your current treatment variable." , style = "color:red")
+      h5(treatment, i18n$t("Upload Validation treatment ordinal incorrect") , style = "color:red")
     },
     br(),
     
-    h4("Treatment Counts:"),
-    ## Print n for each treatment group
-    renderTable(data.frame('Group' = names(table(.data[[treatment]])), 'Count' = as.character(table(.data[[treatment]])))),
+    h4(i18n$t("Upload Validation treatment counts")),
     
-    h5("The above table shows the number of individuals in each treatment group."),
+    ## Print n for each treatment group
+    renderTable(df),
+    
+    h5(i18n$t("Upload Validation treatment counts description")),
     
     br(),
     
     ## Check multicollinearity between variables
-    h4("Multicollinearity Between Variables:"),
+    h4(i18n$t("Upload Validation multicollinearity")),
     
     if (nrow(high_cor) == 0){
-      p(h5("None of the selected matching variables or covariates appear to be strongly correlated (Pearson correaltion > -0.9 or < 0.9).", style = "color:green"),br())
+      p(h5(i18n$t("Upload Validation multicollinearity correct"), style = "color:green"),br())
     } else{
       
-      p(h5("It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). 
-       Please consider removing one of each highly correlated variable pair:", paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red'), br())
+      p(h5(i18n$t("Upload Validation multicollinearity incorrect"), paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red'), br())
     },
     
     ## Check selected survey weight variable for missingness
@@ -140,9 +139,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       ## If missingness detected, give warning
       if (any(is.na(data_Nas[[survey_weight_var]]))){
         
-        p(h4("Survey Weight Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight.
-                  As this includes missing data it will not be used in counterfactual analysis."), 
+        p(h4(i18n$t("Upload Validation survey weight")),
+          h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight missingness")), 
              style = 'color:red'), br())
         
       }
@@ -152,8 +150,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         
         validation_log$survey_weight_no_missingness <- TRUE
         
-        p(h4("Survey Weight Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight. No missingness has been detected in this variable."), 
+        p(h4(i18n$t("Upload Validation survey weight")),
+          h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight no missingness")), 
              style = 'color:green'), br())
       }
     },
@@ -162,9 +160,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     if (!is.null(survey_weight_var) & isTruthy(non_response_weight)){
       if (any(is.na(data_Nas[[survey_weight_var]]))){
         
-        p(h4("Non-response Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response.
-                  As this includes missing data it won't be used as a weight when accounting for missingness"), 
+        p(h4(i18n$t("Upload Validation nonresponse")),
+          h5(paste0(survey_weight_var, i18n$t("Upload Validation nonresponse missingness")), 
              style = 'color:red'), br())
         
       }
@@ -172,8 +169,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         
         validation_log$non_response_weight_no_missingness <- TRUE
         
-        p(h4("Non-response Variable Missingness:"),
-          h5(paste0("You have selected ", survey_weight_var, " as your survey weight and have indicated that this compensates for non-response. No missingness has been detected in this variable."), 
+        p(h4(i18n$t("Upload Validation nonresponse")),
+          h5(paste0(survey_weight_var, i18n$t("Upload Validation nonresponse no missingness")), 
              style = 'color:green'), br())
         
       }
@@ -188,10 +185,9 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       ## If missingness detected, give warning
       if (any(is.na(data_Nas[[clustering_var]]))){
         
-        p(h4("Clustering Variable Missingness:"),
-          h5(paste0("You have selected ", clustering_var, " as your clustering variable.
-                  As this includes missing data it will not be used in counterfactual analysis."), 
-             style = 'color:red'), br())
+        p(h4(i18n$t("Upload Validation clustering")),
+          h5(paste0(clustering_var, i18n$t("Upload Validation clustering missingness"), 
+             style = 'color:red'), br()))
         
       }
       else{
@@ -200,9 +196,9 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         
         validation_log$clustering_no_missingness <- TRUE
         
-        p(h4("Clustering Variable Missingness:"),
-          h5(paste0("You have selected ", clustering_var, " as your clustering variable. No missingness has been detected in this variable."), 
-             style = 'color:green'), br())
+        p(h4(i18n$t("Upload Validation clustering")),
+          h5(paste0(clustering_var, i18n$t("Upload Validation clustering no missingness"), 
+             style = 'color:green'), br()))
         
         
       }
@@ -217,9 +213,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       ## If missingness detected, give warning
       if (any(is.na(data_Nas[[stratification_var]]))){
         
-        p(h4("Stratification Variable Missingness:"),
-          h5(paste0("You have selected ", stratification_var, " as your stratification variable.
-                  As this includes missing data it will not be used in counterfactual analysis."), 
+        p(h4(i18n$t("Upload Validation stratification")),
+          h5(paste0(stratification_var, i18n$t("Upload Validation stratification missingness")), 
              style = 'color:red'), br())
         
       }
@@ -229,8 +224,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         
         validation_log$clustering_no_missingness <- TRUE
         
-        p(h4("Stratification Variable Missingness:"),
-          h5(paste0("You have selected ", stratification_var, " as your stratification variable. No missingness has been detected in this variable."), 
+        p(h4(i18n$t("Upload Validation stratification")),
+          h5(paste0(stratification_var, i18n$t("Upload Validation stratification no missingness")), 
              style = 'color:green'), br())
         
       }
@@ -249,9 +244,9 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         ## If error in creating design matrix, return error message
         error = function(cond) {
           ## Output error message
-          design_matrix_error <- p(h4("Design Matrix Creation:"),
-                                   p(paste0("Design matrix cannot be created with the provided input and will not be used in counterfactual analysis.
-                   Error: ", conditionMessage(cond)) , style = "color:red"), br())
+          design_matrix_error <- p(h4(i18n$t("Upload Validation design matrix")),
+                                   p(paste0(i18n$t("Upload Validation design matrix description"),
+                                            conditionMessage(cond)) , style = "color:red"), br())
           
         })
       
@@ -278,8 +273,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     ## If there is missingness
     if (any(is.na(data_Nas[,c(treatment, outcome, matchvars, covars, survey_weight_var_for_matrix, clustering_var_for_matrix, stratification_var_for_matrix)]))){
       
-      p(h4("Missing Data:"),
-        h5(paste0("Missing data had been detected in your inputted variables. Choices of dealing with missingness and further information are available in the next analysis step."), 
+      p(h4(i18n$t("Upload Validation missingness")),
+        h5(paste0(i18n$t("Upload Validation missingness yes")), 
            style = 'color:green'), br())
     }, ## If statements cannot be combined for some reason - prevents message from printing
     
@@ -304,8 +299,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       
       validation_log$no_missingness_but_non_response <- TRUE
       
-      p(h4("Missing Data:"),
-        h5(paste0("No missing data had been detected in your inputted variables, however, as the survey weight in your data compensates for non-response, 'weighting' as a method of dealing with missingness in the next analysis step (currently only available for binary treatment variables)."),
+      p(h4(i18n$t("Upload Validation missingness")),
+        h5(paste0(i18n$t("Upload Validation missingness no non-response yes")),
            style = 'color:green'), br())
     },
     ## If there is no missingness and no non-response variable
@@ -313,8 +308,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       
       validation_log$no_missingness_no_non_response <- TRUE
       
-      p(h4("Missing Data:"),
-        h5(paste0("No missing data had been detected in your inputted variables, complete case as a method of dealing with data missingness will be automitically applied to your data."),
+      p(h4(i18n$t("Upload Validation missingness")),
+        h5(paste0(i18n$t("Upload Validation missingness no non-response no")),
            style = 'color:green'), br())
     },
     

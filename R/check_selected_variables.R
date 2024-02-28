@@ -1,7 +1,7 @@
 #' Flag variable input errors function
 #' @import shinyFeedback
 #' 
-check_selected_variables <- function(outcome, treatment, matchvars, covars){
+check_selected_variables <- function(outcome, treatment, matchvars, covars, i18n){
   
   
   ## Create variables to track issues with input
@@ -12,9 +12,9 @@ check_selected_variables <- function(outcome, treatment, matchvars, covars){
   if (is.null(outcome) | is.null(treatment) | is.null(matchvars)){
     
     required_input_missing <- TRUE
-    if (is.null(outcome)){feedbackDanger("outcome", show = TRUE, "Please select outcome before proceeding")}
-    if (is.null(treatment)){feedbackDanger("treatment", show = TRUE, "Please select treatment before proceeding")}
-    if (is.null(matchvars)){feedbackDanger("matchvars", show = TRUE, "Please select matching variables before proceeding")}
+    if (is.null(outcome)){feedbackDanger("outcome", show = TRUE, i18n$t("Upload Warning no outcome"))}
+    if (is.null(treatment)){feedbackDanger("treatment", show = TRUE, i18n$t("Upload Warning no treatment"))}
+    if (is.null(matchvars)){feedbackDanger("matchvars", show = TRUE, i18n$t("Upload Warning no matching"))}
   }
   
   ## If all required input selected, check if there are input conflicts
@@ -23,20 +23,20 @@ check_selected_variables <- function(outcome, treatment, matchvars, covars){
       
       required_input_missmatched <- TRUE
       if (outcome == treatment){
-        feedbackDanger("outcome", show = TRUE, "Outcome and treatment cannot be the same")
-        feedbackDanger("treatment", show = TRUE, "Outcome and treatment cannot be the same")}
+        feedbackDanger("outcome", show = TRUE, i18n$t("Upload Warning same outcome treatment"))
+        feedbackDanger("treatment", show = TRUE, i18n$t("Upload Warning same outcome treatment"))}
       if (outcome %in% matchvars){
-        feedbackDanger("outcome", show = TRUE, "Outcome and matching variables cannot be the same")
-        feedbackDanger("matchvars", show = TRUE, "Outcome and matching variables cannot be the same")}
+        feedbackDanger("outcome", show = TRUE, i18n$t("Upload Warning same outcome matching"))
+        feedbackDanger("matchvars", show = TRUE, i18n$t("Upload Warning same outcome matching"))}
       if (treatment %in% matchvars){
-        feedbackDanger("treatment", show = TRUE, "Treatment and matching variables cannot be the same")
-        feedbackDanger("matchvars", show = TRUE, "Treatment and matching variables cannot be the same")}
+        feedbackDanger("treatment", show = TRUE, i18n$t("Upload Warning same treatment matching"))
+        feedbackDanger("matchvars", show = TRUE, i18n$t("Upload Warning same treatment matching"))}
       if (outcome %in% covars){
-        feedbackDanger("outcome", show = TRUE, "Outcome and covariates cannot be the same")
-        feedbackDanger("covars", show = TRUE, "Outcome and covariates cannot be the same")}
+        feedbackDanger("outcome", show = TRUE, i18n$t("Upload Warning same outcome covariate"))
+        feedbackDanger("covars", show = TRUE, i18n$t("Upload Warning same outcome covariate"))}
       if (treatment %in% covars){
-        feedbackDanger("treatment", show = TRUE, "Treatment and covariates cannot be the same")
-        feedbackDanger("covars", show = TRUE, "Treatment and covariates cannot be the same")}
+        feedbackDanger("treatment", show = TRUE, i18n$t("Upload Warning same treatment covariate"))
+        feedbackDanger("covars", show = TRUE, "Upload Warning same treatment covariate")}
     }
   }
   

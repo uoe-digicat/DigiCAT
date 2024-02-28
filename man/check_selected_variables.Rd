@@ -4,7 +4,7 @@
 \alias{check_selected_variables}
 \title{Flag variable input errors function}
 \usage{
-check_selected_variables(outcome, treatment, matchvars, covars)
+check_selected_variables(outcome, treatment, matchvars, covars, i18n)
 }
 \description{
 Flag variable input errors function
