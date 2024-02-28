@@ -57,7 +57,7 @@ ui <- fluidPage(
                        div(class = "selected_language",
                          selectInput("selected_language",
                                    i18n$t("Language"),
-                                   choices = i18n$get_languages()[-1],
+                                   choices = i18n$get_languages()[2],
                                    #choices = "en",
                                    selected = i18n$get_key_translation()
                                    )
