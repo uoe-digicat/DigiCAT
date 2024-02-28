@@ -49,7 +49,10 @@ server <- function(input, output, session) {
   
   data_upload_output <- DigiCAT:::data_upload_server("data_upload",
                                                      parent = session,
-                                                     enableLocal = enable_local_data)
+                                                     enableLocal = enable_local_data,
+                                                     analysis_tab = reactive(input$`methods-tabs`),
+                                                     i18n = i18n,
+                                                     selected_language = reactive(input$selected_language))
   
   # Counterfactual Approach ----
   ####
@@ -68,7 +71,9 @@ server <- function(input, output, session) {
                                                      cluster_var = reactive(data_upload_output$cluster_var),
                                                      stratification_var = reactive(data_upload_output$stratification_var),
                                                      validation_log = reactive(data_upload_output$validation_log),
-                                                     descriptions = desc_global)
+                                                     analysis_tab = reactive(input$`methods-tabs`),
+                                                     i18n = i18n,
+                                                     selected_language = reactive(input$selected_language))
   
   ####
   # Balancing ----
@@ -88,7 +93,13 @@ server <- function(input, output, session) {
                                                  approach = reactive(CF_approach_output$CF_radio),
                                                  missingness = reactive(CF_approach_output$missingness),
                                                  balancing_model = reactive(CF_approach_output$balancing_model),
-                                                 descriptions = desc_global)
+                                                 approach_display = reactive(CF_approach_output$CF_radio_display),
+                                                 missingness_display = reactive(CF_approach_output$missingness_display),
+                                                 balancing_model_display = reactive(CF_approach_output$balancing_model_display),
+                                                 descriptions = desc_global,
+                                                 analysis_tab = reactive(input$`methods-tabs`),
+                                                 i18n = i18n,
+                                                 selected_language = reactive(input$selected_language))
   
   ####
   # Outcome Model ----
@@ -111,15 +122,22 @@ server <- function(input, output, session) {
                                                          approach = reactive(CF_approach_output$CF_radio),
                                                          missingness = reactive(CF_approach_output$missingness),
                                                          balancing_model = reactive(CF_approach_output$balancing_model),
+                                                         approach_display = reactive(CF_approach_output$CF_radio_display),
+                                                         missingness_display = reactive(CF_approach_output$missingness_display),
+                                                         balancing_model_display = reactive(CF_approach_output$balancing_model_display),
                                                          matching_method = reactive(balancing_output$method_radio),
-                                                         matching_ratio = reactive(balancing_output$ratio_radio),
+                                                         matching_method_display = reactive(balancing_output$method_radio_display),
+                                                         matching_ratio = reactive(balancing_output$ratio),
                                                          estimation_stage_res = reactive(balancing_output$estimation_stage_res),
                                                          balancing_stage_res = reactive(balancing_output$balancing_stage_res),
                                                          common_support_plot = reactive(balancing_output$common_support_plot),
                                                          observation_table = reactive(balancing_output$observation_table),
                                                          love_plot = reactive(balancing_output$love_plot),
                                                          balance_table = reactive(balancing_output$balance_table),
-                                                         descriptions = desc_global)
+                                                         descriptions = desc_global,
+                                                         analysis_tab = reactive(input$`methods-tabs`),
+                                                         i18n = i18n,
+                                                         selected_language = reactive(input$selected_language))
   
   ####
   # Sensitivity Analysis ----
@@ -132,9 +150,17 @@ server <- function(input, output, session) {
                                                                        approach = reactive(CF_approach_output$CF_radio),
                                                                        missingness = reactive(CF_approach_output$missingness),
                                                                        balancing_model = reactive(CF_approach_output$balancing_model),
+                                                                       approach_display = reactive(CF_approach_output$CF_radio_display),
+                                                                       missingness_display = reactive(CF_approach_output$missingness_display),
+                                                                       balancing_model_display = reactive(CF_approach_output$balancing_model_display),
                                                                        matching_method = reactive(balancing_output$method_radio),
+                                                                       matching_method_display = reactive(balancing_output$method_radio_display),
                                                                        matching_ratio = reactive(balancing_output$ratio_radio),
-                                                                       outcome_output = reactive(outcome_model_output$outcome_model)
+                                                                       outcome_model = reactive(outcome_model_output$outcome_formula),
+                                                                       outcome_model_display = reactive(outcome_model_output$outcome_formula_display),
+                                                                       analysis_tab = reactive(input$`methods-tabs`),
+                                                                       i18n = i18n,
+                                                                       selected_language = reactive(input$selected_language)
   )
   
   

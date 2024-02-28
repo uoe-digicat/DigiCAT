@@ -58,6 +58,7 @@ ui <- fluidPage(
                          selectInput("selected_language",
                                    i18n$t("Language"),
                                    choices = i18n$get_languages()[-1],
+                                   #choices = "en",
                                    selected = i18n$get_key_translation()
                                    )
                        ),
@@ -79,11 +80,11 @@ ui <- fluidPage(
         tabItem(tabName = "analysis", tabsetPanel(
           id = "methods-tabs",
           DigiCAT:::home_ui("home", i18n = i18n),  ## Load home tab
-          DigiCAT:::data_upload_ui("data_upload"),  ## Load home tab
-          DigiCAT:::CF_approach_ui("CF_approach", descriptions = desc_global), ## Load CF approach tab
-          DigiCAT:::balancing_ui("balancing"), ## Load balancing tab
-          DigiCAT:::outcome_model_ui("outcome_model"), ## Load outcome model tab
-          DigiCAT:::sensitivity_analysis_ui("sensitivity_analysis") ## Load outcome model tab
+          DigiCAT:::data_upload_ui("data_upload", i18n = i18n),  ## Load home tab
+          DigiCAT:::CF_approach_ui("CF_approach", i18n = i18n), ## Load CF approach tab
+          DigiCAT:::balancing_ui("balancing", i18n = i18n), ## Load balancing tab
+          DigiCAT:::outcome_model_ui("outcome_model", i18n = i18n), ## Load outcome model tab
+          DigiCAT:::sensitivity_analysis_ui("sensitivity_analysis",  i18n = i18n) ## Load outcome model tab
         )),
         tabItem(tabName = "TC", DigiCAT:::TCs_ui("TCs", i18n = i18n)),
         tabItem(tabName = "about", DigiCAT:::about_ui("TCs", i18n = i18n)))
