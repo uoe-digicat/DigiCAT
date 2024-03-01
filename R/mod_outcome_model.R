@@ -190,8 +190,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    
                    ## Replace output change warning
                    if (!is.null(outcome_model_values$output_rerun)){
-                     outcome_model_values$output_rerun <- p(h4("Output:"),
-                                                            i18n$t("Outcome model output change"))
+                     outcome_model_values$output_rerun <- p(h4(i18n$t("Balancing Tab output")),
+                                                            i18n$t("Outcome model output rerun"))
                    }
                  })
                  
@@ -264,13 +264,12 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      
                      ## Replace output change warning
                      if (!is.null(outcome_model_values$output_rerun)){
-                       outcome_model_values$output_rerun <- p(h4("Output:"),
-                                                              i18n$t("Outcome model output change"))
+                       outcome_model_values$output_rerun <- p(h4(i18n$t("Balancing Tab output")),
+                                                              i18n$t("Outcome model output rerun"))
                      }
                    }
                  })
-                 
-                   
+
                    
                  ## Page setup ----
                  
@@ -337,8 +336,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      ## Remove output message contents
                      outcome_model_values$output <- NULL
                      outcome_model_values$output_error <- NULL
-                     outcome_model_values$output_rerun <- p(h4("Output:"),
-                                                      i18n$t("Outcome model output change"))
+                     outcome_model_values$output_rerun <- p(h4(i18n$t("Balancing Tab output")),
+                                                            i18n$t("Outcome model output rerun"))
                                                       
                      
                    }

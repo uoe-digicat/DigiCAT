@@ -157,6 +157,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      if(CF_approach_values$approach_choice == "nbp"){
                        updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach NBP"))
                      }
+                     if(CF_approach_values$approach_choice == "cbps"){
+                       updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach CBPS"))
+                     }
                    }
                    
                    if(!is.null(CF_approach_values$missingness_choice)){ ## Only run if missingness has been selected
@@ -211,6 +214,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                        }
                        if(CF_approach_values$approach_choice == "nbp"){
                          updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach NBP"))
+                       }
+                       if(CF_approach_values$approach_choice == "cbps"){
+                         updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach CBPS"))
                        }
                      }
                      
@@ -280,7 +286,8 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                        CF_approach_values$balancing_model_change_message <- p(strong(i18n$t("Approach Warning change model")))
                      }
                      
-                     ## Update approach based on treatment variable (binary/ordinal)
+                     ## Update approach based on treatment variable
+                     ## Binary
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2){
                        
                        output$approach_selection <- renderUI(radioButtons(NS(id, "CF_radio"), 
@@ -296,7 +303,22 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                                                        )
                        
                      }
-                     if (length(unique(na.omit(raw_data()[,treatment_variable()]))) > 2){
+                     ## Continuous
+                     if (length(unique(na.omit(raw_data()[,treatment_variable()]))) > 5){
+                       
+                       output$approach_selection <- renderUI(radioButtons(NS(id, "CF_radio"), 
+                                                                          label = h4(i18n$t("Approach Choose CA")), 
+                                                                          choices = i18n$t("Approach CBPS"),
+                                                                          selected = character(0))
+                       )
+                       
+                       output$approach_description_general <- renderUI(p(h5(i18n$t("Approach Description")),
+                                                                         p(i18n$t("Approach Binary description")),
+                                                                         a(id = "link",i18n$t("Approach CA link"), href = "https://uoe-digicat.github.io/03_choosecf.html",  target="_blank"))
+                       )
+                       
+                     }
+                     if (length(unique(na.omit(raw_data()[,treatment_variable()]))) > 2 & length(unique(na.omit(raw_data()[,treatment_variable()]))) < 6){
                        
                        if (enableLocal){
                          output$approach_selection <- renderUI(p("Non-bipartite Matching (NBP) coming soon." ,style = "color:grey"))
@@ -382,8 +404,8 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      }
                      
                      
-                     ## Check presents of missing data and non-response variable, update missingness accoridingly and add initial balancing model message if treatment variable is binary
-                     if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2){
+                     ## Check presents of missing data and non-response variable, update missingness accoridingly and add initial balancing model message if treatment variable is binary/continuous
+                     if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2 | length(unique(na.omit(raw_data()[,treatment_variable()]))) > 5){
                        
                        ## If no missingness detected and no non repose weight, only offer complete case
                        if(validation_log()$no_missingness_no_non_response){
@@ -529,6 +551,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    if (input$CF_radio == i18n$t("Approach NBP")){
                      CF_approach_values$approach_description <- NULL
                    }
+                   if (input$CF_radio == i18n$t("Approach CBPS")){
+                     CF_approach_values$approach_description <- NULL
+                   }
                    CF_approach_values$approach_missing_message <- NULL
                  })
                  
@@ -600,6 +625,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    }
                    if (input$CF_radio == i18n$t("Approach NBP")){
                      CF_approach_values$approach_choice <- "nbp"
+                   }
+                   if (input$CF_radio == i18n$t("Approach CBPS")){
+                     CF_approach_values$approach_choice <- "cbps"
                    }
                  })
                  observeEvent(input$missingness_radio,{

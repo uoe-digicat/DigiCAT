@@ -1,6 +1,7 @@
 # balancing module ----
 #'@import cobalt
 #'@import shinycssloaders
+#'@import CBPS
 
 balancing_ui <- function(id, i18n) {
   ns <- NS(id)
@@ -23,9 +24,7 @@ balancing_ui <- function(id, i18n) {
                div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
                div(style="width: 12%; text-align: center;", h5(i18n$t("OUTCOME"), style="color: #607cc4;"))
            ),
-           
-           
-           
+
            ## Navigation ----
            
            div(align="center",
@@ -254,6 +253,22 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        )
                      })
                    }
+                   
+                   if (approach() == "cbps"){
+                     
+                     output$balancing_options <- renderUI({
+                       div(
+                         div(style = "width: 100%;",
+                             class = "text_blocks",
+                             div(
+                               p(
+
+                               )
+                             )
+                         )
+                       )
+                     })
+                   }
                  })
                  
                  ## Disable 'Next' button initially
@@ -475,7 +490,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$matching_ratio_missing_message <- p(i18n$t("Balancing Warning no ratio"), style = "color:red")
                    }
                    ## If all required input present, carry out balancing
-                   if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) | ((approach() == "nbp"))  ) {
+                   if (approach() == "iptw" | approach() == "cbps" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) | ((approach() == "nbp"))  ) {
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
@@ -527,7 +542,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          
                        }
                        
-                       if (approach() == "iptw" | approach() == "nbp"){
+                       if (approach() == "iptw" | approach() == "nbp" | approach() == "cbps"){
                          
                          balancing_values$balancing_stage_res <- balance_data(
                            counterfactual_method = approach(),
@@ -570,6 +585,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            ## Get love plot
                            balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
                            output$love_plot <- renderPlot(balancing_values$love_plot)
+                           
                            ## Get balance table
                            balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
                            ## Remove empty columns from balance table
@@ -594,6 +610,35 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            
                          }
                          
+                         if(approach() == "cbps"){
+                           
+                           ## Get love plot
+                           balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
+                           output$love_plot <- renderPlot(balancing_values$love_plot)
+                           
+                           ## Get balance table
+                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
+                           ## Remove empty columns from balance table
+                           balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
+                           ## Round numbers in balance table to 4 decimals
+                           names_temp <- row.names(balance_table)
+                           balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 3) else x))
+                           row.names(balance_table) <- names_temp
+                           ## Output balance table
+                           balancing_values$balance_table <- balance_table
+                           output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
+                           
+                           ## Get observation table
+                           observation_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]])
+                           ## Round numbers in observation table to 4 decimals
+                           names_temp <- row.names(observation_table)
+                           observation_table <- data.frame(lapply(observation_table,function(x) if(is.numeric(x)) round(x, 3) else x))
+                           row.names(observation_table) <- names_temp
+                           ## Output observation table
+                           balancing_values$observation_table <- observation_table
+                           output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
+                           
+                         }
                          
                          if(approach() == "nbp"){
                            

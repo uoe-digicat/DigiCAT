@@ -94,9 +94,13 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     
     ## Check treatment variable is binary/ordinal
     h4(i18n$t("Upload Validation treatment")),
+    if(length(unique(.data[[treatment]])) == 1){
+      validation_log$treatment_variable_error <- TRUE
+      h5(treatment, i18n$t("Upload Validation treatment unary incorrect") , style = "color:red")
+      }, 
     if(length(unique(.data[[treatment]])) == 2 & all(.data[[treatment]]%in% 0:1)){
       h5(treatment, i18n$t("Upload Validation treatment binary correct") , style = "color:green")
-    }, 
+      }, 
     if(length(unique(.data[[treatment]])) == 2 & !all(.data[[treatment]]%in% 0:1)){
       validation_log$treatment_variable_error <- TRUE
       h5(treatment, i18n$t("Upload Validation treatment binary incorrect"), style = "color:red")
@@ -107,17 +111,21 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     },
 
     if(length(unique(.data[[treatment]])) > 5){
-      validation_log$treatment_variable_error <- TRUE
-      h5(treatment, i18n$t("Upload Validation treatment ordinal incorrect") , style = "color:red")
+      h5(treatment, i18n$t("Upload Validation treatment continuous correct") , style = "color:green")
     },
     br(),
     
-    h4(i18n$t("Upload Validation treatment counts")),
-    
-    ## Print n for each treatment group
-    renderTable(df),
-    
-    h5(i18n$t("Upload Validation treatment counts description")),
+    ## Only show treatment counts for binary and ordinal treatments
+    if(length(unique(.data[[treatment]])) < 6){
+      
+      p(
+        h4(i18n$t("Upload Validation treatment counts")),
+        ## Print n for each treatment group
+        renderTable(df),
+        h5(i18n$t("Upload Validation treatment counts description"))
+      )
+      
+      },
     
     br(),
     

@@ -63,14 +63,10 @@ Upload Directions,Choose CSV File or Use Example Data,Roghnaigh Comhad CSV nó �
 Upload Button example data,Example data,Sonraí Samplacha
 Upload Upload data filler,No file selected,Upload Upload data filler
 Upload Select categorical,Select categorical variables *,Upload Select categorical
-Upload Select categorical info,"Any variables with 5 or fewer unique values are automatically classed as categorical, please alter where necessary",Upload Select categorical info
 Upload Select outcome,Select your outcome variable *,Upload Select outcome
-Upload Select outcome info,Please select your outcome. Please note you can only select a continuous variable (i.e. not categorical),Upload Select outcome info
 Upload Select treatment,Select your treatment variable *,Upload Select treatment
 Upload Select matching,Select your matching variables *,Upload Select matching
-Upload Select matching info,Matching variables are the set of variables that you want to balance your groups on to ‘recreate’ a randomised controlled trial,Upload Select matching info
 Upload Select covariates,Select any additional covariates,Upload Select covariates
-Upload Select covariates info,"covariates are characteristics (excluding the treatment) of the participants, that may also affect the outcome",Upload Select covariates info
 Upload Survey weights selection,Select if data includes survey weights,Upload Survey weights selection
 Upload Survey weights,Select survey weight variable,Upload Survey weights
 Upload nonresponse selection,Select if survey weight variable above compensates for non-response ,Upload nonresponse selection
@@ -90,14 +86,22 @@ Upload Requirements rows,Number of rows: ,Upload Requirements rows
 Upload Requirements columns,Number of columns: ,Upload Requirements columns
 Upload Requirements variable type,Variable type: ,Upload Requirements variable type
 Upload Requirements variable type description,All data must be numeric. Binary variables should be coded as 1s and 0s and categorical data should be coded as index variables,Upload Requirements variable type description
-Upload Requirements outcome,Outcome Variable: ,Upload Requirements outcome
-Upload Requirements outcome description,Outcome variable must be continuous,Upload Requirements outcome description
 Upload Data requirements missing data,Missing data:,Upload Data requirements missing data
 Upload Data requirements missing data description,Missing values should be coded as 'NA',Upload Data requirements missing data description
 Upload Data requirements required action,Required actions:,Upload Data requirements required action
 Upload Data requirements upload data,1. Upload data:,Upload Data requirements upload data
 Upload Data requirements upload data description,Upload your own data or use our example data. See the example data description.,Upload Data requirements upload data description
 Upload Data requirements select variables,2. Select input variables,Upload Data requirements select variables
+Upload Data requirements categorical,Categorical: ,
+Upload Data requirements categorical description,"Any variables with 5 or fewer unique values are automatically classed as categorical, please alter where necessary.",
+Upload Data requirements outcome,Outcome:,
+Upload Data requirements outcome description,Only continuous variables can be selected as your outcome (i.e. not categorical),
+Upload Data requirements treatment,Treatment:,
+Upload Data requirements treatment description,"Binary, ordinal and continuous variables can be selected as your treatment.",
+Upload Data requirements matching,Matching variables: ,
+Upload Data requirements matching description,Matching variables are the set of variables that you want to balance your groups on to ‘recreate’ a randomised controlled trial.,
+Upload Data requirements covariates,Covariates:,
+Upload Data requirements covariates description,"Covariates are characteristics (excluding the treatment) of the participants, that may also affect the outcome",
 Upload Data requirements validate,3. Validate input:,Upload Data requirements validate
 Upload Data requirements validate description,Ensure inputed data and variables meet requirments.,Upload Data requirements validate description
 Upload Data requirements proceed,4. Proceed to counterfactual approach,Upload Data requirements proceed
@@ -122,10 +126,11 @@ Upload Validation skewness correct,"Your outcome variable does not appear highly
 Upload Validation skewness incorrect,"Your outcome variable appears to be highly skewed, skewness:",Upload Validation skewness incorrect
 Upload Validation histogram,Histogram ,Upload Validation histogram
 Upload Validation treatment,Treatment Variable Type:,Upload Validation treatment
+Upload Validation treatment unary incorrect,This has been detected as only having one group. A treatment with at least two groups is required.,
 Upload Validation treatment binary correct,This has been detected as a binary variable and can be used in the current counterfactual approaches offered by DigiCAT,Upload Validation treatment binary correct
 Upload Validation treatment binary incorrect,"This has been detected as a binary variable but contains values other than 1 and 0, meaning it cannot be used in the counterfactual analysis currently supported by DigiCAT. To proceed please recode your treatment variable.",Upload Validation treatment binary incorrect
 Upload Validation treatment ordinal correct,This has been detected as an ordinal variable and can be used in the current counterfactual approaches offered by DigiCAT.,Upload Validation treatment ordinal correct
-Upload Validation treatment continuous incorrect,This has been detected as a continuous variable and cannot be used in the current counterfactual approaches offered by DigiCAT. Please reselect or categorize your current treatment variable.,Upload Validation treatment continuous incorrect
+Upload Validation treatment continuous correct,This has been detected as a continuous variable and can be used in the current counterfactual approaches offered by DigiCAT.,Upload Validation treatment continuous incorrect
 Upload Validation treatment counts,Treatment Counts:,Upload Validation treatment counts
 Upload Validation treatment counts group,Group,Upload Validation treatment counts group
 Upload Validation treatment counts count,Count,Upload Validation treatment counts count
@@ -164,6 +169,7 @@ Approach Choose CA,1. Choose a Counterfactual Approach:,Approach Choose CA
 Approach PSM,Propensity Matching (PSM),Approach PSM
 Approach IPTW,Inverse probability of treatment weighting (IPTW),Approach IPTW
 Approach NBP,Non-bipartite Matching (NBP),Approach NBP
+Approach CBPS,Covariate balancing propensity score (CBPS),
 Approach Description,Description:,Approach Description
 Approach Binary description,"The aim of counterfactual analysis is to estimate the causal effects of 'exposures' or 'treatments' by comparing what actually happened (observed outcomes) with what would have happened if a different action had been taken (counterfactual outcomes). Because we can never directly observe counterfactual outcomes, we compare groups who differ in their treatment. However, in observational settings where random allocation into different treatments is not possible, researchers may employ methods that such as 'matching' or 'weighting' of participants to ensure that the different treatment groups being compared are 'balanced' with respect to other characteristics.",Approach Binary description
 Approach PSM description,You've chosen propensity matching. This approach involves creating balanced comparison groups by matching treated individuals with similar untreated individuals based on their propensity scores (probability of someone having a specific treatment based on a set of ‘matching variables’). This aims to ensure that the groups are comparable in terms of potential confounding variables. The treatment effect is then estimated by comparing outcomes between the matched groups. ,Approach PSM description
@@ -269,6 +275,7 @@ Outcome model output SE,Standard Error:,Outcome model output SE
 Outcome model output P description,"In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect or relationship in the data.",Outcome model output P description
 Outcome model output P,P-value:,Outcome model output P
 Outcome model output CI,95% Confidence Interval:,Outcome model output CI
+Outcome model output change,,
 Outcome Button Run,Run,Outcome Button Run
 Outcome Button download report,Download Report,Outcome Button download report
 Outcome Button download script,Download R Script,Outcome Button download script
