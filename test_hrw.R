@@ -29,34 +29,33 @@ evaluate_imputations(abc, "convergence") # include guidance line as output maybe
 evaluate_imputations(abc, "eventslog") # depending on logged events, recommend altering parameters xyz accordingly
 evaluate_imputations(abc, "inspect_matrix")
 
-ghi <- balance_data(counterfactual_method = "cbps", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "mi")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "cbps", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
                               missing_method = "mi",
-                              outcome_formula = "unadjusted",
-                              covariates = "d",
-                              weighting_variable = "e")
+                              outcome_formula = "marginal_effects",
+                              covariates = "d")
 
 #### cc
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "gbm",
+abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "lm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_propensity_stage(abc, evaluation_method = "support")
-ghi <- balance_data(counterfactual_method = "cbps", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "cbps", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
                               missing_method = "complete",
-                              outcome_formula = "with_matching_variables")
+                              outcome_formula = "marginal_effects")
 
 #### Weighting testing ####
 

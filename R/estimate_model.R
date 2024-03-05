@@ -78,7 +78,19 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            }
            
          },
-         stop("I need a valid model! (glm, gbm, rforest, poly)")
+         lm = {
+           if(missing_method == "mi"){
+             estimated_propensity_model = lapply(complete(handled_missingness, "all"), 
+                                                 function(x) glm(f, data = x, family = gaussian(link = "identity"), ...))
+           } else if(missing_method == "complete"){
+             estimated_propensity_model = glm(f, data = handled_missingness,
+                                              family = gaussian(link = "identity"),...)
+           } else if(missing_method == "weighting"){
+             estimated_propensity_model = svyglm(f, design = handled_missingness) 
+           }
+         },
+         
+         stop("I need a valid model! (glm, gbm, rforest, poly, lm)")
   )
   return(estimated_propensity_model)
 }
