@@ -25,6 +25,9 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
       arrange(., pairID) %>%
       ungroup()
     
+    ## Save initial treatment group as 'treatment_old' - HC
+    dose_paired_data$treatment_old = dose_paired_data[[treatment_variable]]
+    
     dose_paired_data[["treatment"]] = dose_paired_data[[treatment_variable]]
     dose_paired_data[[treatment_variable]] = dose_paired_data$treatment_exposure
 
@@ -75,8 +78,6 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
       merge(matched, propensity, by = "ID", all.x = TRUE)
     }, matched_data_long, propensity_data_list)
     
-    library(dplyr)
-    
     # Define the manipulation function
     manipulate_data <- function(data) {
       data %>%
@@ -96,6 +97,7 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
     
     # Define the function for the next steps
     process_dose_paired_data <- function(data) {
+      data[["treatment_old"]] <- data[[treatment_variable]]
       data[[treatment_variable]] <- data$treatment_exposure
       data <- data %>%
         select(-treatment_exposure)
@@ -129,6 +131,9 @@ restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_vari
       select(-c(group, treatment_variable)) %>%
       arrange(., pairID) %>%
       ungroup()
+    
+    ## Save initial treatment group as 'treatment_old' - HC
+    dose_paired_data$treatment_old = dose_paired_data[[treatment_variable]]
     
     dose_paired_data[["treatment"]] = dose_paired_data[[treatment_variable]]
     dose_paired_data[[treatment_variable]] = dose_paired_data$treatment_exposure

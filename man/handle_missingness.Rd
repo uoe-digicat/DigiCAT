@@ -7,8 +7,10 @@
 handle_missingness(
   .data,
   missing_method = NULL,
-  design_object = NULL,
   counterfactual_method = NULL,
+  cluster_variable = NULL,
+  weighting_variable = NULL,
+  strata_variable = NULL,
   ...
 )
 }
@@ -17,9 +19,9 @@ handle_missingness(
 
 \item{missing_method}{}
 
-\item{design_object}{}
-
 \item{...}{}
+
+\item{design_object}{}
 }
 \description{
 Function to handle missingness in datasets
