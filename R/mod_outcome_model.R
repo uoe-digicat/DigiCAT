@@ -277,7 +277,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  observeEvent(approach(),{
                    
                    ## If NBP selected, remove choice with interaction
-                   if(approach() == "nbp"){
+                   if(approach() == "nbp" | approach() == "cbps"){
                      
                      output$outcome_model_selection <- renderUI(
                        radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
@@ -366,7 +366,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      error_check <- NA
                      error_check <- tryCatch({
                        
-                       if(approach() == "psm" | approach() == "iptw"){
+                       if(approach() == "psm" | approach() == "iptw" | approach() == "nbp" | approach() == "cbps"){
                          outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
                            balanced_data = balancing_stage_res(),
                            counterfactual_method = approach(),
@@ -381,20 +381,20 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            outcome_formula = outcome_model_values$outcome_model_choice)
                        }
                        
-                       if(approach() == "nbp"){
-                         outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
-                           balanced_data = balancing_stage_res(), 
-                           counterfactual_method = approach(),
-                           outcome_variable = outcome_variable(),
-                           treatment_variable = treatment_variable(),
-                           matching_variable = matching_variables(), 
-                           covariates = covariates(),
-                           psmodel_obj = estimation_stage_res(),
-                           missing_method = missingness(),
-                           outcome_formula = outcome_model_values$outcome_model_choice)
-                         
-                         
-                       }
+                       # if(approach() == "nbp"){
+                       #   outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
+                       #     balanced_data = balancing_stage_res(), 
+                       #     counterfactual_method = approach(),
+                       #     outcome_variable = outcome_variable(),
+                       #     treatment_variable = treatment_variable(),
+                       #     matching_variable = matching_variables(), 
+                       #     covariates = covariates(),
+                       #     psmodel_obj = estimation_stage_res(),
+                       #     missing_method = missingness(),
+                       #     outcome_formula = outcome_model_values$outcome_model_choice)
+                       #   
+                       #   
+                       # }
                      },
                      
                      ## If outcome model does not run, return error message and enable run button 
@@ -411,7 +411,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        try({
                          ## Output estimate
                          
-                         if(approach() == "psm" | approach() == "iptw"){
+                         if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
                            outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
                                                             i18n$t("Outcome model output estimate description"),
                                                             strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),

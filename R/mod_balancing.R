@@ -87,52 +87,71 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  ## Page Setup ----
                  
                  # Get descriptive statistics of unbalanced matching variables y treatment group
-                 observeEvent(c(treatment_variable(), matching_variables()), {
+                 observeEvent(c(treatment_variable(), matching_variables(), categorical_variables()), {
                    
-                   ## Ensure data, matching variables and treatment variable have been seleceted
-                   if (!(is.null(raw_data()) | is.null(treatment_variable()) | is.null(matching_variables()))){
-                     
-                     ## Define summary function
-                     my_summary <- function(v){
-                       if(!any(is.na(v))){
-                         res <- c(summary(v),"NA's"=0)
-                       } else{
-                         res <- summary(v)
+                   ## Ensure data, categorical variables, matching variables and treatment variable have been seleceted
+                   if (!(is.null(raw_data()) | is.null(categorical_variables()) | is.null(treatment_variable()) | is.null(matching_variables()))){
+                       ## Define summary function
+                       my_summary <- function(v){
+                         if(!any(is.na(v))){
+                           res <- c(summary(v),"NA's"=0)
+                         } else{
+                           res <- summary(v)
+                         }
+                         return(res)
                        }
-                       return(res)
-                     }
-                     
-                     ## Get treatment groups
-                     groups <- unique(isolate(raw_data())[,isolate(treatment_variable())])
-                     groups <- sort(groups)
-                     
-                     # Subset data by treatment group and get descriptives on each variable (by group)
-                     unbalanced_summary <- NA
-                     
-                     for (group in groups){
-                       ## Get descriptives
-                       ls <- lapply(as.data.frame(isolate(raw_data())[isolate(raw_data())[isolate(treatment_variable())] == group, isolate(matching_variables())]), my_summary)
-                       df <- data.frame(matrix(unlist(ls), ncol = max(lengths(ls)), byrow = TRUE))
-                       names(df) <- names(ls[[which(lengths(ls)>0)[1]]])
-                       rownames(df) <- paste(isolate(matching_variables()), isolate(treatment_variable()), group)
-                       unbalanced_summary <- rbind(unbalanced_summary, df)
-                     }
-                     
-                     unbalanced_summary <- unbalanced_summary[-1,]
-                     
-                     ## Reorder table so matching variables are together
-                     formatted_unbalanced_summary <- NA
-                     
-                     for (matching_index in 1:length(isolate(matching_variables()))){
-                       for (group in groups){
-                         index <- matching_index + (length(isolate(matching_variables())) * (which(groups == group) - 1))
-                         ## Get description of each matching variable in each group
-                         formatted_unbalanced_summary_temp <- unbalanced_summary[index,]
-                         formatted_unbalanced_summary <- rbind(formatted_unbalanced_summary,formatted_unbalanced_summary_temp)
+
+                       if (any(treatment_variable() %in% categorical_variables())){ ## If treatment is categorical
+
+                         ## Get treatment groups
+                         groups <- unique(isolate(raw_data())[,isolate(treatment_variable())])
+                         groups <- sort(groups)
+                         df <- isolate(raw_data())
+                         df$treatment_before_balancing <- df[isolate(treatment_variable())]
+
+                       } else{ ## If treatment is continuous, categories into groups
+
+                         df <- isolate(raw_data())
+
+                         treatment_median <- mean(df[,isolate(treatment_variable())], na.rm = T)
+
+                         ## Dicotomise treatment into low (less than or equal to median) and high (greater than median)
+                         df$treatment_before_balancing <- if_else(df[isolate(treatment_variable())] <= treatment_median,
+                                                                  "<= Median",  "> Median")
+                         
+                         ## groups are now dicotimized treatment variable
+                         groups <- c( "<= Mean", "> Mean")
                        }
-                     }
-                     
-                     balancing_values$descriptive_stats <- DT::renderDataTable({DT::datatable(round(formatted_unbalanced_summary[-1,], 2), rownames = TRUE, options = list(scrollX = TRUE))})
+
+                       ## Subset data by treatment group and get descriptives on each variable (by group)
+                       unbalanced_summary <- NA
+                       
+                       for (group in groups){ ## Iterate through treatment groups
+                         ## Get summary of each matching variable
+                         ls_sum <- lapply(as.data.frame(df[df["treatment_before_balancing"] == group, isolate(matching_variables())]), my_summary)
+                         ## Change to dataframe
+                         df_sum <- data.frame(matrix(unlist(ls_sum), ncol = max(lengths(ls_sum)), byrow = TRUE))
+                         ## Change to dataframe and add row and column names
+                         names(df_sum) <- names(ls_sum[[which(lengths(ls_sum)>0)[1]]])
+                         rownames(df_sum) <- paste(isolate(matching_variables()), isolate(treatment_variable()), group)
+                         unbalanced_summary <- rbind(unbalanced_summary, df_sum)
+                       }
+
+                       unbalanced_summary <- unbalanced_summary[-1,]
+
+                       ## Reorder table so matching variables are together
+                       formatted_unbalanced_summary <- NA
+
+                       for (matching_index in 1:length(isolate(matching_variables()))){
+                         for (group in groups){
+                           index <- matching_index + (length(isolate(matching_variables())) * (which(groups == group) - 1))
+                           ## Get description of each matching variable in each group
+                           formatted_unbalanced_summary_temp <- unbalanced_summary[index,]
+                           formatted_unbalanced_summary <- rbind(formatted_unbalanced_summary,formatted_unbalanced_summary_temp)
+                         }
+                       }
+
+                       balancing_values$descriptive_stats <- DT::renderDataTable({DT::datatable(round(formatted_unbalanced_summary[-1,], 2), rownames = TRUE, options = list(scrollX = TRUE))})
                    }
                  })
                  
@@ -581,36 +600,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                                )
                              ))
                            }
-                           #
-                           ## Get love plot
-                           balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
-                           output$love_plot <- renderPlot(balancing_values$love_plot)
-                           
-                           ## Get balance table
-                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
-                           ## Remove empty columns from balance table
-                           balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
-                           ## Round numbers in balance table to 4 decimals
-                           names_temp <- row.names(balance_table)
-                           balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 3) else x))
-                           row.names(balance_table) <- names_temp
-                           ## Output balance table
-                           balancing_values$balance_table <- balance_table
-                           output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
-                           
-                           ## Get observation table
-                           observation_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]])
-                           ## Round numbers in observation table to 4 decimals
-                           names_temp <- row.names(observation_table)
-                           observation_table <- data.frame(lapply(observation_table,function(x) if(is.numeric(x)) round(x, 3) else x))
-                           row.names(observation_table) <- names_temp
-                           ## Output observation table
-                           balancing_values$observation_table <- observation_table
-                           output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
-                           
                          }
                          
-                         if(approach() == "cbps"){
+                         if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
                            
                            ## Get love plot
                            balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
@@ -637,8 +629,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            ## Output observation table
                            balancing_values$observation_table <- observation_table
                            output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
-                           
-                         }
+                           }
                          
                          if(approach() == "nbp"){
                            
@@ -666,8 +657,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
                            tabsetPanel(id = "well_panel",
-                                       ## Don't include common support graph if propensity model other than GLM used
-                                       if(balancing_model() == "glm"){
+                                       ## Don't include common support graph if propensity model other than GLM used or CBPS approach had been taken
+                                       if(balancing_model() == "glm" & !approach() == "cbps"){
                                          tabPanel(title = i18n$t("Balancing Common support graph"),
                                                   value = NS(id, 'common_support_graph_tab'),
                                                   br(),
