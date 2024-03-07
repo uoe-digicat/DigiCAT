@@ -9,3 +9,5 @@ get_categorical_variables <- function(df){
   return(categorical_variables)
   
 }
+
+

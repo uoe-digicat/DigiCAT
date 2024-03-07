@@ -50,36 +50,22 @@ data_upload_ui <- function(id, i18n) {
                           ## Add variable inputs
                           pickerInput(inputId=ns("categorical_vars"), label = i18n$t("Upload Select categorical"), multiple = TRUE, options = pickerOptions(title = "---"),
                                       choices=NULL, selected=NULL
-                          )  %>% ## add info about variables being classed automatically
-                            shinyInput_label_embed(
-                              shiny_iconlink() %>%
-                                bs_embed_popover(title = i18n$t("Upload Select categorical info"), placement = "right")
-                            ),
+                          ), ## add info about variables being classed automatically
                           
                           pickerInput(inputId=ns("outcome"), label = i18n$t("Upload Select outcome"),
-                                      choices=NULL, selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F, title = "---")) %>% ## Multiple choices allowed but max set to 1 so input can be reset to NULL
-                            shinyInput_label_embed(
-                              shiny_iconlink() %>%
-                                bs_embed_popover(title = i18n$t("Upload Select outcome info"), placement = "right")
-                            ),
+                                      choices=NULL, selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F, title = "---")), ## Multiple choices allowed but max set to 1 so input can be reset to NULL
 
                           pickerInput(inputId= ns("treatment"), label = i18n$t("Upload Select treatment"),
                                       choices=NULL,selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F, title = "---") ## Multiple choices allowed but max set to 1 so input can be reset to NULL
                           ),
                           uiOutput(ns("treatment_name_change")),
                           pickerInput(inputId= ns("matchvars"), label = i18n$t("Upload Select matching"),
-                                      choices=NULL,selected=NULL,multiple=TRUE, options = pickerOptions(dropupAuto = F, title = "---")) %>%
-                            shinyInput_label_embed(
-                              shiny_iconlink() %>%
-                                bs_embed_popover(title = p(i18n$t("Upload Select matching info")), placement = "right")
-                            ),
+                                      choices=NULL,selected=NULL,multiple=TRUE, options = pickerOptions(dropupAuto = F, title = "---")),
+
                           pickerInput(inputId= ns("covars"), label = i18n$t("Upload Select covariates"),
                                       choices=NULL,selected=NULL,multiple=TRUE,  options = pickerOptions(dropupAuto = F, title = "---")
-                          ) %>%
-                            shinyInput_label_embed(
-                              shiny_iconlink() %>%
-                                bs_embed_popover(title = i18n$t("Upload Select covariates info"), placement = "right")
-                            ),
+                          ),
+
                           ## Add checkbox asking if "survey weight" should be specified
                           div(class = "tab_panel_feature",
                               checkboxInput(ns("survey_weight_checkbox"), p(i18n$t("Upload Survey weights selection"), tags$sup("†"))),
@@ -123,11 +109,16 @@ data_upload_ui <- function(id, i18n) {
                                                           h5(strong(i18n$t("Upload Requirements rows"))," 10-10,000"),
                                                           h5(strong(i18n$t("Upload Requirements columns"))," 2-100"),
                                                           h5(strong(i18n$t("Upload Requirements variable type")), i18n$t("Upload Requirements variable type description")),
-                                                          h5(strong(i18n$t("Upload Requirements outcome")), i18n$t("Upload Requirements outcome description")),
                                                           h5(strong(i18n$t("Upload Data requirements missing data")), i18n$t("Upload Data requirements missing data description")),
-                                                          br(), h4(strong(i18n$t("Upload Data requirements required action"))),
+                                                          br(),
+                                                          h4(strong(i18n$t("Upload Data requirements required action"))),
                                                           h5(strong(i18n$t("Upload Data requirements upload data")), i18n$t("Upload Data requirements upload data description")),
                                                           h5(strong(i18n$t("Upload Data requirements select variables"))),
+                                                          h5(strong(i18n$t("Upload Data requirements categorical")), i18n$t("Upload Data requirements categorical description")),
+                                                          h5(strong(i18n$t("Upload Data requirements outcome")), i18n$t("Upload Data requirements outcome description")),
+                                                          h5(strong(i18n$t("Upload Data requirements treatment")), i18n$t("Upload Data requirements treatment description")),
+                                                          h5(strong(i18n$t("Upload Data requirements matching")), i18n$t("Upload Data requirements matching description")),
+                                                          h5(strong(i18n$t("Upload Data requirements covariates")), i18n$t("Upload Data requirements covariates description")),
                                                           h5(strong(i18n$t("Upload Data requirements validate")), i18n$t("Upload Data requirements validate description")),
                                                           h5(strong(i18n$t("Upload Data requirements proceed"))),
                                                           br(), h4(strong(i18n$t("Upload Data requirements input requirements"))),
@@ -429,7 +420,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                    showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
                    
                    ## Update variable selection
-                   updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(data_upload_values$rawdata)))
+                   updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "ReadingO_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13")])
                    updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "matchvars", selected=names(isolate(data_upload_values$rawdata))[-c(2:4)], choices = names(isolate(data_upload_values$rawdata)))
