@@ -1,0 +1,293 @@
+key,en,ga
+Analysis,Analysis,Temp
+T and Cs,Terms and Conditions,Temp
+About,About,Temp
+Dark Mode,Dark Mode,Temp
+Language,Change language,Temp
+Language warning,Language change may require analysis rerun!,Temp
+GH feedback,Share feedback on Github,Temp
+GET STARTED,GET STARTED,Temp
+DATA UPLOAD,DATA UPLOAD,Temp
+APPROACH,APPROACH,Temp
+BALANCING,BALANCING,Temp
+OUTCOME,OUTCOME,Temp
+SENSITIVITY ANALYSIS,SENSITIVITY ANALYSIS,Temp
+Home How to use,How to use this tool,Temp
+Home Data Upload,1. Data Upload,Temp
+Home Data Upload description,Upload your own data or use our sample data. More infromation on data requirements and validation will be available on the data upload page.,Temp
+Home Counterfactual Approach,2. Counterfactual Approach,Temp
+Home Counterfactual Approach description,"Select which counterfactual approach, method of dealing with missing data and balancing model you would like to use based on you data and research question.",Temp
+Home Balancing,3. Balancing,Temp
+Home Balancing description,Use propensity scores to balance your sample across treatment groups.,Temp
+Home Outcome Model,4. Outcome Model,Temp
+Home Outcome Model description,Run your outcome model to estimate the effect of the treatment on the outcome.,Temp
+Home Counterfactual Analysis,Counterfactual Analysis,Temp
+Home CA description,"The aim of counterfactual analysis is to estimate the causal effects of interventions or treatments, by comparing what actually happened (observed outcomes) with what would have happened if a different action had been taken (counterfactual outcomes). In observational settings, where random allocation into different treatments is not possible, researchers often employ methods involving 'propensity scores' (the estimated probability of receiving the treatment/intervention, based on a set of observed covariates). These propensity scores can then be used in an analysis to balance the characteristics of treatment vs non-treated groups, reducing bias and enabling a more accurate estimation of the causal effect of receiving the treatment. For more info, visit our tutorial.",Temp
+Home CA tutorial link,Go to tutorial,Temp
+Home DigiCAT description,"DigiCAT stands for ‘Digital counterfactual analysis tool’. With DigiCAT, you can leverage propensity score methods in your own data or using our sample dataset to conduct counterfactual analyses and gain insights into the causal effects of specific interventions or treatments. DigiCAT aims to provide researchers, regardless of their statistical background, with a user-friendly platform that removes barriers and enables them to utilize these methods effectively.",Temp
+Home Our Approach,Our Approach,Temp
+Home Our Approach description,DigiCAT was developed with the help of a lived experience expert group. It was designed with FAIR principles in mind and you can find all code for the tool on our Github. It took a user-centred approach to design and we continue to welcome feedback from users. ,Temp
+Home CA git link,Go to DigiCAT Github,Temp
+Home Get Started,Get Started,Temp
+TC popup heading,Before you get started:,Temp
+TC popup description,Please read and agree to the terms of the DigiCAT User Agreement.,Temp
+TC link,Go to DigiCAT User Agreement,Temp
+TC agree,"Yes, I agree",Temp
+TC disagree,"No, I don't agree",Temp
+TC title,Terms and Conditions for DigiCAT App Usage (Non-Anonymized Data Restrictions),Temp
+TC heading 1,Purpose and Data Restrictions:,Temp
+TC body 1,"Users must not upload non-anonymized data and must adhere to the relevant all applicable end user and legal restrictions in using their own data with DigiCAT. Note that a version of DigiCAT that can be used on a local computer is available. User must not upload content that violates laws, infringes intellectual property rights, or is harmful.",Temp
+TC heading 2,User Responsibilities:,Temp
+TC body 2,Users are responsible for complying with laws and regulations when uploading or sharing content.,Temp
+TC heading 3,Intellectual Property:,Temp
+TC body 3,App-related intellectual property belongs to The University of Edinburgh and may not be used without consent.,Temp
+TC heading 4,Limitation of Liability:,Temp
+TC body 4,The App is provided 'as is' and we are not liable for damages or interruptions in its use.,Temp
+TC heading 5,Indemnification:,Temp
+TC body 5,Users agree to indemnify The University of Edinburgh against claims or liabilities resulting from their use of the App.,Temp
+TC heading 6,Modifications and Termination:,Temp
+TC body 6,We may modify or terminate the App or these terms without prior notice.,Temp
+About Team title,About the DigiCAT Team:,Temp
+About Team description,"DigiCAT was developed to help make counterfactual analysis more accessible and through providing an easy-to-use tool and accessible tutorial materials. It was developed as part of the Wellcome Trust Mental Health Data Prize by a multi-disciplinary team of researchers at the University of Edinburgh. The tool development team includes Aja Murray , Josiah King , Helen Wright and Hannah Casey with lived experience input leads Marie Allitt and Ingrid Obsuth and user input leads Dan Mirman and Patrick Errington.",Temp
+About Contact title,Get in touch:,Temp
+About Contact email,Email us: uoe_digicat-group@uoe.onmicrosoft.com,Temp
+About Contact git,Open an issue on the DigiCAT GitHub page,Temp
+About Acknowledgements title,Acknowledgements:,Temp
+About Acknowledgements description,"We are grateful to the Wellcome Trust for funding the Discovery and Prototyping phases of the development of DigiCAT. Our thanks also go to the many who contributed to DigiCAT in various ways. We are grateful to the young person advisory groups (YPAGs) who provided invaluable insights and help guide the direction of DigiCAT, to the users who responded to our user survey and to the group members who provided feedback on iterations of the tool.",Temp
+Button Previous,Previous,Temp
+Button Next,Next,Temp
+Upload Upload data,Upload data,Temp
+Upload Data warning,Please upload some data first!,Temp
+Upload OR,OR,Temp
+Upload Directions,Choose CSV File or Use Example Data,Temp
+Upload Button example data,Example data,Temp
+Upload Upload data filler,No file selected,Temp
+Upload Select categorical,Select categorical variables *,Temp
+Upload Select outcome,Select your outcome variable *,Temp
+Upload Select treatment,Select your treatment variable *,Temp
+Upload Select matching,Select your matching variables *,Temp
+Upload Select covariates,Select any additional covariates,Temp
+Upload Survey weights selection,Select if data includes survey weights,Temp
+Upload Survey weights,Select survey weight variable,Temp
+Upload nonresponse selection,Select if survey weight variable above compensates for non-response ,Temp
+Upload Clustering,Select if data includes a clustering variable,Temp
+Upload Clustering selection,Select a clustering variable,Temp
+Upload Stratification,Select if data includes a stratification variable,Temp
+Upload Stratification selection,Select a stratification variable,Temp
+Upload Required fields,*Required fields,Temp
+Upload Design warning,Design variables not currently supported for use with ordinal treatment variable,Temp
+Upload Button clear data,Clear Data,Temp
+Upload Button validate,Validate Data,Temp
+Upload Requirements,Requirements,Temp
+Upload Data requirements,Data requirements: ,Temp
+Upload Requirements file type,File Type:,Temp
+Upload Requirements file size,Maximum file size: ,Temp
+Upload Requirements rows,Number of rows: ,Temp
+Upload Requirements columns,Number of columns: ,Temp
+Upload Requirements variable type,Variable type: ,Temp
+Upload Requirements variable type description,All data must be numeric. Binary variables should be coded as 1s and 0s and categorical data should be coded as index variables,Temp
+Upload Data requirements missing data,Missing data:,Temp
+Upload Data requirements missing data description,Missing values should be coded as 'NA',Temp
+Upload Data requirements required action,Required actions:,Temp
+Upload Data requirements upload data,1. Upload data:,Temp
+Upload Data requirements upload data description,Upload your own data or use our example data. See the example data description.,Temp
+Upload Data requirements select variables,2. Select input variables,Temp
+Upload Data requirements categorical,Categorical: ,Temp
+Upload Data requirements categorical description,"Any variables with 5 or fewer unique values are automatically classed as categorical, please alter where necessary.",Temp
+Upload Data requirements outcome,Outcome:,Temp
+Upload Data requirements outcome description,Only continuous variables can be selected as your outcome (i.e. not categorical),Temp
+Upload Data requirements treatment,Treatment:,Temp
+Upload Data requirements treatment description,"Binary, ordinal and continuous variables can be selected as your treatment.",Temp
+Upload Data requirements matching,Matching variables: ,Temp
+Upload Data requirements matching description,Matching variables are the set of variables that you want to balance your groups on to ‘recreate’ a randomised controlled trial.,Temp
+Upload Data requirements covariates,Covariates:,Temp
+Upload Data requirements covariates description,"Covariates are characteristics (excluding the treatment) of the participants, that may also affect the outcome",Temp
+Upload Data requirements validate,3. Validate input:,Temp
+Upload Data requirements validate description,Ensure inputed data and variables meet requirments.,Temp
+Upload Data requirements proceed,4. Proceed to counterfactual approach,Temp
+Upload Data requirements input requirements,Input requirements: ,Temp
+Upload Data requirements input requirements description,"Required input: Data, categorical variables, outcome, treatment, matching variables*",Temp
+Upload Data requirements tutorial,*See the tutorials for guidance in choosing matching variables,Temp
+Upload Data,Data,Temp
+Upload Validation,Validation,Temp
+Upload Validation dimensions,Data Dimensions:,Temp
+Upload Validation dimensions columns,Columns: ,Temp
+Upload Validation dimensions rows,Rows: ,Temp
+Upload Validation dimensions correct columns,Your data has an appropriate number of columns.,Temp
+Upload Validation dimensions incorrect columns,"It is recommended that data has between 2 and 100 columns, please reconsider that data you are using.",Temp
+Upload Validation dimensions correct rows,Your data has an appropriate number of rows.,Temp
+Upload Validation dimensions incorrect rows,"It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.",Temp
+Upload Validation no GBM,"As your data contains fewer than 50 rows, Generalized Boosted Models (GBM) will not be available for generating propensity scores.",Temp
+Upload Validation outcome type,Outcome Variable Type: ,Temp
+Upload Validation outcome type incorrect,: Unique observations are in your chosen outcome variable. This seems a bit low for a continuous variable. We recommend you double check this before continuing.,Temp
+Upload Validation outcome type correct,: Unique observations are in your chosen outcome variable.,Temp
+Upload Validation skewness,Outcome Variable Skewness:,Temp
+Upload Validation skewness correct,"Your outcome variable does not appear highly skewed, skewness:",Temp
+Upload Validation skewness incorrect,"Your outcome variable appears to be highly skewed, skewness:",Temp
+Upload Validation histogram,Histogram ,Temp
+Upload Validation treatment,Treatment Variable Type:,Temp
+Upload Validation treatment unary incorrect,This has been detected as only having one group. A treatment with at least two groups is required.,Temp
+Upload Validation treatment binary correct,This has been detected as a binary variable and can be used in the current counterfactual approaches offered by DigiCAT,Temp
+Upload Validation treatment binary incorrect,"This has been detected as a binary variable but contains values other than 1 and 0, meaning it cannot be used in the counterfactual analysis currently supported by DigiCAT. To proceed please recode your treatment variable.",Temp
+Upload Validation treatment ordinal correct,This has been detected as an ordinal variable and can be used in the current counterfactual approaches offered by DigiCAT.,Temp
+Upload Validation treatment continuous correct,This has been detected as a continuous variable and can be used in the current counterfactual approaches offered by DigiCAT.,Temp
+Upload Validation treatment counts,Treatment Counts:,Temp
+Upload Validation treatment counts group,Group,Temp
+Upload Validation treatment counts count,Count,Temp
+Upload Validation treatment counts description,The above table shows the number of individuals in each treatment group.,Temp
+Upload Validation multicollinearity,Multicollinearity Between Variables:,Temp
+Upload Validation multicollinearity correct,None of the selected matching variables or covariates appear to be strongly correlated (Pearson correaltion > -0.9 or < 0.9).,Temp
+Upload Validation multicollinearity incorrect,It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). Please consider removing one of each highly correlated variable pair:,Temp
+Upload Validation survey weight,Survey Weight Variable Missingness:,Temp
+Upload Validation survey weight missingness,: As this includes missing data it will not be used in counterfactual analysi,Temp
+Upload Validation survey weight no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation nonresponse,Non-response Variable Missingness:,Temp
+Upload Validation nonresponse missingness,: As this includes missing data it won't be used as a weight when accounting for missingness.,Temp
+Upload Validation nonresponse no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation clustering,Clustering Variable Missingness:,Temp
+Upload Validation clustering missingness,: As this includes missing data it will not be used in counterfactual analysis.,Temp
+Upload Validation clustering no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation stratification,Stratification Variable Missingness:,Temp
+Upload Validation stratification missingness,: As this includes missing data it will not be used in counterfactual analysis.,Temp
+Upload Validation stratification no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation design matrix,Design Matrix Creation:,Temp
+Upload Validation design matrix description,Error: Design matrix cannot be created with the provided input and will not be used in counterfactual analysis.,Temp
+Upload Validation missingness,Missing Data:,Temp
+Upload Validation missingness yes,"Missing data had been detected in your inputted variables. Choices of dealing with missingness and further information are available in the next analysis step.""",Temp
+Upload Validation missingness no non-response yes,"No missing data had been detected in your inputted variables, however, as the survey weight in your data compensates for non-response, 'weighting' as a method of dealing with missingness in the next analysis step (currently only available for binary treatment variables).",Temp
+Upload Validation missingness no non-response no,"No missing data had been detected in your inputted variables, complete case as a method of dealing with data missingness will be automitically applied to your data.",Temp
+Upload Warning no outcome,Please select outcome before proceeding,Temp
+Upload Warning no treatment,Please select treatment before proceeding,Temp
+Upload Warning no matching,Please select matching before proceeding,Temp
+Upload Warning same outcome treatment,Outcome and treatment cannot be the same,Temp
+Upload Warning same outcome matching,Outcome and matching variables cannot be the same,Temp
+Upload Warning same treatment matching,Treatment and matching variables cannot be the same,Temp
+Upload Warning same outcome covariate,Outcome and covariates cannot be the same,Temp
+Upload Warning same treatment covariate,Treatment and covariates cannot be the same,Temp
+Upload Warning rerun,Note: Changing data/variable selection will require reruning validation and all subsequent analysis steps.,Temp
+Approach Choose CA,1. Choose a Counterfactual Approach:,Temp
+Approach PSM,Propensity Matching (PSM),Temp
+Approach IPTW,Inverse probability of treatment weighting (IPTW),Temp
+Approach NBP,Non-bipartite Matching (NBP),Temp
+Approach CBPS,Covariate balancing propensity score (CBPS),Temp
+Approach Description,Description:,Temp
+Approach Binary description,"The aim of counterfactual analysis is to estimate the causal effects of 'exposures' or 'treatments' by comparing what actually happened (observed outcomes) with what would have happened if a different action had been taken (counterfactual outcomes). Because we can never directly observe counterfactual outcomes, we compare groups who differ in their treatment. However, in observational settings where random allocation into different treatments is not possible, researchers may employ methods that such as 'matching' or 'weighting' of participants to ensure that the different treatment groups being compared are 'balanced' with respect to other characteristics.",Temp
+Approach PSM description,You've chosen propensity matching. This approach involves creating balanced comparison groups by matching treated individuals with similar untreated individuals based on their propensity scores (probability of someone having a specific treatment based on a set of ‘matching variables’). This aims to ensure that the groups are comparable in terms of potential confounding variables. The treatment effect is then estimated by comparing outcomes between the matched groups. ,Temp
+Approach CA link, For further guidance on choosing an approach see the ‘choosing a counterfactual analysis approach’ section of the tutorials.,Temp
+Approach PSM link, See the ‘propensity matching’ section of the tutorials for more information.,Temp
+Approach IPTW description,"You’ve chosen IPTW. IPTW aims to rebalance treated and untreated individuals using a weighted regression approach. It first estimates propensity scores (probability of someone having a specific treatment based on a set of ‘matching variables’. It then transforms these into weights that are used in a regression model to up-weight (i.e., give more importance to) untreated and treated cases that are similar in terms of their propensity scores and down-weight cases that are very different. This helps to rebalance the treated and untreated groups.",Temp
+Approach IPTW link,See the ‘IPTW’ section of the tutorials for more information.,Temp
+Approach NBP description,"As you have an ordinal treatment variable (i.e., an ordered categorical treatment variable) an appropriate counterfactual analysis approach is non-bipartite propensity matching (NBP). NBP finds pairs of people who differ in their treatment dosage but who have similar treatment propensities based on their matching variables and compares their outcome variable levels. As the treatment is ordinal, this might involve matching and comparing people with for example, low with medium treatment doses and medium with high doses.",Temp
+Approach NBP tutorial link,Please see the 'NBP' section of the tutorials for more information.,Temp
+Approach Select approach,Please click on the approach you would like to take. We will give you more information about each approach as you select them.,Temp
+Approach Choose missingness,2. Choose a Method of Dealing with Missingess:,Temp
+Approach Choose MI,Multiple Imputation,Temp
+Approach Choose CC,Complete Case,Temp
+Approach Choose Weighting,Weighting,Temp
+Approach no missingness,"No missing data detected, please proceed with complete case",Temp
+Approach no missingness but weighting,"No missing data detected, please proceed with complete case or weighting",Temp
+Approach Missingness description,"Missing data can reduce statistical power and introduce bias when it is related to the variables under study. In order to minimise the impact of missingness in our data, DigiCAT offers several approaches to handle missing values. ",Temp
+Approach Missingness tutorial link,"For more information on missingness, see the ‘missing data’ section of the tutorials.",Temp
+Approach MI description,"The fundamental idea behind multiple imputation is to create several (M) completed datasets by predicting what the missing values would have been if we could observe them. These datasets are then analysed separately, and the results of each of these datasets are combined, or ‘pooled’, together. The variability across datasets allows the standard errors to take account of the uncertainty due to the fact that some of the data are predicted rather than observed. DigiCAT imputes 5 complete datasets, conducts the analysis in each and then combines the results across them. However, don’t forget that this statistical method relies on assumptions, which can be difficult to test. If these assumptions are violated, your inferences may be invalid. Multiple imputation assumes ‘missingness at random’ (MAR) meaning that the missingness depends on the data you have available in your model but not on the unobserved values of the outcome variable.",Temp
+Approach MI tutorial link,Please see our tutorial pages on multiple imputation for a detailed discussion.,Temp
+Approach CC description,"Complete case analysis (CCA) (also sometimes known as ‘listwise deletion’), will only analyse the completely observed cases. This analysis will allow valid inferences of your data if the missing data are missing completely at random (MCAR), because the observed values will be a random sample of the complete dataset. If the data are missing at random (MAR) which means that the missingness can be predicted from the data available or missing not at random (MNAR), the inferences may be invalid.",Temp
+Approach CC tutorial link,Please see our tutorial pages for a detailed discussion of complete case analysis.,Temp
+Approach Weighting description,Non-response weighting deals with missingness by up-weighting cases that have a low probability of being observed in the sample and down-weighting variables that have a high probability of being observed in the sample. This is done using a weighted regression approach. These weights are often supplied with datasets and are selected at the ‘data upload’ stage of DigiCAT. ,Temp
+Approach Weighting tutorial link,Please see our ‘non-response weighting’ tutorial section for more information.,Temp
+Approach Choose model,3. Choose a Balancing Model:,Temp
+Approach GBM,Generalized Boosted Models (GBM),Temp
+Approach RF,Random Forest,Temp
+Approach GLM,Logistic Regression,Temp
+Approach LR,Linear Regression,Temp
+Approach ORL,Ordinal Logistic Regression (OGLM),Temp
+Approach Too small GBM,Generalized Boosted Models (GBM) not available for small datasets (< 50 rows),Temp
+Approach Model description,"In order to balance our dataset, we must first calculate the probability each individual has of being in the treatment group, based on their observed characteristics, i.e., their propensity score. On this page, you will select a balancing model to use with your dataset to predict the likelihood of an individual being treated. Different modelling approaches can be used for this step.",Temp
+Approach Model initial,"As the choices of balancing model depends on the counterfactual approach and method of dealing with missingness, balancing model options will appear once these choices have been selected.",Temp
+Approach Model GLM description,"Logistic regression is a method of modelling the relations between a set of predictors (e.g., matching variables) and a binary outcome (such as whether or not someone is in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual.",Temp
+Approach Model GLM tutorial link,See the logistic regression section of our tutorials for more information.,Temp
+Approach Model RF description,Random forest models are meta-estimators that fit decision trees on bootstrapped subsets of a dataset. A final prediction is estimated by aggregating the predictions of these trees through voting or averaging.,Temp
+Approach Model GBM description,"GBM are a type of machine-learning algorithm that combine decision trees and boosting methods. It's a meta-estimator where weak models, in this case, decision trees, are sequentially trained to correct the errors of the previous ones. Higher weights are assigned to misclassified instances, meaning subsequent models rectify these predictions. The final output is a weighted sum of the individual weak learner predictions.",Temp
+Approach Model ORL description,For ordinal treatments an ordinal logistic regression model is used to estimate the propensity scores used for matching. It predicts treatment (as an ordinal variable with different dosage levels) from the set of chosen matching variables.,Temp
+Approach Model ORL tutorial link,See the 'non-bipartite (NBP) methods' section of our tutorials for more information.,Temp
+Approach Warning no approach,Please select an approach before proceeding,Temp
+Approach Warning no missingness,Please select a method of dealing with missing data before proceeding,Temp
+Approach Warning no model,Please select a method of dealing with missing data before proceeding,Temp
+Approach Warning rerun," If counterfactual analysis has already been run, changing this parameter will require the rerun of all subsequent steps.",Temp
+Approach Warning change approach,"Something has changed on the data uplaod page, reselect the approach you would like to take.",Temp
+Approach Warning change missingness,"Something has changed on the data uplaod page, reselect how you would like to deal with missingness.",Temp
+Approach Warning change model,"Something has changed on the data uplaod page, reselect the model you would like to run.",Temp
+Balancing Choose Method,Choose a Matching Method:,Temp
+Balancing Optimal,Optimal,Temp
+Balancing NN,Nearest Neighbour (NN),Temp
+Balancing Matching method,Matching Method:,Temp
+Balancing Matching method title,Weighting Method,Temp
+Balancing Matching method description PSM,"In order to balance covariates between treatment groups, propensity score matching involves matching individuals based on their propensity scores, which represent their likelihood of being treated based on observed characteristics. The goal is to create a pseudo-randomized comparison between the treatment and control groups by matching individuals who have similar or close propensity scores.",Temp
+Balancing Matching method tutorial link PSM,See our tutorial section on propensity score matching for more detailed guidance on choosing an appropriate matching method.,Temp
+Balancing Matching method description IPTW,"In IPTW, the propensity scores estimated based on the set of matching variables are transformed to provide weights to be used in the outcome model. All the data are used (unlike in some methods where some cases might not achieve a match and be discarded). In DigiCAT the ATE is estimated which means that the weights used essentially down-weight treated cases with a high propensity score and up-weight control cases with a low propensity score. This ‘re-balances’ the treatment and control groups to make them more similar.",Temp
+Balancing Matching method tutorial link IPTW,See the ‘IPTW’ section of the tutorials for more information.,Temp
+Balancing Optimal description,You've chosen optimal matching. This method matches treated and untreated cases in a way that minimises the average propensity score difference within the match pairs in the sample. ,Temp
+Balancing Optimal tutorial link,See the optimal matching tutorial section for more detail.,Temp
+Balancing NN description,"Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated and control cases with similar propensity scores. In DigiCat, nearest neighbour greedy matching is implemented whereby the most similar treated and control cases are matched first. Then, from those left the remaining most similar treated and control cases are paired and so on and so forth until all viable matches have been made. ",Temp
+Balancing NN tutorial link,See the nearest neighbour matching tutorial for more details.,Temp
+Balancing Optimal ordinal description,"NBP uses a version of optimal matching to pair up cases who experienced different dosages of the treatment variable (e.g., high versus medium; medium versus low). Optimal matching is based on finding matches to minimise the overall propensity score differences between matched cases. The algorithm in DigiCAT also disallows matches of pairs that are too dis-similar to help ensure that there is good balance between the groups after matching. ",Temp
+Balancing Optimal ordinal tutorial link,See the NBP section of the tutorials for more detail.,Temp
+Balancing Ratio ordinal description,"In NBP, 1:1 matching is used, meaning that each case is matched with one other case with a different treatment dosage.",Temp
+Balancing Choose Ratio,Choose a Matching Ratio:,Temp
+Balancing Matching ratio,Matching Ratio:,Temp
+Balancing Matching ratio description,"Matching ratios in propensity score matching refer to the number of control/untreated individuals that are matched to each treated individual. In DigiCAT, matching ratios can be specified to control the trade-off between achieving better balance between treatment groups and maintaining a larger sample size. ",Temp
+Balancing Matching ratio tutorial link,See our tutorial section on propensity score matching for more detailed guidance on choosing an appropriate matching ratio.,Temp
+Balancing 1to1 ratio description,"1:1 is the most commonly used matching ratio. In 1:1 matching, we match one unit belonging to the intervention group with one unit belonging to the control group that has the closest propensity score.",Temp
+Balancing 1to1 ratio tutorial link,See our tutorial section on 'Matching on the propensity score' for more information.,Temp
+Balancing 1toK ratio choose K,Choose 'k':,Temp
+Balancing 1tok ratio description,"You've chosen a 1:K matching ratio. By matching more than 1 control to each treated unit more of the sample can be used. However, this can come at the cost of the treated and untreated groups being less balanced and can mean there is more bias. Note that if you have a limited number of untreated participants you may not be able to implement a matching ratio greater than 1:1.",Temp
+Balancing Tab summary,Matching Variable(s) Summary (Unbalanced),Temp
+Balancing Tab output,Output,Temp
+Balancing Tab output description,"Once you have selected your matching method and ratio, press 'Run' to get output.",Temp
+Balancing Warning output rerun,"It looks like balancing will have to be rerun, this is because some of the required inputs have been changed since the previous run. Once you have selected your matching method and ratio, press 'Run' to get output.",Temp
+Balancing Common support graph,Common Support Graph,Temp
+Balancing Common support graph description,"The common support graph shows how much overlap there is between different treatment groups in their propensity scores. For multiple imputation this is based on an average of propensity scores across datasets. Ideally there is a lot of overlap; however, sometimes the different treatment groups are very different from each other and there is too little overlap to make counterfactual analysis feasible.",Temp
+Balancing Observation table,Observation Table,Temp
+Balancing ESS,effective sample size,Temp
+Balancing Love plot,Love Plot,Temp
+Balancing Balance plot dots,Dots indicate standardised mean differences in matching variables before and after adjusting.,Temp
+Balancing Balance plot dots MI,Dots indicate standardised mean differences in matching variables before and after adjusting. Bars represent the range across imputations.,Temp
+Balancing Balance table,Balance Table,Temp
+Balancing Warning no method,Please select a matching method before proceeding,Temp
+Balancing Warning no ratio,Please select a matching ratio before proceeding,Temp
+Balancing Warning change rerun,Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.,Temp
+Outcome Choose model,Choose an Outcome Model:,Temp
+Outcome LR w covar interaction,Linear Regression (Outcome ~ Treatment * Matching Variables),Temp
+Outcome LR w covar,Linear Regression (Outcome ~ Treatment + Matching Variables),Temp
+Outcome LR wo covar,Linear Regression (Outcome ~ Treatment),Temp
+Outcome LR description,"Linear regression is a way of modelling the associations between exploratory variable(s) and a continuous outcome variable. The model takes the form y = bX + e, where y and x are our outcome and explanatory variables respectively, and e is the random error. Of interest here is b, which is the estimated effect of our treatment variable on our outcome. By fitting a model to a sample that is either matched or weighted according to the propensity of treatment, we can better estimate the **causal** effect of the treatment on our outcome variable. As you select an outcome model option more information will appear.",Temp
+Outcome LR w covar interaction full,Linear regression adjusted for matching variables as covariates and their interactions with the treatment variable:,Temp
+Outcome LR w covar interaction description,"This option will fit a linear regression with your chosen outcome and the following predictors: i) the treatment variable ii) all matching variables iii) all interactions between treatment and matching variables. This method addresses the fact that dependencies (or ‘clustering’) are introduced into the data due to matching and can help to deal with the effects of any remaining imbalance that isn’t completely addressed by the matching or weighting. It additionally deals with imbalance and bias that might be related to the fact that treatment status might interact with the matching variables (e.g., a treatment might affect people of different genders differently so if there isn’t a perfect gender balance there might be some bias in estimating the treatment effect).",Temp
+Outcome LR w covar full,Linear regression adjusted for matching variables as covariates:,Temp
+Outcome LR w covar description,This option will fit a linear regression with your chosen outcome and the treatment variable and matching variables as predictors. This option is recommended for matching methods as it addresses the fact that dependencies (or ‘clustering’) are introduced into the data due to matching. It can also help to deal with the effects of any remaining imbalance that isn’t completely addressed by the matching or weighting.,Temp
+Outcome LR wo covar full,Linear regression without matching variables as covariates:,Temp
+Outcome LR wo covar description,This option will fit a linear regression with your chosen outcome and just the treatment variable as a predictor using the matched data or IPTW weights. Note that this method does not take into account the paired nature of the data when used with a matching method like propensity score matching for binary treatments or NBP for ordinal treatments.,Temp
+Outcome model output,Outcome Model Output,Temp
+Outcome model output initial,"Once you have selected your outcome model, press ‘Run' to get results.",Temp
+Outcome model output rerun,"It looks like the outcome model will have to be rerun, this is because some of the required inputs have been changed since the previous run. Once you have selected your outcome model, press 'Run' to get results.",Temp
+Outcome model output estimate description,"In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, interventions, or treatments on mental health outcomes.",Temp
+Outcome model output estimate,Estimate:,Temp
+Outcome model output SE description,The standard error is a statistical measure that quantifies the variability or uncertainty associated with the estimate. It provides a measure of how much the estimate is likely to vary from the true population value.,Temp
+Outcome model output SE,Standard Error:,Temp
+Outcome model output P description,"In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect or relationship in the data.",Temp
+Outcome model output P,P-value:,Temp
+Outcome model output CI,95% Confidence Interval:,Temp
+Outcome model output change,Note: Changing this parameter will require the outcome model to be rerun along with all subsequent steps.,Temp
+Outcome Button Run,Run,Temp
+Outcome Button download report,Download Report,Temp
+Outcome Button download script,Download R Script,Temp
+Outcome Button sensitivity,Go to Sensitivity Analysis Tab,Temp
+Outcome Warning rerun,Note: Changing this parameter will require outcome model to be rerun,Temp
+Outcome Warning no model,Please select an outcome model before proceeding,Temp
+Tabs DU outcome,Outcome: ,Temp
+Tabs DU treatment,Treatment: ,Temp
+Tabs Approach approach,Approach: ,Temp
+Tabs Approach missingness,Missingness: ,Temp
+Tabs Approach model,Model: ,Temp
+Tabs Matching method,Matching Method: ,Temp
+Tabs Matching ratio,Matching Ratio:,Temp
+Tabs Outcome model,Outcome Model:,Temp

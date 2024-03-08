@@ -282,6 +282,74 @@ outcome_unadjusted <- function(balanced_data,
     
 
   }
+  else if(extracted_balanced_data$process == "cc_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")   
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    updated_design <- svydesign(ids = cluster_formula,
+                                weights = weighting_formula,
+                                strata = strata_formula,
+                                data = data_to_use)
+    
+    
+    model_fit = svyglm(model_formula, design = updated_design)
+  } 
+  else if(extracted_balanced_data$process == "mi_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")  
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    mi_matched_design <- svydesign(ids = cluster_formula,
+                                   weights = weighting_formula,
+                                   strata = strata_formula,
+                                   data = imputationList(data_to_use))
+    model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
+  }
   return(model_fit)
 }
 
@@ -525,6 +593,74 @@ outcome_matching_variables <- function(balanced_data,
 
     
   }
+  else if(extracted_balanced_data$process == "cc_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")   
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    updated_design <- svydesign(ids = cluster_formula,
+                                weights = weighting_formula,
+                                strata = strata_formula,
+                                data = data_to_use)
+    
+    
+    model_fit = svyglm(model_formula, design = updated_design)
+  }
+  else if(extracted_balanced_data$process == "mi_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")  
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    mi_matched_design <- svydesign(ids = cluster_formula,
+                                   weights = weighting_formula,
+                                   strata = strata_formula,
+                                   data = imputationList(data_to_use))
+    model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
+  }
   return(model_fit)
 }
 
@@ -625,7 +761,10 @@ outcome_marginal_effects <- function(balanced_data,
                                   data = data_to_use)
       
       model_fit = svyglm(model_formula, design = updated_design)
-      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
+      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
+                                                   vcov = ~subclass,
+                                                   newdata = subset(extracted_balanced_data[[1]], 
+                                                                    extracted_balanced_data[[1]][[treatment_variable]] == 1))
       
     }else{
       model_fit = lm(model_formula, data = extracted_balanced_data[[1]], weights = weights)
@@ -673,7 +812,7 @@ outcome_marginal_effects <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) 
     
      model_fit = lapply(model_fit, function(fit){
-     marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, get(treatment_variable) == 1),
+     marginaleffects::avg_comparisons(fit, newdata = fit$data,
                                       variables = treatment_variable, wts = "weights", vcov = "HC3")
     })
 
@@ -717,8 +856,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
                                                  vcov = "HC3",
-                                                 newdata = subset(extracted_balanced_data[[1]], 
-                                                                  extracted_balanced_data[[1]][[treatment_variable]] == 1),
+                                                 newdata = extracted_balanced_data[[1]], 
                                                  wts = "weights")
     
   } else if (extracted_balanced_data$process == "weighting_iptw"){

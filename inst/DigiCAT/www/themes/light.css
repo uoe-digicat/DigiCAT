@@ -22,6 +22,16 @@ background-color: transparent;
 color: #170344;
 }
 
+.skin-blue .selectize-dropdown-content {
+background-color: transparent;
+color: #170344;
+}
+
+/* Select language label colour  */
+.selected_language{
+  color: #170344;
+}
+                          
 /* other links in the sidebarmenu when hovered */
 .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
   background-color: transparent;
@@ -55,6 +65,11 @@ color: #C01976;
 /* main sidebar */
 .skin-blue .main-sidebar {
   background-color: #ffffff;;
+}
+
+/* selectInput font colour */
+#selected_language {
+  color: #170344;
 }
 
 /* dashboard body */
@@ -168,5 +183,3 @@ tbody {
 .checkbox {
   color: #170344;
 }
-
-      
