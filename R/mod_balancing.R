@@ -89,70 +89,71 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  # Get descriptive statistics of unbalanced matching variables y treatment group
                  observeEvent(c(treatment_variable(), matching_variables(), categorical_variables()), {
                    
-                   ## Ensure data, categorical variables, matching variables and treatment variable have been seleceted
-                   if (!(is.null(raw_data()) | is.null(categorical_variables()) | is.null(treatment_variable()) | is.null(matching_variables()))){
-                       ## Define summary function
-                       my_summary <- function(v){
-                         if(!any(is.na(v))){
-                           res <- c(summary(v),"NA's"=0)
-                         } else{
-                           res <- summary(v)
-                         }
-                         return(res)
-                       }
-
-                       if (any(treatment_variable() %in% categorical_variables())){ ## If treatment is categorical
-
-                         ## Get treatment groups
-                         groups <- unique(isolate(raw_data())[,isolate(treatment_variable())])
-                         groups <- sort(groups)
-                         df <- isolate(raw_data())
-                         df$treatment_before_balancing <- df[isolate(treatment_variable())]
-
-                       } else{ ## If treatment is continuous, categories into groups
-
-                         df <- isolate(raw_data())
-
-                         treatment_median <- mean(df[,isolate(treatment_variable())], na.rm = T)
-
-                         ## Dicotomise treatment into low (less than or equal to median) and high (greater than median)
-                         df$treatment_before_balancing <- if_else(df[isolate(treatment_variable())] <= treatment_median,
-                                                                  "<= Median",  "> Median")
-                         
-                         ## groups are now dicotimized treatment variable
-                         groups <- c( "<= Mean", "> Mean")
-                       }
-
-                       ## Subset data by treatment group and get descriptives on each variable (by group)
-                       unbalanced_summary <- NA
-                       
-                       for (group in groups){ ## Iterate through treatment groups
-                         ## Get summary of each matching variable
-                         ls_sum <- lapply(as.data.frame(df[df["treatment_before_balancing"] == group, isolate(matching_variables())]), my_summary)
-                         ## Change to dataframe
-                         df_sum <- data.frame(matrix(unlist(ls_sum), ncol = max(lengths(ls_sum)), byrow = TRUE))
-                         ## Change to dataframe and add row and column names
-                         names(df_sum) <- names(ls_sum[[which(lengths(ls_sum)>0)[1]]])
-                         rownames(df_sum) <- paste(isolate(matching_variables()), isolate(treatment_variable()), group)
-                         unbalanced_summary <- rbind(unbalanced_summary, df_sum)
-                       }
-
-                       unbalanced_summary <- unbalanced_summary[-1,]
-
-                       ## Reorder table so matching variables are together
-                       formatted_unbalanced_summary <- NA
-
-                       for (matching_index in 1:length(isolate(matching_variables()))){
-                         for (group in groups){
-                           index <- matching_index + (length(isolate(matching_variables())) * (which(groups == group) - 1))
-                           ## Get description of each matching variable in each group
-                           formatted_unbalanced_summary_temp <- unbalanced_summary[index,]
-                           formatted_unbalanced_summary <- rbind(formatted_unbalanced_summary,formatted_unbalanced_summary_temp)
-                         }
-                       }
-
-                       balancing_values$descriptive_stats <- DT::renderDataTable({DT::datatable(round(formatted_unbalanced_summary[-1,], 2), rownames = TRUE, options = list(scrollX = TRUE))})
-                   }
+                   # ## Ensure data, categorical variables, matching variables and treatment variable have been seleceted
+                   # if (!(is.null(raw_data()) | is.null(categorical_variables()) | is.null(treatment_variable()) | is.null(matching_variables()))){
+                   #     ## Define summary function
+                   #     my_summary <- function(v){
+                   #       if(!any(is.na(v))){
+                   #         res <- c(summary(v),"NA's"=0)
+                   #       } else{
+                   #         res <- summary(v)
+                   #       }
+                   #       return(res)
+                   #     }
+                   # 
+                   #     if (any(treatment_variable() %in% categorical_variables())){ ## If treatment is categorical
+                   # 
+                   #       ## Get treatment groups
+                   #       groups <- unique(isolate(raw_data())[,isolate(treatment_variable())])
+                   #       groups <- sort(groups)
+                   #       groups <- as.numeric(as.character(groups)) ## Covert to numeric to defactor
+                   #       df <- isolate(raw_data())
+                   #       df$treatment_before_balancing <- df[isolate(treatment_variable())]
+                   # 
+                   #     } else{ ## If treatment is continuous, categories into groups
+                   # 
+                   #       df <- isolate(raw_data())
+                   # 
+                   #       treatment_median <- mean(df[,isolate(treatment_variable())], na.rm = T)
+                   # 
+                   #       ## Dicotomise treatment into low (less than or equal to median) and high (greater than median)
+                   #       df$treatment_before_balancing <- if_else(df[isolate(treatment_variable())] <= treatment_median,
+                   #                                                "<= Median",  "> Median")
+                   #       
+                   #       ## groups are now dicotimized treatment variable
+                   #       groups <- c( "<= Mean", "> Mean")
+                   #     }
+                   # 
+                   #     ## Subset data by treatment group and get descriptives on each variable (by group)
+                   #     unbalanced_summary <- NA
+                   #     
+                   #     for (group in groups){ ## Iterate through treatment groups
+                   #       ## Get summary of each matching variable
+                   #       ls_sum <- lapply(as.data.frame(df[df["treatment_before_balancing"] == group, isolate(matching_variables())]), my_summary)
+                   #       ## Change to dataframe
+                   #       df_sum <- data.frame(matrix(unlist(ls_sum), ncol = max(lengths(ls_sum)), byrow = TRUE))
+                   #       ## Change to dataframe and add row and column names
+                   #       names(df_sum) <- names(ls_sum[[which(lengths(ls_sum)>0)[1]]])
+                   #       rownames(df_sum) <- paste(isolate(matching_variables()), isolate(treatment_variable()), group)
+                   #       unbalanced_summary <- rbind(unbalanced_summary, df_sum)
+                   #     }
+                   # 
+                   #     unbalanced_summary <- unbalanced_summary[-1,]
+                   # 
+                   #     ## Reorder table so matching variables are together
+                   #     formatted_unbalanced_summary <- NA
+                   # 
+                   #     for (matching_index in 1:length(isolate(matching_variables()))){
+                   #       for (group in groups){
+                   #         index <- matching_index + (length(isolate(matching_variables())) * (which(groups == group) - 1))
+                   #         ## Get description of each matching variable in each group
+                   #         formatted_unbalanced_summary_temp <- unbalanced_summary[index,]
+                   #         formatted_unbalanced_summary <- rbind(formatted_unbalanced_summary,formatted_unbalanced_summary_temp)
+                   #       }
+                   #     }
+                   # 
+                   #     balancing_values$descriptive_stats <- DT::renderDataTable({DT::datatable(round(formatted_unbalanced_summary[-1,], 2), rownames = TRUE, options = list(scrollX = TRUE))})
+                   #}
                  })
                  
                  ## Render balancing analysis options based on approach chosen

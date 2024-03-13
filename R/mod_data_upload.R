@@ -192,10 +192,6 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                      ## Change treatment variable name in uploaded data
                      data_upload_values$rawdata[, "uploaded_treatment"] <- data_upload_values$rawdata[, input$treatment]
                      data_upload_values$treatment_name <- "uploaded_treatment"
-                     ## Flag change to user
-                     output$treatment_name_change <- renderUI({
-                       p("Will be refered to as 'uploaded_treatment' in DigiCAT analysis", style = "color:grey")
-                     })
                    } else{
                      data_upload_values$treatment_name <- input$treatment
                      output$treatment_name_change <- NULL
@@ -209,10 +205,6 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                      ## Change survey weights variable name in uploaded data
                      data_upload_values$rawdata[, "uploaded_weights"] <- data_upload_values$rawdata[, input$survey_weight_var]
                      data_upload_values$survey_weight_var <- "uploaded_weights"
-                     ## Flag change to user
-                     output$survey_weight_name_change <- renderUI({
-                       p("Will be refered to as 'uploaded_weights' in DigiCAT analysis", style = "color:grey")
-                     })
                    } else{
                      data_upload_values$survey_weight_var <- input$survey_weight_var
                      output$survey_weight_name_change <- NULL
@@ -268,7 +260,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                    
                    if (input$clustering_checkbox){
                      output$clustering_var <- renderUI(
-                       pickerInput(session$ns("clustering_var"), label = i18n$t("Select a clustering variable"),
+                       pickerInput(session$ns("clustering_var"), label = i18n$t("Upload Clustering selection"),
                                    choices=names(isolate(data_upload_values$rawdata)), selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F)))
                    } else{
                      output$clustering_var <- NULL ## If checkbox unseleceted, show nothing
@@ -483,10 +475,10 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                        output$no_data_warning <- renderUI(h5(i18n$t("Upload Data warning"), style = "color:red"))
                        
                      }else{
-                       variable_check_info <- check_selected_variables(outcome = input$outcome,
-                                                                       treatment = input$treatment,
-                                                                       matchvars = input$matchvars,
-                                                                       covars = input$covars,
+                       variable_check_info <- check_selected_variables(outcome = isolate(input$outcome),
+                                                                       treatment = isolate(input$treatment),
+                                                                       matchvars = isolate(input$matchvars),
+                                                                       covars = isolate(input$covars),
                                                                        i18n = i18n)
                        
                        ## If there is no missing data and no variable mismatched, proceed to next tab
@@ -495,15 +487,18 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                          showTab(inputId = NS(id,"data_panel"), target = NS(id,"data_validation"), select = TRUE, session = parent)
                          
                          ## Validate data
+                         ## First, ensure all data is numeric as required for cor etimate, categorical variables will later be factorised
+                         data_upload_values$rawdata <- mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x)))
+                         
                          data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, 
-                                                                          outcome = input$outcome, 
-                                                                          treatment = input$treatment, 
-                                                                          matchvars = input$matchvars, 
-                                                                          covars = input$covars, 
-                                                                          survey_weight_var = input$survey_weight_var,
-                                                                          non_response_weight = input$non_response_weight_checkbox,
-                                                                          clustering_var = input$clustering_var,
-                                                                          stratification_var = input$stratification_var,
+                                                                          outcome = isolate(input$outcome), 
+                                                                          treatment = isolate(input$treatment), 
+                                                                          matchvars = isolate(input$matchvars), 
+                                                                          covars = isolate(input$covars), 
+                                                                          survey_weight_var = isolate(input$survey_weight_var),
+                                                                          non_response_weight = isolate(input$non_response_weight_checkbox),
+                                                                          clustering_var = isolate(input$clustering_var),
+                                                                          stratification_var = isolate(input$stratification_var),
                                                                           i18n = i18n)
                          
                          
@@ -537,10 +532,12 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                          
                          ## Display warning under data/variable selection warning about reselection requiring revalidation/rerun of subsequent analysis
                          data_upload_output$data_upload_rerun_message <- p(i18n$t("Upload Warning rerun"))
+                         
+                         ## Factorise categorical variables
+                         data_upload_values$rawdata <- data_upload_values$rawdata %>%
+                           mutate(across(isolate(input$categorical_vars), (as.factor)))
                        }
                      }}
-                   else{
-                   }
                  })
                  
                  # Language change ----
@@ -565,7 +562,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  
                  ## Pass output to UI ----
                  
-                 output$contents <- DT::renderDataTable({DT::datatable(round(data_upload_values$rawdata, 2), options = list(dom = 't', scrollX = TRUE))})
+                 output$contents <- DT::renderDataTable({DT::datatable(round(mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x))), 2), options = list(dom = 't', scrollX = TRUE))})
                  output$data_validation <- renderUI(p(data_upload_values$validation$print))
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
