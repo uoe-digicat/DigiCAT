@@ -88,8 +88,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  observeEvent(c(approach(), missingness(), balancing_model()), {
                    
                    if (!is.null(approach())){
-                     ## If IPTW selected, display nothing
-                     if (approach() == "iptw"){
+                     ## If IPTW or CBPS selected, display nothing
+                     if (approach() == "iptw" | approach() == "cbps"){
                        output$prog_choiceBM <- NULL
                      }
                      else{
@@ -361,6 +361,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      outcome_model_values$output_initial <- NULL
                      outcome_model_values$output_rerun <- NULL
                      outcome_model_values$output_error <- NULL
+                     outcome_model_values$output_change <- NULL
                      
                      ## Save potential error to check for running of code dependent on outcome model
                      error_check <- NA
