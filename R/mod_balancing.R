@@ -59,7 +59,7 @@ balancing_ui <- function(id, i18n) {
   )
 }
 
-balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, descriptions, analysis_tab, i18n, selected_language) {
+balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, descriptions, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -86,23 +86,23 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  
                  ## Page Setup ----
                  
-                 # Get descriptive statistics of unbalanced matching variables y treatment group
-                 observeEvent(c(treatment_variable(), matching_variables(), categorical_variables()), {
+                 # Get descriptive statistics of unbalanced matching variables in each treatment group
+                 observeEvent(c(validation_log()), {
                    
-                   ## Ensure data, categorical variables, matching variables and treatment variable have been seleceted
-                   if (!(is.null(raw_data()) | is.null(categorical_variables()) | is.null(treatment_variable()) | is.null(matching_variables()))){
+                   ## Ensure data, matching variables and treatment variable have been selected
+                   if (!(is.null(raw_data()) | is.null(treatment_variable()) | is.null(matching_variables()))){
 
                        if (any(treatment_variable() %in% categorical_variables())){ ## If treatment is categorical
-                         
+
                          ## Get mean and SD of each matching variable per treatment group
-                         df <- raw_data()
+                         df <- isolate(raw_data())
                          df <- aggregate(. ~ get(treatment_variable()), df[,c(treatment_variable(), matching_variables())], function(x) summary = paste0(round(mean(as.numeric(as.character(x))), 2), " (", round(sd(as.numeric(as.character(x))), 2), ")"))
                          df <- as.data.frame(t(df))
                          names(df) <-paste0(treatment_variable(), " ", df[1,], " Mean (Standard Deviation)")
                          formatted_unbalanced_summary <- df[-c(1,2),]
 
                        } else{ ## If treatment is continuous, categories into groups
-                         
+
                          df <- isolate(raw_data())
                          ## Slit continuous treatment into quartiles
                          df$treatment_quartiles <- ntile(df[,treatment_variable()], 4)

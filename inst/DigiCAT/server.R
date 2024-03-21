@@ -90,6 +90,7 @@ server <- function(input, output, session) {
                                                  survey_weight_var = reactive(data_upload_output$survey_weight_var),
                                                  cluster_var = reactive(data_upload_output$cluster_var),
                                                  stratification_var = reactive(data_upload_output$stratification_var),
+                                                 validation_log = reactive(data_upload_output$validation_log),
                                                  approach = reactive(CF_approach_output$CF_radio),
                                                  missingness = reactive(CF_approach_output$missingness),
                                                  balancing_model = reactive(CF_approach_output$balancing_model),
