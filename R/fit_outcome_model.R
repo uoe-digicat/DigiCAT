@@ -247,6 +247,10 @@ outcome_unadjusted <- function(balanced_data,
   else if (extracted_balanced_data$process == "cc_nbp" | extracted_balanced_data$process == "weighting_nbp"){
     
     data_to_use <- extracted_balanced_data[[1]]
+   
+  
+    contrasts(data_to_use[[treatment_variable]]) <- contr.sum(length(levels(data_to_use[[treatment_variable]])))
+    
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
@@ -276,7 +280,6 @@ outcome_unadjusted <- function(balanced_data,
                                 weights = weighting_formula,
                                 strata = strata_formula,
                                 data = data_to_use)
-    
     
     model_fit = svyglm(model_formula, design = updated_design)
     
@@ -557,6 +560,8 @@ outcome_matching_variables <- function(balanced_data,
   else if (extracted_balanced_data$process == "cc_nbp" | extracted_balanced_data$process == "weighting_nbp"){
     
     data_to_use <- extracted_balanced_data[[1]]
+
+    contrasts(data_to_use[[treatment_variable]]) <- contr.sum(length(levels(data_to_use[[treatment_variable]])))
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
@@ -587,7 +592,7 @@ outcome_matching_variables <- function(balanced_data,
                                 strata = strata_formula,
                                 data = data_to_use)
     
-    
+
     model_fit = svyglm(model_formula, design = updated_design)
 
     
