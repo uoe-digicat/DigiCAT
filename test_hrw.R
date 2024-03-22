@@ -1,8 +1,21 @@
 source("R/propensity_estimation_stage.R")
+source("R/handle_missingness.R")
+source("R/estimate_model.R")
+source("R/get_propensity.R")
 source("R/evaluate_imputations.R")
 source("R/evaluate_propensity_stage.R")
 source("R/balance_data.R")
+source("R/prepare_dataset_nbp.R")
+source("R/make_matrix_nbp.R")
+source("R/Restructure_nbp.R")
+source("R/extract_balanced_data.R")
+source("R/fit_outcome_model.R")
+source("R/extract_outcome_results.R")
+source("R/standardise_outcome_format.R")
 source("R/outcome_analysis_stage.R")
+source("R/run_SA.R")
+
+
 
 N =500
 A = matrix(runif(5^2)*2-1, ncol = 5)
@@ -205,6 +218,23 @@ trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "n
                                 covariates = NULL,
                                 outcome_formula = "with_matching_variables",
                                 psmodel_obj = un, missing_method = "mi",
+                                weighting_variable = "income")
+
+
+un <- estimation_stage(.data = simulated_data$amp, missing_method = "weighting", model_type = "poly",
+                       treatment_variable = "treatment", matching_variable = "age",
+                       weighting_variable = "income")
+
+deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
+                     matching_variable = "age", PS_estimation_object = un,
+                     missing_method = "weighting")
+
+trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
+                                outcome_variable = "continuous_outcome", treatment_variable = "treatment",
+                                matching_variable = "age",
+                                covariates = NULL,
+                                outcome_formula = "unadjusted",
+                                psmodel_obj = un, missing_method = "weighting",
                                 weighting_variable = "income")
 
 data(mtcars)
