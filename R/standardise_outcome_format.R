@@ -96,7 +96,7 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     results_dataframe = extracted_outcome_results[[1]]
     results_dataframe = results_dataframe[,-3]
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
-    results_dataframe <- results_dataframe[-1,]
+    results_dataframe <- results_dataframe[2,]
     return(results_dataframe)
   } else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "nbp" & outcome_formula == "unadjusted"){
     results_dataframe = extracted_outcome_results[[1]]

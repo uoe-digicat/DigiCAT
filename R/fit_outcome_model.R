@@ -249,8 +249,6 @@ outcome_unadjusted <- function(balanced_data,
     data_to_use <- extracted_balanced_data[[1]]
    
   
-    contrasts(data_to_use[[treatment_variable]]) <- contr.sum(length(levels(data_to_use[[treatment_variable]])))
-    
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
@@ -561,8 +559,6 @@ outcome_matching_variables <- function(balanced_data,
     
     data_to_use <- extracted_balanced_data[[1]]
 
-    contrasts(data_to_use[[treatment_variable]]) <- contr.sum(length(levels(data_to_use[[treatment_variable]])))
-    
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
       cluster_formula <- as.formula(paste("~", cluster_variable))
