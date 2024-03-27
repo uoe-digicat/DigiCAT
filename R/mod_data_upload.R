@@ -540,22 +540,6 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                      }}
                  })
                  
-                 # Language change ----
-                 ## If language changes, rerun data validation function to get translated version
-                 observeEvent(selected_language(), { ## Only run when on data upload page
-                   if(shiny::isTruthy(analysis_tab())){
-                     if(analysis_tab() == "data_upload-tab"){
-                       reset_upload_page(hide_validation = TRUE, reset_errors = TRUE, parent = parent)
-                       data_upload_values$validation <- NULL
-                       shinyjs::disable("nextDU_btn")
-                       ## If rerun warning presesnt, repalce with correct translation
-                       if(!is.null(data_upload_output$data_upload_rerun_message)){
-                         data_upload_output$data_upload_rerun_message <- p(i18n$t("Upload Warning rerun"))
-                       }
-                     }
-                   }
-                 })
-                 
                  observeEvent(input$nextDU_btn, {
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "CF_approach-tab")
                  })
