@@ -187,6 +187,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      if(CF_approach_values$model_choice == "poly"){
                        updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach ORL"))
                      }
+                     if(CF_approach_values$model_choice == "lm"){
+                       updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach LR"))
+                     }
                    }
                    ## Replace rerun warning
                    if (!is.null(CF_approach_values$approach_rerun_message)){
@@ -244,6 +247,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                        }
                        if(CF_approach_values$model_choice == "poly"){
                          updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach ORL"))
+                       }
+                       if(CF_approach_values$model_choice == "lm"){
+                         updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach LR"))
                        }
                      }
                      ## Replace rerun warning
@@ -322,14 +328,14 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      ### Approach, missingness and PS model: ordinal treatment ----
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) > 2 & any(treatment_variable() %in% categorical_variables())){ ## Ordinal treatment approaches
 
-                       if (enableLocal){
-                         output$approach_selection <- renderUI(p("Non-bipartite Matching (NBP) coming soon." ,style = "color:grey"))
-                       } else{
+                       # if (enableLocal){
+                       #   output$approach_selection <- renderUI(p("Non-bipartite Matching (NBP) coming soon." ,style = "color:grey"))
+                       # } else{
                          output$approach_selection <- renderUI(radioButtons(ns("CF_radio"),
                                                                             label = h4("1. Choose a Counterfactual Approach:"),
                                                                             choices = i18n$t("Approach NBP"),
                                                                             selected = i18n$t("Approach NBP")))
-                       }
+                       # }
 
                        output$approach_description_general <- renderUI(p(h5(i18n$t("Approach Description")),
                                                                          p(i18n$t("Approach NBP description")),
@@ -620,6 +626,10 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      )
                    }
                    
+                   if (input$balancing_model_radio == i18n$t("Approach LR")){
+                     CF_approach_values$balancing_model_description <- p("")
+                   }
+                   
                    ## Remove message with no balancing method selected error if present
                    CF_approach_values$balancing_model_missing_message <- NULL
                  })
@@ -664,6 +674,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    }
                    if (input$balancing_model_radio == i18n$t("Approach ORL")){
                      CF_approach_values$model_choice <- "poly"
+                   }
+                   if (input$balancing_model_radio == i18n$t("Approach LR")){
+                     CF_approach_values$model_choice <- "lm"
                    }
                  })
                  

@@ -31,6 +31,7 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
   
   else if(missing_method == "weighting"){
     eps = 1*10^-100 
+    propensity_data = na.omit(propensity_data)
     result = matrix(ncol = nrow(propensity_data), nrow = nrow(propensity_data))
     
     matj = matrix(data = propensity_data[[treatment_variable]], nrow = nrow(propensity_data), ncol = nrow(propensity_data), byrow = F)
@@ -54,6 +55,7 @@ make_matrix_nbp <- function(propensity_data, estimated_propensity_model, treatme
     
     distance_matrix_nbp = res_squared
     row.names(distance_matrix_nbp) <- propensity_data$ID
+    distance_matrix_nbp
     
   }
   

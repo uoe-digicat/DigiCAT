@@ -244,9 +244,11 @@ outcome_unadjusted <- function(balanced_data,
   } else if (extracted_balanced_data$process == "weighting_psm"){
     model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
   }
-  else if (extracted_balanced_data$process == "cc_nbp"){
+  else if (extracted_balanced_data$process == "cc_nbp" | extracted_balanced_data$process == "weighting_nbp"){
     
     data_to_use <- extracted_balanced_data[[1]]
+   
+  
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
@@ -276,7 +278,6 @@ outcome_unadjusted <- function(balanced_data,
                                 weights = weighting_formula,
                                 strata = strata_formula,
                                 data = data_to_use)
-    
     
     model_fit = svyglm(model_formula, design = updated_design)
     
@@ -363,7 +364,6 @@ outcome_matching_variables <- function(balanced_data,
                                        psmodel_obj, cluster_variable = NULL,
                                        weighting_variable = NULL,
                                        strata_variable = NULL,...){
-  
   
   if(!is.null(covariates)){
     model_formula = paste0(outcome_variable,"~",paste0(c(treatment_variable,matching_variable,covariates),collapse="+"))
@@ -555,10 +555,10 @@ outcome_matching_variables <- function(balanced_data,
   } else if (extracted_balanced_data$process == "weighting_psm"){
     model_fit = svyglm(model_formula, design = extracted_balanced_data[[1]])
   }
-  else if (extracted_balanced_data$process == "cc_nbp"){
+  else if (extracted_balanced_data$process == "cc_nbp" | extracted_balanced_data$process == "weighting_nbp"){
     
     data_to_use <- extracted_balanced_data[[1]]
-    
+
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
       cluster_formula <- as.formula(paste("~", cluster_variable))
@@ -588,7 +588,7 @@ outcome_matching_variables <- function(balanced_data,
                                 strata = strata_formula,
                                 data = data_to_use)
     
-    
+
     model_fit = svyglm(model_formula, design = updated_design)
 
     
