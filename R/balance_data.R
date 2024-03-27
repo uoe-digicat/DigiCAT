@@ -12,6 +12,7 @@
 #' @import WeightIt
 #' @import MatchIt
 #' @import MatchThem
+#' @import CBPS
 #' 
 #' @examples
 #' estimates <- estimation_stage(

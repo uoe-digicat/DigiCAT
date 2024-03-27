@@ -2,6 +2,7 @@
 
 export(outcome_analysis_stage)
 export(run_DigiCAT)
+import(CBPS)
 import(MatchIt)
 import(MatchThem)
 import(WeightIt)

@@ -1,6 +1,7 @@
 # balancing module ----
 #'@import cobalt
 #'@import shinycssloaders
+#'@import CBPS
 
 balancing_ui <- function(id, i18n) {
   ns <- NS(id)
@@ -23,9 +24,7 @@ balancing_ui <- function(id, i18n) {
                div(style="width: 12%; text-align: center; height: 1px; background-color: #607cc4; margin:18px;"),
                div(style="width: 12%; text-align: center;", h5(i18n$t("OUTCOME"), style="color: #607cc4;"))
            ),
-           
-           
-           
+
            ## Navigation ----
            
            div(align="center",
@@ -60,7 +59,7 @@ balancing_ui <- function(id, i18n) {
   )
 }
 
-balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, descriptions, analysis_tab, i18n, selected_language) {
+balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, descriptions, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -87,53 +86,35 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  
                  ## Page Setup ----
                  
-                 # Get descriptive statistics of unbalanced matching variables y treatment group
-                 observeEvent(c(treatment_variable(), matching_variables()), {
+                 # Get descriptive statistics of unbalanced matching variables in each treatment group
+                 observeEvent(c(validation_log()), {
                    
-                   ## Ensure data, matching variables and treatment variable have been seleceted
+                   ## Ensure data, matching variables and treatment variable have been selected
                    if (!(is.null(raw_data()) | is.null(treatment_variable()) | is.null(matching_variables()))){
-                     
-                     ## Define summary function
-                     my_summary <- function(v){
-                       if(!any(is.na(v))){
-                         res <- c(summary(v),"NA's"=0)
-                       } else{
-                         res <- summary(v)
+
+                       if (any(treatment_variable() %in% categorical_variables())){ ## If treatment is categorical
+
+                         ## Get mean and SD of each matching variable per treatment group
+                         df <- isolate(raw_data())
+                         df <- aggregate(. ~ get(treatment_variable()), df[,c(treatment_variable(), matching_variables())], function(x) summary = paste0(round(mean(as.numeric(as.character(x))), 2), " (", round(sd(as.numeric(as.character(x))), 2), ")"))
+                         df <- as.data.frame(t(df))
+                         names(df) <-paste0(treatment_variable(), " ", df[1,], " Mean (Standard Deviation)")
+                         formatted_unbalanced_summary <- df[-c(1,2),]
+
+                       } else{ ## If treatment is continuous, categories into groups
+
+                         df <- isolate(raw_data())
+                         ## Slit continuous treatment into quartiles
+                         df$treatment_quartiles <- ntile(df[,treatment_variable()], 4)
+                         ## Get mean and SD of each matching variable per treatment group
+                         df <- aggregate(. ~ treatment_quartiles, df[,c("treatment_quartiles", matching_variables())], function(x) summary = paste0(round(mean(as.numeric(as.character(x))), 2), " (", round(sd(as.numeric(as.character(x))), 2), ")"))
+                         df <- as.data.frame(t(df))
+                         names(df) <- paste0(treatment_variable(), " Q", df[1,], " Mean (Standard Deviation)")
+                         formatted_unbalanced_summary <- df[-1,]
                        }
-                       return(res)
-                     }
-                     
-                     ## Get treatment groups
-                     groups <- unique(isolate(raw_data())[,isolate(treatment_variable())])
-                     groups <- sort(groups)
-                     
-                     # Subset data by treatment group and get descriptives on each variable (by group)
-                     unbalanced_summary <- NA
-                     
-                     for (group in groups){
-                       ## Get descriptives
-                       ls <- lapply(as.data.frame(isolate(raw_data())[isolate(raw_data())[isolate(treatment_variable())] == group, isolate(matching_variables())]), my_summary)
-                       df <- data.frame(matrix(unlist(ls), ncol = max(lengths(ls)), byrow = TRUE))
-                       names(df) <- names(ls[[which(lengths(ls)>0)[1]]])
-                       rownames(df) <- paste(isolate(matching_variables()), isolate(treatment_variable()), group)
-                       unbalanced_summary <- rbind(unbalanced_summary, df)
-                     }
-                     
-                     unbalanced_summary <- unbalanced_summary[-1,]
-                     
-                     ## Reorder table so matching variables are together
-                     formatted_unbalanced_summary <- NA
-                     
-                     for (matching_index in 1:length(isolate(matching_variables()))){
-                       for (group in groups){
-                         index <- matching_index + (length(isolate(matching_variables())) * (which(groups == group) - 1))
-                         ## Get description of each matching variable in each group
-                         formatted_unbalanced_summary_temp <- unbalanced_summary[index,]
-                         formatted_unbalanced_summary <- rbind(formatted_unbalanced_summary,formatted_unbalanced_summary_temp)
-                       }
-                     }
-                     
-                     balancing_values$descriptive_stats <- DT::renderDataTable({DT::datatable(round(formatted_unbalanced_summary[-1,], 2), rownames = TRUE, options = list(scrollX = TRUE))})
+
+                     ## Render unmatched balancing table
+                     balancing_values$descriptive_stats <- DT::renderDataTable({DT::datatable(formatted_unbalanced_summary, rownames = TRUE, options = list(scrollX = TRUE))})
                    }
                  })
                  
@@ -248,6 +229,22 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                                  p(i18n$t("Balancing Matching method description IPTW")),
                                  a(id = "link",i18n$t("Balancing Matching method tutorial link IPTW"), href = "https://uoe-digicat.github.io/04_cfmethod.html#iptw",
                                    target="_blank")
+                               )
+                             )
+                         )
+                       )
+                     })
+                   }
+                   
+                   if (approach() == "cbps"){
+                     
+                     output$balancing_options <- renderUI({
+                       div(
+                         div(style = "width: 100%;",
+                             class = "text_blocks",
+                             div(
+                               p(
+
                                )
                              )
                          )
@@ -475,7 +472,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$matching_ratio_missing_message <- p(i18n$t("Balancing Warning no ratio"), style = "color:red")
                    }
                    ## If all required input present, carry out balancing
-                   if (approach() == "iptw" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) | ((approach() == "nbp"))  ) {
+                   if (approach() == "iptw" | approach() == "cbps" | ((approach() == "psm" & !is.null(input$method_radio) & !is.null(balancing_values$ratio))) | ((approach() == "nbp"))  ) {
                      
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
@@ -527,7 +524,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          
                        }
                        
-                       if (approach() == "iptw" | approach() == "nbp"){
+                       if (approach() == "iptw" | approach() == "nbp" | approach() == "cbps"){
                          
                          balancing_values$balancing_stage_res <- balance_data(
                            counterfactual_method = approach(),
@@ -566,10 +563,14 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                                )
                              ))
                            }
-                           #
+                         }
+                         
+                         if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
+                           
                            ## Get love plot
                            balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
                            output$love_plot <- renderPlot(balancing_values$love_plot)
+                           
                            ## Get balance table
                            balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
                            ## Remove empty columns from balance table
@@ -591,9 +592,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                            ## Output observation table
                            balancing_values$observation_table <- observation_table
                            output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
-                           
-                         }
-                         
+                           }
                          
                          if(approach() == "nbp"){
                            
@@ -621,8 +620,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                          ## Add tabs to display output
                          balancing_values$output <- renderUI(
                            tabsetPanel(id = "well_panel",
-                                       ## Don't include common support graph if propensity model other than GLM used
-                                       if(balancing_model() == "glm"){
+                                       ## Don't include common support graph if propensity model other than GLM used or CBPS approach had been taken
+                                       if(balancing_model() == "glm" & !approach() == "cbps"){
                                          tabPanel(title = i18n$t("Balancing Common support graph"),
                                                   value = NS(id, 'common_support_graph_tab'),
                                                   br(),
