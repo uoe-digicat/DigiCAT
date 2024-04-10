@@ -81,16 +81,20 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     
     if (outcome_type == 'Continuous'){
       
-      p(h5("Continuous outcome variable selected" , style = "color:green"),
-      h4(i18n$t("Upload Validation skewness")),
-      if (abs(skewness(.data[[outcome]])) <= 0.8){
-        h5(i18n$t("Upload Validation skewness correct"), round(skewness(.data[[outcome]]), 2), style = "color:green")
-      } else{h5(i18n$t("Upload Validation skewness incorrect"), round(skewness(.data[[outcome]]), 2), style = "color:red")})
-    
-      renderPlot(hist(.data[[outcome]], 
-                      main = paste(i18n$t("Upload Validation histogram"), outcome),
-                      xlab = "",
-                      col = "#76b9f5"))
+      p(
+        h5("Continuous outcome variable selected" , style = "color:green"),
+        br(),
+        h4(i18n$t("Upload Validation skewness")),
+        
+        if (abs(skewness(.data[[outcome]])) <= 0.8){
+          h5(i18n$t("Upload Validation skewness correct"), round(skewness(.data[[outcome]]), 2), style = "color:green")
+        } else{h5(i18n$t("Upload Validation skewness incorrect"), round(skewness(.data[[outcome]]), 2), style = "color:red")},
+        
+        renderPlot(hist(.data[[outcome]], 
+                        main = paste(i18n$t("Upload Validation histogram"), outcome),
+                        xlab = "",
+                        col = "#76b9f5"))
+        )
     },br(),
     
     
