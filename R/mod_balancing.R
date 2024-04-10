@@ -271,9 +271,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  ## Update descriptions and rerun message when input changes ----
                  
                  ## Update matching method description based on choice of approach
-                 observeEvent(balancing_values$method_choice,{
+                 observeEvent(input$method_radio,{
                    
-                   if(balancing_values$method_choice == "nearest"){
+                   if (input$method_radio == i18n$t("Balancing NN")){
                      balancing_values$matching_method_description <- p(
                        h5(i18n$t("Balancing NN")),
                        p(i18n$t("Balancing NN description")),
@@ -281,7 +281,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      )
                    }
                    
-                   if(balancing_values$method_choice == "optimal"){
+                   if (input$method_radio == i18n$t("Balancing Optimal")){
                      balancing_values$matching_method_description <- p(
                        h5(i18n$t("Balancing Optimal")),
                        p(i18n$t("Balancing Optimal description")),
@@ -305,9 +305,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  })
                  
                  ## Update matching ratio description based on choice of ratio
-                 observeEvent(balancing_values$ratio_choice,{
+                 observeEvent(input$ratio_radio,{
                    
-                   if (balancing_values$ratio_choice  == "one_to_one"){
+                   if (input$ratio_radio == "one_to_one"){
                      
                      balancing_values$matching_ratio_description <- p(
                        h5("1:1:"),
@@ -322,7 +322,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      output$ratio_slider_output <- NULL
                    }
                    
-                   if(balancing_values$ratio_choice == "one_to_k"){
+                   if (input$ratio_radio == "one_to_k"){
                      balancing_values$matching_ratio_description <- p(
                        h5("1:K:"),
                        p(i18n$t("Balancing 1tok ratio description")),

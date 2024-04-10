@@ -352,31 +352,25 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model initial")))
 
                      }}
-
-                   ## Reset radio button inputs
-                   #CF_approach_values$approach_choice <- NULL
-                   #CF_approach_values$missingness_choice <- NULL
-                   #CF_approach_values$balancing_model_description <- NULL
-                   
                  })
                  
                 ### PS model: binary and continuous treatment ----
                  ## Update balancing model choice when approach/missingness changes ----
-                 observeEvent(c(CF_approach_values$approach_choice, CF_approach_values$missingness_choice), {
+                 observeEvent(c(input$CF_radio, input$missingness_radio), {
                    
                    ## Do nothing if approach and missingess have not both been selected
-                   if(is.null(CF_approach_values$approach_choice) | is.null(CF_approach_values$missingness_choice)){
+                   if(is.null(input$CF_radio) | is.null(input$missingness_radio)){
                      
                    }else{
                      
                      ## If approach is NBP:
-                     if (CF_approach_values$approach_choice == "nbp"){
+                     if (input$CF_radio == i18n$t("Approach NBP")){
                        ## Do nothing as options are already displayed
                      }
                      
                      ## If approach other than NBP selected, base balancing model choice off of missingness
                      else {
-                       if (CF_approach_values$missingness_choice =="complete" | CF_approach_values$missingness_choice =="mi"){
+                       if (input$missingness_radio == i18n$t("Approach Choose CC") | input$missingness_radio == i18n$t("Approach Choose MI")){
                          
                            if (!any(treatment_variable() %in% categorical_variables())){ ## If continuous treatment, only display LR option 
                              output$balancing_model_selection <- renderUI(p(
@@ -412,7 +406,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                              )
                            }
                              
-                           if (CF_approach_values$missingness_choice =="weighting"){
+                           if (input$missingness_radio == i18n$t("Approach Choose Weighting")){
                              output$balancing_model_selection <- renderUI(p(
                                radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                             choices = list(
