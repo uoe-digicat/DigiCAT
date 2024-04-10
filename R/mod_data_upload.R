@@ -547,7 +547,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  ## Pass output to UI ----
                  
                  output$contents <- DT::renderDataTable({DT::datatable(round(mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x))), 2), options = list(dom = 't', scrollX = TRUE))})
-                 output$data_validation <- renderUI(p(data_upload_values$validation$print, as.data.frame(data_upload_values$validation$log)))
+                 output$data_validation <- renderUI(p(data_upload_values$validation$print))
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
                  

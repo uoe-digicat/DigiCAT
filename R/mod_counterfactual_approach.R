@@ -283,10 +283,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
 
                        ## If there is data missingness and no non response weight provided, don't add weighting
                        if (validation_log()$some_missingness_no_non_response){
-                         output$missingness_selection <- renderUI(p(
-                                                                    validation_log()$some_missingness_no_non_response,
-                                                                    br(),
-                                                                    validation_log()$some_missingness_but_non_response,
+                         output$missingness_selection <- renderUI(p(survey_weight_var(),
                            radioButtons(NS(id, "missingness_radio"),
                                         label = h4("2. Choose a Method of Dealing with Missingess:"),
                                         choices = list(

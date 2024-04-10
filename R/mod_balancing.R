@@ -320,6 +320,10 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      
                      ## Remove ratio slider if present
                      output$ratio_slider_output <- NULL
+                     
+                     
+                     ## Remove missing parameter message if present
+                     balancing_values$matching_ratio_missing_message <- NULL
                    }
                    
                    if (input$ratio_radio == "one_to_k"){
@@ -342,9 +346,6 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    }
                  })
                  
-                 
-                 ## Remove missing parameter message if present
-                 balancing_values$matching_ratio_missing_message <- NULL
                  
                  ## If K in matching ratio is changes, update reactive value indicating K
                  observeEvent(input$ratio_slider, {
