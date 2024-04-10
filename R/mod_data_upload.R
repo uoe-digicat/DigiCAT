@@ -51,7 +51,6 @@ data_upload_ui <- function(id, i18n) {
                           pickerInput(inputId=ns("categorical_vars"), label = i18n$t("Upload Select categorical"), multiple = TRUE, options = pickerOptions(title = "---"),
                                       choices=NULL, selected=NULL
                           ), ## add info about variables being classed automatically
-                          
                           pickerInput(inputId=ns("outcome"), label = i18n$t("Upload Select outcome"),
                                       choices=NULL, selected=NULL, multiple=TRUE, options = pickerOptions(maxOptions = 1, dropupAuto = F, title = "---")), ## Multiple choices allowed but max set to 1 so input can be reset to NULL
 
@@ -91,6 +90,7 @@ data_upload_ui <- function(id, i18n) {
                           ),
                           p(i18n$t("Upload Required fields")),
                           p(tags$sup("†"), i18n$t("Upload Design warning")),
+                          p(textOutput(ns('outcomeType'))),
                           br(),
                           
                           ## Add buttons to clear/validate data  
@@ -136,6 +136,17 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
   
   moduleServer(id,
                function(input, output, session) {
+                 
+                 
+                 output$outcomeType <- renderText({
+                   if (length(input$outcome) == 0){
+                     out = 'No outcome variable selected'
+                   } else {
+                     out = paste(check_selected_outcome(data_upload_values$rawdata, input$outcome), 'outcome variable selected.')
+                   }
+                   out
+                 })
+                 
                  observe({
                    shinyjs::toggleState("file1", enableLocal)
                  })
@@ -213,17 +224,12 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  })
                  
                  ## When categorical variable selection changed, update what can be selected as the outcome variable
-                 observeEvent(input$categorical_vars, {
-                   
-                   if(data_upload_values$data_source == "sample"){
-                     
-                   }else{
-                     ## Get names of continuous variables
-                     continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% input$categorical_vars]
-                     ## Only allow selection from continuous variables
-                     updatePickerInput(session, "outcome", selected=NULL, choices = continuous_variables)
-                   }
-                 }, ignoreNULL = FALSE, ignoreInit = TRUE)
+                 # observeEvent(input$categorical_vars, {
+                 #     ## Get names of continuous variables
+                 #     continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% input$categorical_vars]
+                 #     ## Only allow selection from continuous variables
+                 #     updatePickerInput(session, "outcome", selected=continuous_variables[1], choices = continuous_variables)
+                 # }, ignoreNULL = FALSE, ignoreInit = TRUE)
                  
                  ## If "survey weight" checked, show picker selection
                  observeEvent(input$survey_weight_checkbox, {
@@ -353,7 +359,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
 
                          ## Reset variable inputs
                          updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
-                         updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
+                         updatePickerInput(session, "outcome", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
                          updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
                          updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
                          updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
@@ -370,7 +376,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
 
                        ## Reset variable inputs
                        updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
-                       updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
+                       updatePickerInput(session, "outcome", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
                        updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
                        updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
                        updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
@@ -413,7 +419,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                    
                    ## Update variable selection
                    updatePickerInput(session, "categorical_vars", selected=c("Gender", "Reading_age15", "ReadingO_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13"), choices = names(isolate(data_upload_values$rawdata)))
-                   updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% c("Gender", "Reading_age15", "SubstanceUse1_age13", "SubstanceUse2_age13", "SubstanceUse3_age13", "SubstanceUse4_age13")])
+                   updatePickerInput(session, "outcome", selected="Anxiety_age17", choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "treatment", selected="Reading_age15", choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "matchvars", selected=names(isolate(data_upload_values$rawdata))[-c(2:4)], choices = names(isolate(data_upload_values$rawdata)))
                    updatePickerInput(session, "covars", choices = names(isolate(data_upload_values$rawdata)))
@@ -456,6 +462,8 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                    updatePickerInput(session, "clustering_var", choices = character(0))
                    updatePickerInput(session, "stratification_var", choices = character(0))
                  })
+                 
+  
                  
                  # Data Validation ----
                  
