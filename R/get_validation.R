@@ -53,6 +53,8 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   
   names(df) <- c(i18n$t("Upload Validation treatment counts group"), i18n$t("Upload Validation treatment counts count"))
   
+  outcome_type <- check_selected_outcome(.data, outcome)
+  
   print_validation <- p(
     h4(i18n$t("Upload Validation dimensions")),
     h5(i18n$t("Upload Validation dimensions columns"), dim(.data)[2]),
@@ -76,21 +78,21 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     
     ## Check outcome variable is continuous
     h4(i18n$t("Upload Validation outcome type")),
-    if(length(unique(.data[[outcome]])) < 5){
-      h5(length(unique(.data[[outcome]])), i18n$t("Upload Validation outcome type incorrect") , style = "color:red")
-    } else{h5(length(unique(.data[[outcome]])), i18n$t("Upload Validation outcome type correct"), style = "color:green")}, br(),
     
-    ## Check outcome variable is normally distributed
-    h4(i18n$t("Upload Validation skewness")),
+    if (outcome_type == 'Continuous'){
+      
+      p(h5("Continuous outcome variable selected" , style = "color:green"),
+      h4(i18n$t("Upload Validation skewness")),
+      if (abs(skewness(.data[[outcome]])) <= 0.8){
+        h5(i18n$t("Upload Validation skewness correct"), round(skewness(.data[[outcome]]), 2), style = "color:green")
+      } else{h5(i18n$t("Upload Validation skewness incorrect"), round(skewness(.data[[outcome]]), 2), style = "color:red")})
     
-    if (abs(skewness(.data[[outcome]])) <= 0.8){
-      h5(i18n$t("Upload Validation skewness correct"), round(skewness(.data[[outcome]]), 2), style = "color:green")
-    } else{h5(i18n$t("Upload Validation skewness incorrect"), round(skewness(.data[[outcome]]), 2), style = "color:red")},
+      renderPlot(hist(.data[[outcome]], 
+                      main = paste(i18n$t("Upload Validation histogram"), outcome),
+                      xlab = "",
+                      col = "#76b9f5"))
+    },br(),
     
-    renderPlot(hist(.data[[outcome]], 
-                    main = paste(i18n$t("Upload Validation histogram"), outcome),
-                    xlab = "",
-                    col = "#76b9f5")), br(),
     
     ## Check treatment variable is binary/ordinal
     h4(i18n$t("Upload Validation treatment")),
