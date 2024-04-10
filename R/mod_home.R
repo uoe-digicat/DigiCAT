@@ -53,7 +53,7 @@ home_ui <- function(id, i18n) {
            
            ## Select Language ----
            
-           div(style = "text-align: center; position: relative; top: 50%; transform: translateX(37%);",
+           div(style = "text-align: center; position: relative; top: 50%; transform: translateX(35%); z-index:1002;",
                selectInput(NS(id,"selected_language"),
                                               i18n$t("Language"),
                                               choices = i18n$get_languages()[2],
