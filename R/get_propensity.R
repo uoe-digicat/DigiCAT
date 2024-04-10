@@ -80,7 +80,17 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
              propensity_score <- cbind(handled_missingness$variables, propensity_score)
            }
          },
-         stop("I need a valid model! (glm, gbm, rf, poly)")
+         
+         lm = {
+           if(missing_method == "mi"){
+             propensity_score = lapply(complete(handled_missingness, "all"), 
+                                       function(x) predict(glm(f, data = x, family = gaussian(), ...)))
+           } else { # for CC and weighting approaches alike
+             propensity_score = predict(estimated_propensity_model)
+           } 
+         },
+         
+         stop("I need a valid model! (glm, gbm, rf, poly, lm)")
          
   )
   return(propensity_score)

@@ -14,7 +14,6 @@ handle_missingness <- function(.data, missing_method = NULL,
                                cluster_variable = NULL, weighting_variable = NULL,
                                strata_variable = NULL,
                                ...){
- # browser()
   switch(missing_method, 
          
          complete = {

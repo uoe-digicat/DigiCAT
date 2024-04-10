@@ -92,7 +92,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                  
                  ## Define Reactives ----
                  
-                 ## Create reactive value for approach description
+                 ## Create reactive value for elements on appraoch tab
                  CF_approach_values <- reactiveValues(
                    approach_description = i18n$t("Approach Select approach"),
                    approach_rerun_message = NULL,
@@ -141,123 +141,6 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      CF_approach_values$balancing_model_rerun_message <- p(i18n$t("Approach Warning rerun"), style = "color:grey")
                      ## Proceed to balancing page
                      updateTabsetPanel(session = parent, inputId = 'methods-tabs', selected = "balancing-tab")
-                   }
-                 })
-                 
-                 ## Language change ----
-                 ## If language changes, reselect inputs - i18n resets radiobuttons
-                 observeEvent(selected_language(), {
-                   if(!is.null(CF_approach_values$approach_choice)){ ## Only run if approach has been selected, or if on 
-                     if(CF_approach_values$approach_choice == "psm"){
-                       updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach PSM"))
-                     }
-                     if(CF_approach_values$approach_choice == "iptw"){
-                       updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach IPTW"))
-                     }
-                     if(CF_approach_values$approach_choice == "nbp"){
-                       updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach NBP"))
-                     }
-                     if(CF_approach_values$approach_choice == "cbps"){
-                       updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach CBPS"))
-                     }
-                   }
-                   
-                   if(!is.null(CF_approach_values$missingness_choice)){ ## Only run if missingness has been selected
-                     if(CF_approach_values$missingness_choice == "complete"){
-                       updateRadioButtons(session, "missingness_radio", selected=i18n$t("Approach Choose CC"))
-                     }
-                     if(CF_approach_values$missingness_choice == "mi"){
-                       updateRadioButtons(session, "missingness_radio", selected=i18n$t("Approach Choose MI"))
-                     }
-                     if(CF_approach_values$missingness_choice == "weighting"){
-                       updateRadioButtons(session, "missingness_radio", selected=i18n$t("Approach Choose Weighting"))
-                     }
-                   }
-                   
-                   if(!is.null(CF_approach_values$model_choice)){ ## Only run if model has been selected
-                     if(CF_approach_values$model_choice == "glm"){
-                       updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach GLM"))
-                     }
-                     if(CF_approach_values$model_choice == "rf"){
-                       updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach RF"))
-                     }
-                     if(CF_approach_values$model_choice == "gbm"){
-                       updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach GBM"))
-                     }
-                     if(CF_approach_values$model_choice == "poly"){
-                       updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach ORL"))
-                     }
-                   }
-                   ## Replace rerun warning
-                   if (!is.null(CF_approach_values$approach_rerun_message)){
-                     CF_approach_values$approach_rerun_message <- p(i18n$t("Approach Warning rerun"), style = "color:grey")
-                     CF_approach_values$missingness_rerun_message <- p(i18n$t("Approach Warning rerun"), style = "color:grey")
-                     CF_approach_values$balancing_model_rerun_message <- p(i18n$t("Approach Warning rerun"), style = "color:grey")
-                   }
-                   ## Replace change warning
-                   if (!is.null(CF_approach_values$approach_change_message)){
-                     CF_approach_values$approach_change_message <- p(strong(i18n$t("Approach Warning change approach")))
-                     CF_approach_values$missingness_change_message <- p(strong(i18n$t("Approach Warning change missingness")))
-                     CF_approach_values$balancing_model_change_message <- p(strong(i18n$t("Approach Warning change model")))
-                   }
-                 })
-                 
-                 ## Above only works when on appraoch tab, trigger same code when page if is revisted
-                 observeEvent(analysis_tab(), {
-                   if(analysis_tab() == "CF_approach-tab"){
-                     if(!is.null(CF_approach_values$approach_choice)){ ## Only run if approach has been selected, or if on 
-                       if(CF_approach_values$approach_choice == "psm"){
-                         updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach PSM"))
-                       }
-                       if(CF_approach_values$approach_choice == "iptw"){
-                         updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach IPTW"))
-                       }
-                       if(CF_approach_values$approach_choice == "nbp"){
-                         updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach NBP"))
-                       }
-                       if(CF_approach_values$approach_choice == "cbps"){
-                         updateRadioButtons(session, "CF_radio", selected=i18n$t("Approach CBPS"))
-                       }
-                     }
-                     
-                     if(!is.null(CF_approach_values$missingness_choice)){ ## Only run if missingness has been selected
-                       if(CF_approach_values$missingness_choice == "complete"){
-                         updateRadioButtons(session, "missingness_radio", selected=i18n$t("Approach Choose CC"))
-                       }
-                       if(CF_approach_values$missingness_choice == "mi"){
-                         updateRadioButtons(session, "missingness_radio", selected=i18n$t("Approach Choose MI"))
-                       }
-                       if(CF_approach_values$missingness_choice == "weighting"){
-                         updateRadioButtons(session, "missingness_radio", selected=i18n$t("Approach Choose Weighting"))
-                       }
-                     }
-                     
-                     if(!is.null(CF_approach_values$model_choice)){ ## Only run if model has been selected
-                       if(CF_approach_values$model_choice == "glm"){
-                         updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach GLM"))
-                       }
-                       if(CF_approach_values$model_choice == "rf"){
-                         updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach RF"))
-                       }
-                       if(CF_approach_values$model_choice == "gbm"){
-                         updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach GBM"))
-                       }
-                       if(CF_approach_values$model_choice == "poly"){
-                         updateRadioButtons(session, "balancing_model_radio", selected=i18n$t("Approach ORL"))
-                       }
-                     }
-                     ## Replace rerun warning
-                     if (!is.null(CF_approach_values$approach_rerun_message)){
-                       CF_approach_values$approach_rerun_message <- p(i18n$t("Approach Warning rerun"), style = "color:grey")
-                       CF_approach_values$missingness_rerun_message <- p(i18n$t("Approach Warning rerun"), style = "color:grey")
-                       CF_approach_values$balancing_model_rerun_message <- p(i18n$t("Approach Warning rerun"), style = "color:grey")
-                     }
-                     ## Replace change warning
-                     if (!is.null(CF_approach_values$approach_change_message)){
-                       CF_approach_values$approach_change_message <- p(strong(i18n$t("Approach Warning change approach")))
-                       CF_approach_values$missingness_change_message <- p(strong(i18n$t("Approach Warning change missingness")))
-                       CF_approach_values$balancing_model_change_message <- p(strong(i18n$t("Approach Warning change model")))
-                     }
                    }
                  })
                  
@@ -322,14 +205,14 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      ### Approach, missingness and PS model: ordinal treatment ----
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) > 2 & any(treatment_variable() %in% categorical_variables())){ ## Ordinal treatment approaches
 
-                       if (enableLocal){
-                         output$approach_selection <- renderUI(p("Non-bipartite Matching (NBP) coming soon." ,style = "color:grey"))
-                       } else{
+                       # if (enableLocal){
+                       #   output$approach_selection <- renderUI(p("Non-bipartite Matching (NBP) coming soon." ,style = "color:grey"))
+                       # } else{
                          output$approach_selection <- renderUI(radioButtons(ns("CF_radio"),
                                                                             label = h4("1. Choose a Counterfactual Approach:"),
                                                                             choices = i18n$t("Approach NBP"),
                                                                             selected = i18n$t("Approach NBP")))
-                       }
+                       # }
 
                        output$approach_description_general <- renderUI(p(h5(i18n$t("Approach Description")),
                                                                          p(i18n$t("Approach NBP description")),
@@ -471,9 +354,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      }}
 
                    ## Reset radio button inputs
-                   CF_approach_values$approach_choice <- NULL
-                   CF_approach_values$missingness_choice <- NULL
-                   CF_approach_values$balancing_model_description <- NULL
+                   #CF_approach_values$approach_choice <- NULL
+                   #CF_approach_values$missingness_choice <- NULL
+                   #CF_approach_values$balancing_model_description <- NULL
                    
                  })
                  
@@ -620,6 +503,10 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      )
                    }
                    
+                   if (input$balancing_model_radio == i18n$t("Approach LR")){
+                     CF_approach_values$balancing_model_description <- p("")
+                   }
+                   
                    ## Remove message with no balancing method selected error if present
                    CF_approach_values$balancing_model_missing_message <- NULL
                  })
@@ -664,6 +551,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    }
                    if (input$balancing_model_radio == i18n$t("Approach ORL")){
                      CF_approach_values$model_choice <- "poly"
+                   }
+                   if (input$balancing_model_radio == i18n$t("Approach LR")){
+                     CF_approach_values$model_choice <- "lm"
                    }
                  })
                  
