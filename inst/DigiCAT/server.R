@@ -6,7 +6,8 @@ i18n <- Translator$new(translation_csvs_path = system.file("DigiCAT/translation/
 
 server <- function(input, output, session) {
   
-  ## Uodate language
+  
+  ## Update language
   observeEvent(home_output$selected_language, {
     # Update language in session
     shiny.i18n::update_lang(home_output$selected_language)

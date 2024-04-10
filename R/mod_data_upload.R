@@ -503,7 +503,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                          
                          
                          ## If survey design weight, clustering or stratification unsuitable (based on missingness or error in survey design), overwrite variable name with NULL or output
-                         if (data_upload_values$validation$log$survey_weight_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
+                         if (data_upload_values$validation$log$survey_weight_no_missingness == FALSE){
                            data_upload_values$survey_weight_var <- NULL
                          } else{ ## otherwise, overwrite with survey weight variable name to be output - check that variable name is not "weights", if it is, rename
                            if (input$survey_weight_var == "weights"){
@@ -513,13 +513,13 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                            }
                          }
                          
-                         if (data_upload_values$validation$log$clustering_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
+                         if (data_upload_values$validation$log$clustering_no_missingness == FALSE){
                            data_upload_values$clustering_var <- NULL
                          } else{ ## otherwise, overwrite with clustering variable name to be output
                            data_upload_values$clustering_var <- input$clustering_var
                          }
                          
-                         if (data_upload_values$validation$log$stratification_no_missingness == FALSE | data_upload_values$validation$log$no_design_matrix_error == FALSE){
+                         if (data_upload_values$validation$log$stratification_no_missingness == FALSE){
                            data_upload_values$survey_weight <- NULL
                          } else{ ## otherwise, overwrite with stratification variable name to be output
                            data_upload_values$survey_weight <- input$stratification_var
@@ -547,7 +547,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  ## Pass output to UI ----
                  
                  output$contents <- DT::renderDataTable({DT::datatable(round(mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x))), 2), options = list(dom = 't', scrollX = TRUE))})
-                 output$data_validation <- renderUI(p(data_upload_values$validation$print))
+                 output$data_validation <- renderUI(p(data_upload_values$validation$print, as.data.frame(data_upload_values$validation$log)))
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
                  
