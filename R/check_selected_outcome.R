@@ -1,11 +1,13 @@
 
 check_selected_outcome <- function(data, outcome){
   
-  if (length(unique(data[[outcome]])) == 2){
+  non_na_values <- length(setdiff(data[[outcome]], c(NA)))
+  
+  if (non_na_values == 2){
     var_type = 'Binary'
-  } else if (length(unique(data[[outcome]])) > 2 & length(unique(data[[outcome]])) < 5){
-    var_type = 'Categarical'
-  } else if (length(unique(data[[outcome]])) > 5){
+  } else if (non_na_values > 2 & non_na_values <= 5){
+    var_type = 'Categorical'
+  } else if (non_na_values > 5){
     var_type = 'Continuous'
   } else{
     var_type = 'Constant'
