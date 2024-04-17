@@ -4,6 +4,9 @@ library(shiny.i18n)
 i18n <- Translator$new(translation_csvs_path = system.file("DigiCAT/translation/", package = "DigiCAT"),
                        translation_csv_config =system.file("DigiCAT/translation/config.yaml", package = "DigiCAT"))
 
+## Increase maximum upload file size
+options(shiny.maxRequestSize = 50*1024^2)
+
 server <- function(input, output, session) {
   
   
