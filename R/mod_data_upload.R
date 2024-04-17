@@ -487,7 +487,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                          showTab(inputId = NS(id,"data_panel"), target = NS(id,"data_validation"), select = TRUE, session = parent)
                          
                          ## Validate data
-                         ## First, ensure all data is numeric as required for cor etimate, categorical variables will later be factorised
+                         ## First, ensure all data is numeric as required for cor estimate, categorical variables will later be factorised
                          data_upload_values$rawdata <- mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x)))
                          
                          data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, 

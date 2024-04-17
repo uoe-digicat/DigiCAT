@@ -318,8 +318,8 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                          i18n$t("Approach GBM"),
-                                          i18n$t("Approach RF"),
+                                          #i18n$t("Approach GBM"),
+                                          #i18n$t("Approach RF"),
                                           i18n$t("Approach GLM")),
                                         selected = character(0)))
                          )
@@ -328,7 +328,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                          i18n$t("Approach RF"),
+                                          #i18n$t("Approach RF"),
                                           i18n$t("Approach GLM")),
                                         selected = character(0)),
                            br(),
