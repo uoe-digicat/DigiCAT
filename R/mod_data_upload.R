@@ -502,8 +502,8 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                                                                           i18n = i18n)
                          
                          
-                         ## If survey design weight, clustering or stratification unsuitable (based on missingness or error in survey design), overwrite variable name with NULL or output
-                         if (data_upload_values$validation$log$survey_weight_no_missingness == FALSE){
+                         ## If survey design weight, clustering or stratification unsuitable (based on missingness or negative values), overwrite variable name with NULL or output
+                         if (data_upload_values$validation$log$survey_weight_no_missingness == FALSE | data_upload_values$validation$log$survey_weight_no_negative == FALSE){
                            data_upload_values$survey_weight_var <- NULL
                          } else{ ## otherwise, overwrite with survey weight variable name to be output - check that variable name is not "weights", if it is, rename
                            if (input$survey_weight_var == "weights"){
@@ -513,13 +513,13 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                            }
                          }
                          
-                         if (data_upload_values$validation$log$clustering_no_missingness == FALSE){
+                         if (data_upload_values$validation$log$clustering_no_missingness == FALSE | data_upload_values$validation$log$clustering_no_negative == FALSE){
                            data_upload_values$clustering_var <- NULL
                          } else{ ## otherwise, overwrite with clustering variable name to be output
                            data_upload_values$clustering_var <- input$clustering_var
                          }
                          
-                         if (data_upload_values$validation$log$stratification_no_missingness == FALSE){
+                         if (data_upload_values$validation$log$stratification_no_missingness == FALSE | data_upload_values$validation$log$stratification_no_negative == FALSE){
                            data_upload_values$survey_weight <- NULL
                          } else{ ## otherwise, overwrite with stratification variable name to be output
                            data_upload_values$survey_weight <- input$stratification_var

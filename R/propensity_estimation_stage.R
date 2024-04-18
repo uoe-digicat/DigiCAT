@@ -17,6 +17,7 @@
 #' @return Estimation model object
 #' @import gbm
 #' @import randomForest
+#' @import survey
 #'
 #' @examples 
 #' estimation_stage(
