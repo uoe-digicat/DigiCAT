@@ -1,3 +1,4 @@
+#' @import tidyverse
 # home module ----
 
 home_ui <- function(id, i18n) {
