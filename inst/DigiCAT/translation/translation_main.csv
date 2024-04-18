@@ -139,17 +139,25 @@ Upload Validation multicollinearity,Multicollinearity Between Variables:,Temp
 Upload Validation multicollinearity correct,None of the selected matching variables or covariates appear to be strongly correlated (Pearson correaltion > -0.9 or < 0.9).,Temp
 Upload Validation multicollinearity incorrect,It looks like some of the  matching variables and/or covariates you have selected are highly correlated (Pearson correaltion > -0.9 or < 0.9). Please consider removing one of each highly correlated variable pair:,Temp
 Upload Validation survey weight,Survey Weight Variable Missingness:,Temp
-Upload Validation survey weight missingness,: As this includes missing data it will not be used in counterfactual analysi,Temp
+Upload Validation survey weight missingness,: As this includes missing data it will not be used in counterfactual analysis.,Temp
 Upload Validation survey weight no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation survey weight negative,: As this includes negative values it will not be used in counterfactual analysis.,
+Upload Validation survey weight no negative,: No negative values have been detected in this variable.,
 Upload Validation nonresponse,Non-response Variable Missingness:,Temp
 Upload Validation nonresponse missingness,: As this includes missing data it won't be used as a weight when accounting for missingness.,Temp
 Upload Validation nonresponse no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation nonresponse no negative,: No negative values have been detected in this variable.,
+Upload Validation nonresponse negative,: As this includes negative values it will not be used in counterfactual analysis.,
 Upload Validation clustering,Clustering Variable Missingness:,Temp
 Upload Validation clustering missingness,: As this includes missing data it will not be used in counterfactual analysis.,Temp
 Upload Validation clustering no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation clustering no negative,: No negative values have been detected in this variable.,
+Upload Validation clustering negative,: As this includes negative values it will not be used in counterfactual analysis.,
 Upload Validation stratification,Stratification Variable Missingness:,Temp
 Upload Validation stratification missingness,: As this includes missing data it will not be used in counterfactual analysis.,Temp
 Upload Validation stratification no missingness,: No missingness has been detected in this variable.,Temp
+Upload Validation stratification no negative,: No negative values have been detected in this variable.,
+Upload Validation stratification negative,: As this includes negative values it will not be used in counterfactual analysis.,
 Upload Validation design matrix,Design Matrix Creation:,Temp
 Upload Validation design matrix description,Error: Design matrix cannot be created with the provided input and will not be used in counterfactual analysis.,Temp
 Upload Validation missingness,Missing Data:,Temp

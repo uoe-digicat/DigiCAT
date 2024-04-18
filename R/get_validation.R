@@ -15,13 +15,14 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   validation_log <- list(
     treatment_variable_error = FALSE,
     no_GBM = FALSE,
-    survey_weight_available = FALSE,
-    clustering_available = FALSE,
-    stratification_available = FALSE,
     survey_weight_no_missingness = FALSE,
+    survey_weight_no_negative = FALSE,
     non_response_weight_no_missingness = FALSE,
+    non_response_weight_no_negative = FALSE,
     clustering_no_missingness = FALSE,
+    clustering_no_negative = FALSE,
     stratification_no_missingness = FALSE,
+    stratification_no_negative = FALSE,
     some_missingness_no_non_response = FALSE,
     some_missingness_but_non_response = FALSE,
     no_missingness_no_non_response = FALSE,
@@ -117,112 +118,127 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
       
       },
     
-    br(),
-    
     ## Check multicollinearity between variables
-    h4(i18n$t("Upload Validation multicollinearity")),
+    h4(br(),i18n$t("Upload Validation multicollinearity")),
     
     if (nrow(high_cor) == 0){
-      p(h5(i18n$t("Upload Validation multicollinearity correct"), style = "color:green"),br())
+      p(h5(i18n$t("Upload Validation multicollinearity correct"), style = "color:green"))
     } else{
-      
-      p(h5(i18n$t("Upload Validation multicollinearity incorrect"), paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red'), br())
+      p(h5(i18n$t("Upload Validation multicollinearity incorrect"), paste0(high_cor[,1], " and ", high_cor[,2], collapse = ", "), style = 'color:red'))
     },
     
-    ## Check selected survey weight variable for missingness
+    ## Check selected survey weight variable for missingness and negative values
     if (!is.null(survey_weight_var)){
       
-      validation_log$survey_weight_available <- TRUE
+      p(br(),h4(i18n$t("Upload Validation survey weight")),
       
       ## If missingness detected, give warning
       if (any(is.na(data_Nas[[survey_weight_var]]))){
-        
-        p(h4(i18n$t("Upload Validation survey weight")),
-          h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight missingness")), 
-             style = 'color:red'), br())
-        
-      }
-      else{
-        
+        h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight missingness")), 
+           style = 'color:red')
+      },
+      if (!any(is.na(data_Nas[[survey_weight_var]]))){
         validation_log$survey_weight_no_missingness <- TRUE
-        
-        p(h4(i18n$t("Upload Validation survey weight")),
-          h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight no missingness")), 
-             style = 'color:green'), br())
+        h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight no missingness")), 
+           style = 'color:green')
+      },
+      ## If negative values detected, give warning
+      if (any(data_Nas[[survey_weight_var]] < 0, na.rm = T)){
+        h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight negative"), 
+                    style = 'color:red'))
+      },
+      if (!any(data_Nas[[survey_weight_var]] < 0, na.rm = T)){
+        validation_log$survey_weight_no_negative <- TRUE
+        h5(paste0(survey_weight_var, i18n$t("Upload Validation survey weight no negative")), 
+                    style = 'color:green')
       }
+      )
     },
     
-    ## Check selected non-response weight variable has no missingness
+    ## Check selected non response weight variable for missingness and negative values
     if (!is.null(survey_weight_var) & isTruthy(non_response_weight)){
-      if (any(is.na(data_Nas[[survey_weight_var]]))){
+      
+      p(br(),h4(i18n$t("Upload Validation nonresponse")),
         
-        p(h4(i18n$t("Upload Validation nonresponse")),
+        ## If missingness detected, give warning
+        if (any(is.na(data_Nas[[survey_weight_var]]))){
           h5(paste0(survey_weight_var, i18n$t("Upload Validation nonresponse missingness")), 
-             style = 'color:red'), br())
-        
-      }
-      else{
-        
-        validation_log$non_response_weight_no_missingness <- TRUE
-        
-        p(h4(i18n$t("Upload Validation nonresponse")),
+             style = 'color:red')
+        },
+        if (!any(is.na(data_Nas[[survey_weight_var]]))){
+          validation_log$non_response_weight_no_missingness <- TRUE
           h5(paste0(survey_weight_var, i18n$t("Upload Validation nonresponse no missingness")), 
-             style = 'color:green'), br())
-        
-      }
+             style = 'color:green')
+        },
+        ## If negative values detected, give warning
+        if (any(data_Nas[[survey_weight_var]] < 0, na.rm = T)){
+          h5(paste0(survey_weight_var, i18n$t("Upload Validation nonresponse negative"), 
+                    style = 'color:red'))
+        },
+        if (!any(data_Nas[[survey_weight_var]] < 0, na.rm = T)){
+          validation_log$non_response_weight_no_negative <- TRUE
+          h5(paste0(survey_weight_var, i18n$t("Upload Validation nonresponse no negative")), 
+             style = 'color:green')
+        }
+      )
     },
     
-    
-    ## Check selected clustering variable for missingness
+    ## Check selected clustering variable for missingness and negative values
     if (!is.null(clustering_var)){
-      
-      validation_log$clustering_available <- TRUE
-      
-      ## If missingness detected, give warning
-      if (any(is.na(data_Nas[[clustering_var]]))){
+
+      p(br(),h4(i18n$t("Upload Validation clustering")),
         
-        p(h4(i18n$t("Upload Validation clustering")),
-          h5(paste0(clustering_var, i18n$t("Upload Validation clustering missingness"), 
-             style = 'color:red'), br()))
-        
-      }
-      else{
-        
-        validation_log$clustering_no_missingness <- TRUE
-        
-        p(h4(i18n$t("Upload Validation clustering")),
-          h5(paste0(clustering_var, i18n$t("Upload Validation clustering no missingness"), 
-             style = 'color:green'), br()))
-        
-        
-      }
+        ## If missingness detected, give warning
+        if (any(is.na(data_Nas[[clustering_var]]))){
+          h5(paste0(clustering_var, i18n$t("Upload Validation clustering missingness")), 
+             style = 'color:red')
+        },
+        if (!any(is.na(data_Nas[[clustering_var]]))){
+          validation_log$clustering_no_missingness <- TRUE
+          h5(paste0(clustering_var, i18n$t("Upload Validation clustering no missingness")), 
+             style = 'color:green')
+        },
+        ## If negative values detected, give warning
+        if (any(data_Nas[[clustering_var]] < 0, na.rm = T)){
+          h5(paste0(clustering_var, i18n$t("Upload Validation clustering negative"), 
+                    style = 'color:red'))
+        },
+        if (!any(data_Nas[[clustering_var]] < 0, na.rm = T)){
+          validation_log$clustering_no_negative <- TRUE
+          h5(paste0(clustering_var, i18n$t("Upload Validation clustering no negative")), 
+             style = 'color:green')
+        }
+      )
     },
+
     
-    
-    ## Check selected stratification variable for missingness
+    ## Check selected stratification variable for missingness and negative values
     if (!is.null(stratification_var)){
       
-      validation_log$stratification_available <- TRUE
-      
-      ## If missingness detected, give warning
-      if (any(is.na(data_Nas[[stratification_var]]))){
+      p(br(),h4(i18n$t("Upload Validation stratification")),
         
-        p(h4(i18n$t("Upload Validation stratification")),
+        ## If missingness detected, give warning
+        if (any(is.na(data_Nas[[stratification_var]]))){
           h5(paste0(stratification_var, i18n$t("Upload Validation stratification missingness")), 
-             style = 'color:red'), br())
-        
-      }
-      else{
-        
-        validation_log$clustering_no_missingness <- TRUE
-        
-        p(h4(i18n$t("Upload Validation stratification")),
+             style = 'color:red')
+        },
+        if (!any(is.na(data_Nas[[stratification_var]]))){
+          validation_log$stratification_no_missingness <- TRUE
           h5(paste0(stratification_var, i18n$t("Upload Validation stratification no missingness")), 
-             style = 'color:green'), br())
-        
-      }
+             style = 'color:green')
+        },
+        ## If negative values detected, give warning
+        if (any(data_Nas[[stratification_var]] < 0, na.rm = T)){
+          h5(paste0(stratification_var, i18n$t("Upload Validation stratification negative"), 
+                    style = 'color:red'))
+        },
+        if (!any(data_Nas[[stratification_var]] < 0, na.rm = T)){
+          validation_log$stratification_no_negative <- TRUE
+          h5(paste0(stratification_var, i18n$t("Upload Validation stratification no negative")), 
+             style = 'color:green')
+        }
+      )
     },
-    
     
     ## Check for presence of missingness in uploaded data
     ## If there is missingness
@@ -235,11 +251,10 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
         validation_log$some_missingness_no_non_response <- TRUE
       }
       
-      p(h4(i18n$t("Upload Validation missingness")),
+      p(br(),h4(i18n$t("Upload Validation missingness")),
         h5(paste0(i18n$t("Upload Validation missingness yes")), 
            style = 'color:green'), br())
       
-
     },
     
     ## If there is no missingness but there is a non-response variable
