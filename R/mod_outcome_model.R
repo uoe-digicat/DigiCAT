@@ -490,6 +490,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Run outcome model ----
                  observeEvent(input$run_outcome_model_btn, {
                    
+                   outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   
                    ## If no outcome model has been selected, give error message
                    if(is.null(input$outcome_model_radio)){
                      outcome_model_values$model_missing_message <-  i18n$t("Outcome Warning no model")
@@ -514,6 +516,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            balanced_data = balancing_stage_res(),
                            counterfactual_method = approach(),
                            outcome_variable = outcome_variable(),
+                           outcome_type = outcome_type,
                            treatment_variable = treatment_variable(),
                            matching_variable = matching_variables(),
                            covariates = covariates(),
