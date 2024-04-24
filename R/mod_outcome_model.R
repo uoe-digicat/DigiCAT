@@ -192,6 +192,9 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    ## Replace output
                    if (!is.null(outcome_model_values$output) & !is.null(approach())){
                        if(approach() == "nbp"){
+                         
+                         if (outcome_type == 'Continuous'){
+                         
                          outcome_model_values$output <- p(h4("Model Output"),
                                                           descriptions$estimate,
                                                           strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
@@ -204,21 +207,64 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                           br(),
                                                           strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                          )
+                         } else if (outcome_type == 'Binary'){
+                           outcome_model_values$output <- p(h4("Model Output"),
+                                                            descriptions$odds_ratio,
+                                                            strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                            br(),
+                                                            descriptions$estimate_bin,
+                                                            strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                            br(),
+                                                            descriptions$standard_error,
+                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                            br(),
+                                                            descriptions$p_value,
+                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                            br(),
+                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                                                            
+                           )
+                         }
+                         
                        }
                        if(approach() == "iptw" | approach() == "psm"){
-                         outcome_model_values$output <- p(
-                           h4("Model Output"),
-                            i18n$t("Outcome model output estimate description"),
-                            strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                            br(),
-                            i18n$t("Outcome model output SE description"),
-                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                            br(),
-                            i18n$t("Outcome model output P description"),
-                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                            br(),
-                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                       )
+                         
+                         if (outcome_type == 'Continuous'){
+                           outcome_model_values$output <- p(
+                             h4("Model Output"),
+                             i18n$t("Outcome model output estimate description"),
+                             strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output SE description"),
+                             strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output P description"),
+                             strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                             br(),
+                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                         } else if (outcome_type == 'Binary'){
+                           
+                           #### START HERE ON WEDNESDAY ####
+                           outcome_model_values$output <- p(
+                             h4("Model Output"),
+                             i18n$t("Outcome model output odds ratio description"),
+                             strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                             br(),
+                             i18n$t("Outcome model output binary estimate description"),
+                             strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output SE description"),
+                             strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output P description"),
+                             strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                             br(),
+                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                         }
+                         
+                      
                        }
                    }
                    
@@ -303,33 +349,77 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      ## Replace output
                      if (!is.null(outcome_model_values$output) & !is.null(approach())){
                        if(approach() == "nbp"){
-                         outcome_model_values$output <- p(h4("Model Output"),
-                                                          descriptions$estimate,
-                                                          strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                                                          br(),
-                                                          descriptions$standard_error,
-                                                          strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                                                          br(),
-                                                          descriptions$p_value,
-                                                          strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                                                          br(),
-                                                          strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                         )
+                         
+                         if (outcome_type == 'Continuous'){
+                           outcome_model_values$output <- p(h4("Model Output"),
+                                                            descriptions$estimate,
+                                                            strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                            br(),
+                                                            descriptions$standard_error,
+                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                            br(),
+                                                            descriptions$p_value,
+                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                            br(),
+                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                           
+                         } else if (outcome_type == 'Binary'){
+                           outcome_model_values$output <- p(h4("Model Output"),
+                                                            i18n$t("Outcome model output odds ratio description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                            br(),
+                                                            i18n$t("Outcome model output binary estimate description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                            br(),
+                                                            i18n$t("Outcome model output SE description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                            br(),
+                                                            i18n$t("Outcome model output P description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                            br(),
+                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                           
+                         }
+                         
                        }
                        if(approach() == "iptw" | approach() == "psm"){
-                         outcome_model_values$output <- p(
-                           h4("Model Output"),
-                           i18n$t("Outcome model output estimate description"),
-                           strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                           br(),
-                           i18n$t("Outcome model output SE description"),
-                           strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                           br(),
-                           i18n$t("Outcome model output P description"),
-                           strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                           br(),
-                           strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                         )
+                         
+                         if (outcome_type == 'Continuous'){
+                           outcome_model_values$output <- p(
+                             h4("Model Output"),
+                             i18n$t("Outcome model output estimate description"),
+                             strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output SE description"),
+                             strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output P description"),
+                             strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                             br(),
+                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                           
+                         } else if(outcome_type == 'Binary'){
+                           outcome_model_values$output <- p(
+                             h4("Model Output"),
+                             i18n$t("Outcome model output odds ratio description"),
+                             strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                             br(),
+                             i18n$t("Outcome model output binary estimate description"),
+                             strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output SE description"),
+                             strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output P description"),
+                             strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                             br(),
+                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                         }
+                         
                        }
                      }
                      
@@ -558,34 +648,81 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          ## Output estimate
                          
                          if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
-                           outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
-                                                            i18n$t("Outcome model output estimate description"),
-                                                            strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                                                            br(),
-                                                            i18n$t("Outcome model output SE description"),
-                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                                                            br(),
-                                                            i18n$t("Outcome model output P description"),
-                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                                                            br(),
-                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-
-                           )
+                           
+                           if (outcome_type == 'Continuous'){
+                             
+                             outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
+                                                              i18n$t("Outcome model output estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output SE description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output P description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                                                              
+                             )
+                             
+                           } else if (outcome_type == 'Binary'){
+                             outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
+                                                              i18n$t("Outcome model output odds ratio description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output binary estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output SE description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output P description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                                                              
+                             )
+                           }
+                           
+                           
                          }
                          
                          if(approach() == "nbp"){
-                           outcome_model_values$output <- p(h4("Model Output"),
-                                                            descriptions$estimate,
-                                                            strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                                                            br(),
-                                                            descriptions$standard_error,
-                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                                                            br(),
-                                                            descriptions$p_value,
-                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                                                            br(),
-                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                           )
+                           
+                           if (outcome_type == 'Continuous'){
+                             outcome_model_values$output <- p(h4("Model Output"),
+                                                              descriptions$estimate,
+                                                              strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              descriptions$standard_error,
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              descriptions$p_value,
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                             )
+                             
+                           } else if (outcome_type == 'Binary'){
+                             
+                             outcome_model_values$output <- p(h4("Model Output"),
+                                                              i18n$t("Outcome model output odds ratio description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output binary estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              descriptions$standard_error,
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              descriptions$p_value,
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                             )
+                           }
+                           
+                           
                          }
                          
                          ## Add message noting that parameter reselection will require rerun

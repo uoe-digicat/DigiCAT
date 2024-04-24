@@ -319,7 +319,7 @@ outcome_unadjusted <- function(balanced_data,
     if (outcome_type == 'Continuous'){
       model_fit = svyglm(model_formula, design = updated_design)
     } else if (outcome_type == 'Binary'){
-      model_fit = svyglm(model_formula, design = updated_design, family = 'Binary')
+      model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
     }
     
     
@@ -461,7 +461,7 @@ outcome_matching_variables <- function(balanced_data,
     if (outcome_type == 'Continuous'){
       model_fit = with(mi_matched_design, svyglm(model_formula))
     } else if (outcome_type == 'Binary'){
-      model_fit = with(mi_matched_design, svyglm(model_formula), family = 'binomial')
+      model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial'))
     }
      # leave unpooled until next step
     

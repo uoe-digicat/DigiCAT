@@ -280,6 +280,10 @@ Outcome model output,Outcome Model Output,Temp
 Outcome model output initial,"Once you have selected your outcome model, press ‘Run' to get results.",Temp
 Outcome model output rerun,"It looks like the outcome model will have to be rerun, this is because some of the required inputs have been changed since the previous run. Once you have selected your outcome model, press 'Run' to get results.",Temp
 Outcome model output estimate description,"In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, interventions, or treatments on mental health outcomes.",Temp
+Outcome model output binary estimate description,The estimate produced by a logistic regression analysis estimates the logarithm of the odds ratio (log-odds),
+Outcome model output binary estimate,Log Odds:,
+Outcome model output odds ratio,Odds Ratio: ,
+Outcome model output odds ratio description,"The odds ratio tells us the strength of association between treatment and outcome. Explicitly, it quantifies the change in odds of the outcome for every unit change in treatment. An odds ratio greater than 1 means that the treatment increases the odds of the outcome while an odds ratio less than 1 suggests the treatment decreases the odds of the outcome.",
 Outcome model output estimate,Estimate:,Temp
 Outcome model output SE description,The standard error is a statistical measure that quantifies the variability or uncertainty associated with the estimate. It provides a measure of how much the estimate is likely to vary from the true population value.,Temp
 Outcome model output SE,Standard Error:,Temp
