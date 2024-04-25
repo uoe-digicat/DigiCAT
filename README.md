@@ -1,6 +1,9 @@
 # Digital Counterfactual Analysis Tool: DigiCAT
+
 <p align="center">
-  <img src="inst/DigiCAT/www/logos/DigiCAT/digicat6b.png" />
+
+<img src="inst/DigiCAT/www/logos/DigiCAT/digicat6b.png"/>
+
 </p>
 
 ### **Counterfactual Analysis**
@@ -38,6 +41,32 @@ Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or 
 ``` r
 DigiCAT::run_DigiCAT(enableLocal = TRUE)
 ```
+
+### Container platform
+
+DigiCAT is also available as a container, meaning all required software is combined into a monolithic application. This means DigiCAT can be easily installed on new systems and is robust to updates in dependencies.
+
+#### 1. Install Docker
+
+<https://docs.docker.com/get-docker/>
+
+#### 2. Download DigiCAT
+
+This can be done from the command line and requires approximately 3 gigabytes of storage.
+
+```{bash}
+docker pull digicatuoe/digicat_tool:latest
+```
+
+#### 3. Run DigiCAT
+
+DigiCAT can now be run locally from the command line.
+
+```{bash}
+docker run -p 3838:3838 digicat_tool
+```
+
+Once running, visit <http://0.0.0.0:3838/> in your web browser to use the DigiCAT tool.
 
 ## DigiCAT Tutorial
 
@@ -92,6 +121,3 @@ Contains
 ### man/ directory
 
 This folder contains documentation for the functions exported from the DigiCAT package.
-
-
-
