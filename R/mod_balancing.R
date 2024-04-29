@@ -81,6 +81,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    balancing_stage_res = NULL,
                    matching_var_balance = NULL,
                    descriptive_stats = NULL,
+                   run_balancing = FALSE,
                    output = p(h4(i18n$t("Balancing Tab output")),
                               p(i18n$t("Balancing Tab output description"))))
                  
@@ -271,9 +272,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  ## Update descriptions and rerun message when input changes ----
                  
                  ## Update matching method description based on choice of approach
-                 observeEvent(balancing_values$method_choice,{
+                 observeEvent(input$method_radio,{
                    
-                   if(balancing_values$method_choice == "nearest"){
+                   if (input$method_radio == i18n$t("Balancing NN")){
                      balancing_values$matching_method_description <- p(
                        h5(i18n$t("Balancing NN")),
                        p(i18n$t("Balancing NN description")),
@@ -281,7 +282,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      )
                    }
                    
-                   if(balancing_values$method_choice == "optimal"){
+                   if (input$method_radio == i18n$t("Balancing Optimal")){
                      balancing_values$matching_method_description <- p(
                        h5(i18n$t("Balancing Optimal")),
                        p(i18n$t("Balancing Optimal description")),
@@ -305,9 +306,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  })
                  
                  ## Update matching ratio description based on choice of ratio
-                 observeEvent(balancing_values$ratio_choice,{
+                 observeEvent(input$ratio_radio,{
                    
-                   if (balancing_values$ratio_choice  == "one_to_one"){
+                   if (input$ratio_radio == "one_to_one"){
                      
                      balancing_values$matching_ratio_description <- p(
                        h5("1:1:"),
@@ -320,9 +321,13 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      
                      ## Remove ratio slider if present
                      output$ratio_slider_output <- NULL
+                     
+                     
+                     ## Remove missing parameter message if present
+                     balancing_values$matching_ratio_missing_message <- NULL
                    }
                    
-                   if(balancing_values$ratio_choice == "one_to_k"){
+                   if (input$ratio_radio == "one_to_k"){
                      balancing_values$matching_ratio_description <- p(
                        h5("1:K:"),
                        p(i18n$t("Balancing 1tok ratio description")),
@@ -342,9 +347,6 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    }
                  })
                  
-                 
-                 ## Remove missing parameter message if present
-                 balancing_values$matching_ratio_missing_message <- NULL
                  
                  ## If K in matching ratio is changes, update reactive value indicating K
                  observeEvent(input$ratio_slider, {
@@ -368,6 +370,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                  
                  ## Run Balancing ----
                  
+                 ## Ensure balancing can be run 
                  observeEvent(input$run_balancing_btn, {
                    
                    ## If matching approach selected but no balancing method, give error message
@@ -385,190 +388,205 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
                      
-                     ## Show output tab - updateTabsetPanel doesn't work here for some reason so using showTab instead
-                     hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "output"))
-                     showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "output"), select = TRUE)
+                     ## Show output tab 
+                     updateTabsetPanel(
+                       session = parent, inputId = NS(id,"results_panel"), selected = NS(id, "output")
+                     )
                      
-                     ## Remove balancing output
-                     balancing_values$estimation_stage_res <- NULL
-                     balancing_values$balancing_stage_res <- NULL
+                     ## Update reactive value in order to run balancing
+                     balancing_values$run_balancing <- TRUE
                      
-                     ## Remove general output message
-                     balancing_values$output  <- NULL
-                     
-                     ## Remove balancing result outputs
-                     output$AUC <- NULL
-                     output$love_plot  <- NULL
-                     output$balance_table <- NULL
-                     output$observation_table <- NULL
-                     
-                     ## Save potential error to check for running of code dependent on balancing model
-                     error_check <- NA
-                     error_check <- tryCatch({
-                       
-                       # Get propensity scores
-                       balancing_values$estimation_stage_res <- estimation_stage(
-                         .data = raw_data(),
-                         missing_method = missingness(),
-                         model_type = balancing_model(),
-                         treatment_variable = treatment_variable(),
-                         matching_variable = matching_variables(),
-                         weighting_variable = survey_weight_var(),
-                         cluster_variable = cluster_var(),
-                         strata_variable = stratification_var()
-                       )
-                       
-                       ## Balance dataset
-                       if (approach() == "psm"){
-                         
-                         balancing_values$balancing_stage_res <- balance_data(
-                           counterfactual_method = approach(),
-                           treatment_variable = treatment_variable(),
-                           matching_variable = matching_variables(),
-                           PS_estimation_object = balancing_values$estimation_stage_res,
-                           missing_method = missingness(),
-                           ratio = balancing_values$ratio,
-                           method = balancing_values$method_choice)
-                         
-                       }
-                       
-                       if (approach() == "iptw" | approach() == "nbp" | approach() == "cbps"){
-                         
-                         balancing_values$balancing_stage_res <- balance_data(
-                           counterfactual_method = approach(),
-                           treatment_variable = treatment_variable(),
-                           matching_variable = matching_variables(),
-                           PS_estimation_object = balancing_values$estimation_stage_res,
-                           missing_method = missingness())
-                         
-                       }
-                     },
-                     
-                     ## If balancing does not run, return error message and enable run button 
-                     error = function(cond) {
-                       ## Enable "Run" button
-                       shinyjs::enable("run_balancing_btn")
-                       ## Output error message
-                       balancing_values$output <- p(p(paste0(conditionMessage(cond)) , style = "color:red"))
-                     })
-                     
-                     
-                     ## Output balance plots and tables if no error in balancing
-                     if (all(!grepl("Error:", error_check))){
-                       try({
-                         
-                         if(approach() == "psm" | approach() == "iptw"){
-                           
-                           if((balancing_model() == "glm" & missingness() == "complete") | (balancing_model() == "glm" & missingness() == "mi")){
-                             # Get common support graph - only works with GLM currently (MI and CC)
-                             balancing_values$common_support_plot <- evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())
-                             output$common_support <- renderUI(p(
-                               h4("Common Support Graph:"),
-                               renderPlot(balancing_values$common_support_plot),
-                               p(
-                                 h5(i18n$t("Balancing Common support graph")),
-                                 p(i18n$t("Balancing Common support graph description"))
-                               )
-                             ))
-                           }
-                         }
-                         
-                         if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
-                           
-                           ## Get love plot
-                           balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
-                           output$love_plot <- renderPlot(balancing_values$love_plot)
-                           
-                           ## Get balance table
-                           balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
-                           ## Remove empty columns from balance table
-                           balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
-                           ## Round numbers in balance table to 4 decimals
-                           names_temp <- row.names(balance_table)
-                           balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 3) else x))
-                           row.names(balance_table) <- names_temp
-                           ## Output balance table
-                           balancing_values$balance_table <- balance_table
-                           output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
-                           
-                           ## Get observation table
-                           observation_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]])
-                           ## Round numbers in observation table to 4 decimals
-                           names_temp <- row.names(observation_table)
-                           observation_table <- data.frame(lapply(observation_table,function(x) if(is.numeric(x)) round(x, 3) else x))
-                           row.names(observation_table) <- names_temp
-                           ## Output observation table
-                           balancing_values$observation_table <- observation_table
-                           output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
-                           }
-                         
-                         if(approach() == "nbp"){
-                           
-                           ## Get observation table, balancing table and love plot
-                           balancing_values$NBP_balancing_output <- get_NBP_balancing_output(
-                             estimation_model_object = balancing_values$estimation_stage_res,
-                             balanced_data = balancing_values$balancing_stage_res,
-                             treatment_variable = treatment_variable(),
-                             matching_variables = matching_variables(),
-                             missing_method = missingness())
-                           
-                           ## Get love plot
-                           balancing_values$love_plot <- balancing_values$NBP_balancing_output$love_plot
-                           output$love_plot <- renderPlot(balancing_values$love_plot)
-                           ## Get balance table
-                           balancing_values$balance_table <- as.data.frame(balancing_values$NBP_balancing_output$balance_table)
-                           output$balance_table  <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$balance_table), rownames = TRUE, options = list(scrollX = TRUE))})
-                           ## Get observation table
-                           balancing_values$observation_table <- as.data.frame(balancing_values$NBP_balancing_output$observation_table)
-                           output$observation_table <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$observation_table), rownames = TRUE, options = list(scrollX = TRUE))})
-                           
-                         }
-                         
-                         
-                         ## Add tabs to display output
-                         balancing_values$output <- renderUI(
-                           tabsetPanel(id = "well_panel",
-                                       ## Don't include common support graph if propensity model other than GLM used or CBPS approach had been taken
-                                       if(balancing_model() == "glm" & !approach() == "cbps"){
-                                         tabPanel(title = i18n$t("Balancing Common support graph"),
-                                                  value = NS(id, 'common_support_graph_tab'),
-                                                  br(),
-                                                  withSpinner(uiOutput(session$ns("common_support"))))
-                                       },
-                                       tabPanel(title = i18n$t("Balancing Observation table"),
-                                                value = NS(id, 'observation_table_tab'),
-                                                br(),
-                                                withSpinner(DT::dataTableOutput(session$ns("observation_table"))),
-                                                p(paste("ESS = ", i18n$t("Balancing ESS")))),
-                                       tabPanel(title =i18n$t("Balancing Love plot"),
-                                                value = NS(id, 'love_plot_tab'),
-                                                br(),
-                                                withSpinner(plotOutput(session$ns("love_plot"))),
-                                                if(missingness() == "mi"){
-                                                  p(i18n$t("Balancing Balance plot dots MI"))
-                                                },
-                                                if(missingness() == "complete"){
-                                                  p(i18n$t("Balancing Balance plot dots"))
-                                                }
-                                       ),
-                                       tabPanel(title = "Balance Table",
-                                                value = NS(id, 'balance_table_tab'),
-                                                br(),
-                                                withSpinner(DT::dataTableOutput(session$ns("balance_table")))
-                                       ))
-                         )
-                         
-                         ## Enable 'Run' and 'Next' buttons
-                         shinyjs::enable("run_balancing_btn")
-                         shinyjs::enable("next_balancing_btn")
-                         
-                         ## Add message noting that parameter reselection will require rerun
-                         balancing_values$matching_method_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
-                         balancing_values$matching_ratio_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
-                       })
-                     }
                    }
                  })
+                 
+                 ## Run balancing
+                 observeEvent(input$results_panel, {
+                   
+                   ## Only run if output tab is selected and balancing can be run 
+                   if(balancing_values$run_balancing){
+
+                   ## Remove balancing output
+                   balancing_values$estimation_stage_res <- NULL
+                   balancing_values$balancing_stage_res <- NULL
+                   
+                   ## Remove general output message
+                   balancing_values$output  <- NULL
+                   
+                   ## Remove balancing result outputs
+                   output$AUC <- NULL
+                   output$love_plot  <- NULL
+                   output$balance_table <- NULL
+                   output$observation_table <- NULL
+                   
+                   ## Save potential error to check for running of code dependent on balancing model
+                   error_check <- NA
+                   error_check <- tryCatch({
+                     
+                     # Get propensity scores
+                     balancing_values$estimation_stage_res <- estimation_stage(
+                       .data = raw_data(),
+                       missing_method = missingness(),
+                       model_type = balancing_model(),
+                       treatment_variable = treatment_variable(),
+                       matching_variable = matching_variables(),
+                       weighting_variable = survey_weight_var(),
+                       cluster_variable = cluster_var(),
+                       strata_variable = stratification_var()
+                     )
+                     
+                     ## Balance dataset
+                     if (approach() == "psm"){
+                       
+                       balancing_values$balancing_stage_res <- balance_data(
+                         counterfactual_method = approach(),
+                         treatment_variable = treatment_variable(),
+                         matching_variable = matching_variables(),
+                         PS_estimation_object = balancing_values$estimation_stage_res,
+                         missing_method = missingness(),
+                         ratio = balancing_values$ratio,
+                         method = balancing_values$method_choice)
+                       
+                     }
+                     
+                     if (approach() == "iptw" | approach() == "nbp" | approach() == "cbps"){
+                       
+                       balancing_values$balancing_stage_res <- balance_data(
+                         counterfactual_method = approach(),
+                         treatment_variable = treatment_variable(),
+                         matching_variable = matching_variables(),
+                         PS_estimation_object = balancing_values$estimation_stage_res,
+                         missing_method = missingness())
+                       
+                     }
+                   },
+                   
+                   ## If balancing does not run, return error message and enable run button 
+                   error = function(cond) {
+                     ## Enable "Run" button
+                     shinyjs::enable("run_balancing_btn")
+                     ## Output error message
+                     balancing_values$output <- p(p(paste0(conditionMessage(cond)) , style = "color:red"))
+                   })
+                   
+                   
+                   ## Output balance plots and tables if no error in balancing
+                   if (all(!grepl("Error:", error_check))){
+                     try({
+                       
+                       if(approach() == "psm" | approach() == "iptw"){
+                         
+                         if((balancing_model() == "glm" & missingness() == "complete") | (balancing_model() == "glm" & missingness() == "mi")){
+                           # Get common support graph - only works with GLM currently (MI and CC)
+                           balancing_values$common_support_plot <- evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())
+                           output$common_support <- renderUI(p(
+                             h4("Common Support Graph:"),
+                             renderPlot(balancing_values$common_support_plot),
+                             p(
+                               h5(i18n$t("Balancing Common support graph")),
+                               p(i18n$t("Balancing Common support graph description"))
+                             )
+                           ))
+                         }
+                       }
+                       
+                       if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
+                         
+                         ## Get love plot
+                         balancing_values$love_plot <- cobalt::love.plot(balancing_values$balancing_stage_res)
+                         output$love_plot <- renderPlot(balancing_values$love_plot)
+                         
+                         ## Get balance table
+                         balance_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res,  un = TRUE)[[which(grepl("^Balance",names(cobalt::bal.tab(balancing_values$balancing_stage_res, un = TRUE))))]])
+                         ## Remove empty columns from balance table
+                         balance_table <- balance_table[,colSums(is.na(balance_table))<nrow(balance_table)]
+                         ## Round numbers in balance table to 4 decimals
+                         names_temp <- row.names(balance_table)
+                         balance_table <- data.frame(lapply(balance_table,function(x) if(is.numeric(x)) round(x, 3) else x))
+                         row.names(balance_table) <- names_temp
+                         ## Output balance table
+                         balancing_values$balance_table <- balance_table
+                         output$balance_table <- DT::renderDataTable({DT::datatable(balance_table, rownames = TRUE, options = list(scrollX = TRUE))})
+                         
+                         ## Get observation table
+                         observation_table <- as.data.frame(cobalt::bal.tab(balancing_values$balancing_stage_res)[["Observations"]])
+                         ## Round numbers in observation table to 4 decimals
+                         names_temp <- row.names(observation_table)
+                         observation_table <- data.frame(lapply(observation_table,function(x) if(is.numeric(x)) round(x, 3) else x))
+                         row.names(observation_table) <- names_temp
+                         ## Output observation table
+                         balancing_values$observation_table <- observation_table
+                         output$observation_table <- DT::renderDataTable({DT::datatable(observation_table, rownames = TRUE, options = list(scrollX = TRUE))})
+                         }
+                       
+                       if(approach() == "nbp"){
+                         
+                         ## Get observation table, balancing table and love plot
+                         balancing_values$NBP_balancing_output <- get_NBP_balancing_output(
+                           estimation_model_object = balancing_values$estimation_stage_res,
+                           balanced_data = balancing_values$balancing_stage_res,
+                           treatment_variable = treatment_variable(),
+                           matching_variables = matching_variables(),
+                           missing_method = missingness())
+                         
+                         ## Get love plot
+                         balancing_values$love_plot <- balancing_values$NBP_balancing_output$love_plot
+                         output$love_plot <- renderPlot(balancing_values$love_plot)
+                         ## Get balance table
+                         balancing_values$balance_table <- as.data.frame(balancing_values$NBP_balancing_output$balance_table)
+                         output$balance_table  <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$balance_table), rownames = TRUE, options = list(scrollX = TRUE))})
+                         ## Get observation table
+                         balancing_values$observation_table <- as.data.frame(balancing_values$NBP_balancing_output$observation_table)
+                         output$observation_table <- DT::renderDataTable({DT::datatable(as.data.frame(balancing_values$NBP_balancing_output$observation_table), rownames = TRUE, options = list(scrollX = TRUE))})
+                         
+                       }
+                       
+                       
+                       ## Add tabs to display output
+                       balancing_values$output <- renderUI(
+                         tabsetPanel(id = "well_panel",
+                                     ## Don't include common support graph if propensity model other than GLM used or CBPS approach had been taken
+                                     if(balancing_model() == "glm" & !approach() == "cbps"){
+                                       tabPanel(title = i18n$t("Balancing Common support graph"),
+                                                value = NS(id, 'common_support_graph_tab'),
+                                                br(),
+                                                withSpinner(uiOutput(session$ns("common_support"))))
+                                     },
+                                     tabPanel(title = i18n$t("Balancing Observation table"),
+                                              value = NS(id, 'observation_table_tab'),
+                                              br(),
+                                              withSpinner(DT::dataTableOutput(session$ns("observation_table"))),
+                                              p(paste("ESS = ", i18n$t("Balancing ESS")))),
+                                     tabPanel(title =i18n$t("Balancing Love plot"),
+                                              value = NS(id, 'love_plot_tab'),
+                                              br(),
+                                              withSpinner(plotOutput(session$ns("love_plot"))),
+                                              if(missingness() == "mi"){
+                                                p(i18n$t("Balancing Balance plot dots MI"))
+                                              },
+                                              if(missingness() == "complete"){
+                                                p(i18n$t("Balancing Balance plot dots"))
+                                              }
+                                     ),
+                                     tabPanel(title = "Balance Table",
+                                              value = NS(id, 'balance_table_tab'),
+                                              br(),
+                                              withSpinner(DT::dataTableOutput(session$ns("balance_table")))
+                                     ))
+                       )
+                       
+                       ## Enable 'Run' and 'Next' buttons
+                       shinyjs::enable("run_balancing_btn")
+                       shinyjs::enable("next_balancing_btn")
+                       
+                       ## Add message noting that parameter reselection will require rerun
+                       balancing_values$matching_method_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
+                       balancing_values$matching_ratio_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
+                     })
+                   }
+                   ## Update reactive value so balancing only runs when "Run" clicked
+                   balancing_values$run_balancing <- FALSE
+                 }
+                 }, ignoreInit = T)
                  
                  ## Reset if balancing inputs have changed ----
                  
