@@ -1,4 +1,5 @@
 #library(tidyverse, quietly = T)
+#' @import tidyverse
 
 restructure_rejoin_nbp <- function(matched_data, propensity_data, treatment_variable, missing_method,...){
   if(missing_method == "complete"){
