@@ -9,8 +9,9 @@
 #' @import parallel
 #' @import mitools
 
-handle_missingness <- function(.data, missing_method = NULL,
+handle_missingness <- function(.data,missing_method = NULL,
                                counterfactual_method = NULL,
+                               treatment_variable = NULL,
                                cluster_variable = NULL, weighting_variable = NULL,
                                strata_variable = NULL,
                                ...){
@@ -60,8 +61,13 @@ handle_missingness <- function(.data, missing_method = NULL,
            
            # if(counterfactual_method == "psm"){
            
+           ## Remove any rows without treatment data - HC
+           .data <- .data[!is.na(.data[,treatment_variable]),]
+           
+           ## Perform MI without treatment as we do not want this to be used as a predictor - HC
            handled_missingness = mice(.data, m = 5, maxit = 20,
-                                      method = "rf") # default options
+                                      method = "rf",
+                                      quickpred(.data, exclude = treatment_variable)) # default options
            # allow user to alter m & maxit according to FMI & convergence
            # will not be congenial unless include interactions of substantive outcome model
            # cannot reliably obtain congeniality -> default is random forest imputation
