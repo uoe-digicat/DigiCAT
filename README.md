@@ -63,7 +63,7 @@ docker pull digicatuoe/digicat_tool:latest
 DigiCAT can now be run locally from the command line.
 
 ```{bash}
-docker run -p 3838:3838 digicat_tool
+docker run -p 3838:3838 digicatuoe/digicat_tool
 ```
 
 Once running, visit <http://0.0.0.0:3838/> in your web browser to use the DigiCAT tool.
