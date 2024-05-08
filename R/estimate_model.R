@@ -1,10 +1,14 @@
 estimate_model <- function(handled_missingness, model_type = NULL, treatment_variable, matching_variable, 
                            missing_method,...){
-  if(model_type != "poly"){
+  
+  if (model_type == "glm"){
     f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
-  } else {
+  } else if (model_type == "gbm"){
+    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
+  } else if (model_type == "poly" | model_type == "randomforest"){
     f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
   }
+  
   switch(model_type, 
          
          glm = {
@@ -29,13 +33,13 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            }
          },
          
-         rf = {
+         randomforest = {
            if(missing_method == "mi"){
              estimated_propensity_model = lapply(complete(handled_missingness, "all"), # switch to ranger for comp speed
                                                  function(x) randomForest::randomForest(as.formula(f), data = x, ...)) 
            }
            if(missing_method == "complete"){
-             estimated_propensity_model <- randomForest::randomForest(as.formula(f), data = handled_missingness,...) # switch to ranger for comp speed
+             estimated_propensity_model <- randomForest::randomForest(as.formula(f), data = handled_missingness, ...) # switch to ranger for comp speed
            }
          },
          
@@ -90,7 +94,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            }
          },
          
-         stop("I need a valid model! (glm, gbm, rforest, poly, lm)")
+         stop("I need a valid model! (glm, gbm, randomforest, poly, lm)")
   )
   return(estimated_propensity_model)
 }

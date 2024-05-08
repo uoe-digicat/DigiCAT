@@ -22,9 +22,12 @@ calculate_ordered_logistic_linear_predictor <- function(formula, data,
 
 get_propensity <- function(estimated_propensity_model, model_type, treatment_variable, matching_variable, 
                            handled_missingness, missing_method,.data,...){
-  if(model_type != "poly"){
+  
+  if (model_type == "glm"){
     f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
-  } else {
+  } else if (model_type == "gbm"){
+    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
+  } else if (model_type == "poly" | model_type == "randomforest"){
     f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
   }
   
@@ -50,13 +53,13 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
            }
          },
          
-         rf = {
+         randomforest = {
            if(missing_method == "mi"){
              propensity_score = lapply(complete(handled_missingness, "all"), 
                                        function(x) predict(randomForest(as.formula(f), data = x, ...),
-                                                           type = "response"))    
+                                                           type = "prob")[,2])    
            } else{
-             propensity_score = predict(estimated_propensity_model, type = "response")
+             propensity_score = predict(estimated_propensity_model, type = "prob")[,2]
            }
          },
          
@@ -90,7 +93,7 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
            } 
          },
          
-         stop("I need a valid model! (glm, gbm, rf, poly, lm)")
+         stop("I need a valid model! (glm, gbm, randomforest, poly, lm)")
          
   )
   return(propensity_score)

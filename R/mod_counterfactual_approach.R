@@ -318,8 +318,8 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                          #i18n$t("Approach GBM"),
-                                          #i18n$t("Approach RF"),
+                                          i18n$t("Approach GBM"),
+                                          i18n$t("Approach RF"),
                                           i18n$t("Approach GLM")),
                                         selected = character(0)))
                          )
@@ -328,7 +328,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
-                                          #i18n$t("Approach RF"),
+                                          i18n$t("Approach RF"),
                                           i18n$t("Approach GLM")),
                                         selected = character(0)),
                            br(),
@@ -466,7 +466,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      CF_approach_values$model_choice <- "gbm"
                    }
                    if (input$balancing_model_radio == i18n$t("Approach RF")){
-                     CF_approach_values$model_choice <- "rf"
+                     CF_approach_values$model_choice <- "randomforest"
                    }
                    if (input$balancing_model_radio == i18n$t("Approach GLM")){
                      CF_approach_values$model_choice <- "glm"
