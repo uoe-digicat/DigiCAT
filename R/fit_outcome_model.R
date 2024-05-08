@@ -66,7 +66,7 @@ outcome_unadjusted <- function(balanced_data,
       
       # Check if cluster_variable is provided
       if (!is.null(cluster_variable)) {
-        cluster_formula <- as.formula(paste("~", cluster_variable))
+        cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
       } else {
         # Set cluster_formula to ~1 if cluster_variable is not provided
         cluster_formula <- as.formula("~1")
@@ -75,7 +75,7 @@ outcome_unadjusted <- function(balanced_data,
       # Check if weighting_variable is provided
       if (!is.null(weighting_variable)) {
         # Convert weighting_variable to a formula
-        weighting_formula <- as.formula(paste("~", weighting_variable))
+        weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
       } else {
         # Use another variable as the default if weighting_variable is not provided
         weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
@@ -83,7 +83,7 @@ outcome_unadjusted <- function(balanced_data,
       
       # Check if strata_variable is provided
       if (!is.null(strata_variable)) {
-        strata_formula <- as.formula(paste("~", strata_variable))
+        strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
       } else {
         # Set strata_formula to NULL if strata_variable is not provided
         strata_formula <- NULL
@@ -102,7 +102,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -111,7 +111,7 @@ outcome_unadjusted <- function(balanced_data,
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
       # Convert weighting_variable to a formula
-      weighting_formula <- as.formula(paste("~", weighting_variable))
+      weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- NULL  # Replace "weights" with the appropriate variable
@@ -119,7 +119,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -137,7 +137,7 @@ outcome_unadjusted <- function(balanced_data,
       
       # Check if cluster_variable is provided
       if (!is.null(cluster_variable)) {
-        cluster_formula <- as.formula(paste("~", cluster_variable))
+        cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
       } else {
         # Set cluster_formula to ~1 if cluster_variable is not provided
         cluster_formula <- as.formula("~1")
@@ -146,7 +146,7 @@ outcome_unadjusted <- function(balanced_data,
       # Check if weighting_variable is provided
       if (!is.null(weighting_variable)) {
         # Convert weighting_variable to a formula
-        weighting_formula <- as.formula(paste("~", weighting_variable))
+        weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
       } else {
         # Use another variable as the default if weighting_variable is not provided
         weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
@@ -154,7 +154,7 @@ outcome_unadjusted <- function(balanced_data,
       
       # Check if strata_variable is provided
       if (!is.null(strata_variable)) {
-        strata_formula <- as.formula(paste("~", strata_variable))
+        strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
       } else {
         # Set strata_formula to NULL if strata_variable is not provided
         strata_formula <- NULL
@@ -173,7 +173,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -181,7 +181,7 @@ outcome_unadjusted <- function(balanced_data,
 
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))* weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -189,7 +189,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -208,7 +208,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -216,7 +216,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -224,7 +224,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -252,7 +252,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -260,7 +260,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable))
+      weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- NULL  
@@ -268,7 +268,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -288,7 +288,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -296,7 +296,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")   
@@ -304,7 +304,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -323,7 +323,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -331,7 +331,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -339,7 +339,7 @@ outcome_unadjusted <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -376,7 +376,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -385,7 +385,7 @@ outcome_matching_variables <- function(balanced_data,
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
       # Convert weighting_variable to a formula
-      weighting_formula <- as.formula(paste("~", weighting_variable))
+      weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
@@ -393,7 +393,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -412,7 +412,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -421,7 +421,7 @@ outcome_matching_variables <- function(balanced_data,
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
       # Convert weighting_variable to a formula
-      weighting_formula <- as.formula(paste("~", weighting_variable))
+      weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- NULL  # Replace "weights" with the appropriate variable
@@ -429,7 +429,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -447,7 +447,7 @@ outcome_matching_variables <- function(balanced_data,
       
       # Check if cluster_variable is provided
       if (!is.null(cluster_variable)) {
-        cluster_formula <- as.formula(paste("~", cluster_variable))
+        cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
       } else {
         # Set cluster_formula to ~1 if cluster_variable is not provided
         cluster_formula <- as.formula("~1")
@@ -456,7 +456,7 @@ outcome_matching_variables <- function(balanced_data,
       # Check if weighting_variable is provided
       if (!is.null(weighting_variable)) {
         # Convert weighting_variable to a formula
-        weighting_formula <- as.formula(paste("~", weighting_variable))
+        weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
       } else {
         # Use another variable as the default if weighting_variable is not provided
         weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
@@ -464,7 +464,7 @@ outcome_matching_variables <- function(balanced_data,
       
       # Check if strata_variable is provided
       if (!is.null(strata_variable)) {
-        strata_formula <- as.formula(paste("~", strata_variable))
+        strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
       } else {
         # Set strata_formula to NULL if strata_variable is not provided
         strata_formula <- NULL
@@ -483,7 +483,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -491,7 +491,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -499,7 +499,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -519,7 +519,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -527,7 +527,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, "))* weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -535,7 +535,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -561,7 +561,7 @@ outcome_matching_variables <- function(balanced_data,
 
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -569,7 +569,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable))
+      weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- NULL 
@@ -577,7 +577,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -598,7 +598,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -606,7 +606,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")   
@@ -614,7 +614,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -633,7 +633,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -641,7 +641,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -649,7 +649,7 @@ outcome_matching_variables <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -690,7 +690,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -698,7 +698,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -706,7 +706,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL
@@ -732,7 +732,7 @@ outcome_marginal_effects <- function(balanced_data,
       
       # Check if cluster_variable is provided
       if (!is.null(cluster_variable)) {
-        cluster_formula <- as.formula(paste("~", cluster_variable))
+        cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
       } else {
         # Set cluster_formula to ~1 if cluster_variable is not provided
         cluster_formula <- as.formula("~1")
@@ -741,7 +741,7 @@ outcome_marginal_effects <- function(balanced_data,
       # Check if weighting_variable is provided
       if (!is.null(weighting_variable)) {
         # Convert weighting_variable to a formula
-        weighting_formula <- as.formula(paste("~", weighting_variable))
+        weighting_formula <- as.formula(paste("~as.numeric(as.character(", weighting_variable, "))"))
       } else {
         # Use another variable as the default if weighting_variable is not provided
         weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
@@ -749,7 +749,7 @@ outcome_marginal_effects <- function(balanced_data,
       
       # Check if strata_variable is provided
       if (!is.null(strata_variable)) {
-        strata_formula <- as.formula(paste("~", strata_variable))
+        strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
       } else {
         # Set strata_formula to NULL if strata_variable is not provided
         strata_formula <- NULL
@@ -782,7 +782,7 @@ outcome_marginal_effects <- function(balanced_data,
       
       # Check if cluster_variable is provided
       if (!is.null(cluster_variable)) {
-        cluster_formula <- as.formula(paste("~", cluster_variable))
+        cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
       } else {
         # Set cluster_formula to ~1 if cluster_variable is not provided
         cluster_formula <- as.formula("~1")
@@ -790,7 +790,7 @@ outcome_marginal_effects <- function(balanced_data,
       
       # Check if weighting_variable is provided
       if (!is.null(weighting_variable)) {
-        weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+        weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
       } else {
         # Use another variable as the default if weighting_variable is not provided
         weighting_formula <- as.formula("~ weights")  
@@ -798,7 +798,7 @@ outcome_marginal_effects <- function(balanced_data,
       
       # Check if strata_variable is provided
       if (!is.null(strata_variable)) {
-        strata_formula <- as.formula(paste("~", strata_variable))
+        strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
       } else {
         # Set strata_formula to NULL if strata_variable is not provided
         strata_formula <- NULL
@@ -824,7 +824,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       # Set cluster_formula to ~1 if cluster_variable is not provided
       cluster_formula <- as.formula("~1")
@@ -832,7 +832,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     # Check if weighting_variable is provided
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       # Use another variable as the default if weighting_variable is not provided
       weighting_formula <- as.formula("~ weights")  
@@ -840,7 +840,7 @@ outcome_marginal_effects <- function(balanced_data,
     
     # Check if strata_variable is provided
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~as.numeric(as.character(", strata_variable, "))"))
     } else {
       # Set strata_formula to NULL if strata_variable is not provided
       strata_formula <- NULL

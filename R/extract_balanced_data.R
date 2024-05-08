@@ -25,19 +25,19 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     extracted_balanced_data = match.data(balanced_data)
     
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
     } else {
       cluster_formula <- as.formula("~1")
     }
     
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, "))* weights"))
     } else {
       weighting_formula <- as.formula("~ weights")  
     }
     
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~ as.numeric(as.character(", strata_variable, "))"))
     } else {
       strata_formula <- NULL
     }
@@ -64,19 +64,19 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     
     
     if (!is.null(cluster_variable)) {
-      cluster_formula <- as.formula(paste("~", cluster_variable))
+      cluster_formula <- as.formula(paste("~ as.numeric(as.character(", cluster_variable, "))"))
     } else {
       cluster_formula <- as.formula("~1")
     }
     
     if (!is.null(weighting_variable)) {
-      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+      weighting_formula <- as.formula(paste("~ as.numeric(as.character(", weighting_variable, ")) * weights"))
     } else {
       weighting_formula <- as.formula("~ weights")  # Replace "weights" with the appropriate variable
     }
     
     if (!is.null(strata_variable)) {
-      strata_formula <- as.formula(paste("~", strata_variable))
+      strata_formula <- as.formula(paste("~ as.numeric(as.character(", strata_variable, "))"))
     } else {
       strata_formula <- NULL
     }
