@@ -23,9 +23,11 @@ calculate_ordered_logistic_linear_predictor <- function(formula, data,
 get_propensity <- function(estimated_propensity_model, model_type, treatment_variable, matching_variable, 
                            handled_missingness, missing_method,.data,...){
   
-  if (model_type == "gbm" | model_type == "randomforest" | model_type == "glm"){
+  if (model_type == "glm"){
+    f = paste0(treatment_variable,"~",paste0(matching_variable, collapse="+"))
+  } else if (model_type == "gbm"){
     f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
-  } else if (model_type == "poly"){
+  } else if (model_type == "poly" | model_type == "randomforest"){
     f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
   }
   
@@ -55,9 +57,9 @@ get_propensity <- function(estimated_propensity_model, model_type, treatment_var
            if(missing_method == "mi"){
              propensity_score = lapply(complete(handled_missingness, "all"), 
                                        function(x) predict(randomForest(as.formula(f), data = x, ...),
-                                                           type = "response"))    
+                                                           type = "prob")[,2])    
            } else{
-             propensity_score = predict(estimated_propensity_model, type = "response")
+             propensity_score = predict(estimated_propensity_model, type = "prob")[,2]
            }
          },
          
