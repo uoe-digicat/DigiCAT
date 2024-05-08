@@ -62,7 +62,11 @@ balance_data <- function(counterfactual_method, treatment_variable, matching_var
 
 balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method,...){
   
-  f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
+  if (model_type == "gbm"){
+    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
+  } else{
+    f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
+  }
   
   if(missing_method=="mi" ) {
     balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
@@ -85,11 +89,14 @@ balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_
 
 balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method,...){
   
-  f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
+  if (model_type == "gbm"){
+    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
+  } else{
+    f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
+  }
   
   if(missing_method=="mi" ) {
     balanced_data = matchthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset, approach = "within", distance=PS_estimation_object$propensity_model_class, ...)
-    
     
   } else if(missing_method=="complete"){
     balanced_data = matchit(as.formula(f), data = PS_estimation_object$missingness_treated_dataset, distance = PS_estimation_object$propensity_scores, ...)
@@ -157,7 +164,13 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
 
 balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_object, 
                            missing_method,...){
-  f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
+  
+  if (model_type == "gbm"){
+    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
+  } else{
+    f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
+  }
+  
   if(missing_method == "complete"){
     data_to_use = cbind(PS_estimation_object$missingness_treated_dataset, PS_estimation_object$propensity_scores)
     balanced_data = weightit(as.formula(f), data = data_to_use, method = "cbps",
