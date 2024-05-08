@@ -439,6 +439,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        
                        balancing_values$balancing_stage_res <- balance_data(
                          counterfactual_method = approach(),
+                         model_type = balancing_model(),
                          treatment_variable = treatment_variable(),
                          matching_variable = matching_variables(),
                          PS_estimation_object = balancing_values$estimation_stage_res,
@@ -452,6 +453,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        
                        balancing_values$balancing_stage_res <- balance_data(
                          counterfactual_method = approach(),
+                         model_type = balancing_model(),
                          treatment_variable = treatment_variable(),
                          matching_variable = matching_variables(),
                          PS_estimation_object = balancing_values$estimation_stage_res,
