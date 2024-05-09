@@ -46,11 +46,12 @@ DigiCAT::run_DigiCAT(enableLocal = TRUE)
 
 DigiCAT is also available as a container, meaning all required software is combined into a monolithic application. This means DigiCAT can be easily installed on new systems and is robust to updates in dependencies.
 
-#### 1. Install Docker
+#### From the command line
+##### 1. Install Docker
 
 <https://docs.docker.com/get-docker/>
 
-#### 2. Download DigiCAT
+##### 2. Download DigiCAT
 
 This can be done from the command line and requires approximately 3 gigabytes of storage.
 
@@ -58,15 +59,20 @@ This can be done from the command line and requires approximately 3 gigabytes of
 docker pull digicatuoe/digicat_tool:latest
 ```
 
-#### 3. Run DigiCAT
+##### 3. Run DigiCAT
 
-DigiCAT can now be run locally from the command line.
+DigiCAT can now be run locally from the command line. Users must specify the file path containing the data they would like to upload and analyse in DigiCAT.
 
 ```{bash}
-docker run -p 3838:3838 digicatuoe/digicat_tool
+docker run -v </path/to/data>:/srv/shiny-server/home -p 3838:3838 digicatuoe/digicat_tool
 ```
+Once running, visit <http://0.0.0.0:3838/> in Google Chrome to use the DigiCAT tool.
 
-Once running, visit <http://0.0.0.0:3838/> in your web browser to use the DigiCAT tool.
+#### From Docker Desktop 
+
+DigiCAT can also be run from [Docker Desktop](https://www.docker.com/products/docker-desktop/). Please watch the guide below for guidance on how to do this.
+
+https://github.com/uoe-digicat/DigiCAT/assets/53822789/595fbc6b-2d7e-4e36-b9f4-3bf622f79fb9
 
 ## DigiCAT Tutorial
 
