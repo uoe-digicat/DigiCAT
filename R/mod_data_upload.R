@@ -305,8 +305,9 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                    error_check <- NA
                    
                    error_check <- tryCatch({
-
-                    data_upload_values$rawdata <- read.csv(input$file1$datapath)},
+                     
+                     data_upload_output$data <- NULL ## Clear displayed data
+                     data_upload_values$rawdata <- read.csv(input$file1$datapath)},
 
                      ## If data does not upload, return error message
                      error = function(cond) {
@@ -335,17 +336,26 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                        if(initial_data_check_ls$small_rows){
                          data_upload_values$upload_error <- p("Error: Data has too few rows! (<10 rows)", style = "color:red")
                          data_upload_values$rawdata <- NULL
+                         reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent) 
+                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
+                         
                        }
 
                        if(initial_data_check_ls$small_cols){
                          data_upload_values$upload_error <- p("Error: Data has too few columns! (<2 columns)", style = "color:red")
                          data_upload_values$rawdata <- NULL
+                         reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent)
+                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
+                         
                        }
 
                        ## If data is contains nonnumeric values, give error, delete and remove data tab
                        if(initial_data_check_ls$some_nonnumeric){
                          data_upload_values$upload_error <- p("Error: Non numeric values detected!", style = "color:red")
                          data_upload_values$rawdata <- NULL
+                         reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent) 
+                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
+                         
                        }
 
                        ## If inappropriate data is uploaded:
@@ -546,7 +556,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  
                  ## Pass output to UI ----
                  
-                 output$contents <- DT::renderDataTable({DT::datatable(round(mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x))), 2), options = list(dom = 't', scrollX = TRUE))})
+                 output$contents <- DT::renderDataTable({DT::datatable(round(mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x))), 2), options = list(scrollX = TRUE, scrollY = TRUE))})
                  output$data_validation <- renderUI(p(data_upload_values$validation$print))
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
