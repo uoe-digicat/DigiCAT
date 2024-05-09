@@ -312,7 +312,6 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                      
                      error_check <- tryCatch({
                        
-                       data_upload_output$data <- NULL ## Clear displayed data
                        data_upload_values$rawdata <- read_csv(parseFilePaths(volumes, input$file1)$datapath)},
   
                        ## If data does not upload, return error message
@@ -322,8 +321,8 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
   
                        })
   
-                     ## Carry out data checks if no error in data upload
-                     if (all(!grepl("Error:", error_check))){
+                     ## Carry out data checks if no error in data upload and data had been uplaoded
+                     if (all(!grepl("Error:", error_check)) & length(data_upload_values$rawdata)>1){
                        try({
                          
                          ## Show and switch to data tab
