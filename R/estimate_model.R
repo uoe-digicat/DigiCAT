@@ -1,7 +1,7 @@
 estimate_model <- function(handled_missingness, model_type = NULL, treatment_variable, matching_variable, 
                            missing_method,...){
   
-  if (model_type == "gbm" | model_type == "glm"){
+  if (model_type == "gbm" | model_type == "glm" | model_type == "lm"){
     f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
   } else if (model_type == "poly" | model_type == "randomforest"){
     f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
