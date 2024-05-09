@@ -3,6 +3,7 @@ data_upload_ui <- function(id, i18n) {
   
   require(shinyFeedback)
   require(shinycssloaders)
+  require(shinyFiles)
   
   ## Tab for data upload and variable selection
   tabPanel(title = "",
@@ -46,7 +47,8 @@ data_upload_ui <- function(id, i18n) {
                           div(style="margin: 0 auto;",
                               actionButton(NS(id,"Btn_sampledata"), i18n$t("Upload Button example data"), width = "100%"), ## Add button to load sample data
                               p(i18n$t("Upload OR"), style="text-align: center; padding-top:5px;"),
-                              fileInput(ns("file1"), label = NULL, buttonLabel = i18n$t("Upload Upload data"), placeholder = "", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))),  ## Add file input for user to upload own data 
+                              shinyFilesButton(ns("file1"), label = i18n$t("Upload Upload data"), title = NULL, multiple = FALSE)),
+                              #fileInput(ns("file1"), label = NULL, buttonLabel = i18n$t("Upload Upload data"), placeholder = "", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))),  ## Add file input for user to upload own data 
                           ## Add variable inputs
                           pickerInput(inputId=ns("categorical_vars"), label = i18n$t("Upload Select categorical"), multiple = TRUE, options = pickerOptions(title = "---"),
                                       choices=NULL, selected=NULL
@@ -68,29 +70,29 @@ data_upload_ui <- function(id, i18n) {
 
                           ## Add checkbox asking if "survey weight" should be specified
                           div(class = "tab_panel_feature",
-                              checkboxInput(ns("survey_weight_checkbox"), p(i18n$t("Upload Survey weights selection"), tags$sup("†"))),
+                              checkboxInput(ns("survey_weight_checkbox"), p(i18n$t("Upload Survey weights selection"), tags$sup("**"))),
                               ## If check box selected, show picker input
                               uiOutput(ns("survey_weight_var")),
                               uiOutput(ns("survey_weight_name_change")),
                               ## Add checkbox to see if weights compensates for non-response
-                              checkboxInput(ns("non_response_weight_checkbox"), p(i18n$t("Upload nonresponse selection"), tags$sup("†")))
+                              checkboxInput(ns("non_response_weight_checkbox"), p(i18n$t("Upload nonresponse selection"), tags$sup("**")))
                           ),
                           br(),
                           ## Add checkbox asking if "clustering variable" should be specified
                           div(class = "tab_panel_feature",
-                              checkboxInput(ns("clustering_checkbox"), p(i18n$t("Upload Clustering"), tags$sup("†"))),
+                              checkboxInput(ns("clustering_checkbox"), p(i18n$t("Upload Clustering"), tags$sup("**"))),
                               ## If check box selected, show picker input
                               uiOutput(ns("clustering_var"))
                           ),
                           br(),
                           ## Add checkbox asking if "stratification variables" should be specified
                           div(class = "tab_panel_feature",
-                              checkboxInput(ns("stratification_checkbox"), p(i18n$t("Upload Stratification"), tags$sup("†"))),
+                              checkboxInput(ns("stratification_checkbox"), p(i18n$t("Upload Stratification"), tags$sup("**"))),
                               ## If check box selected, show picker input
                               uiOutput(ns("stratification_var"))
                           ),
                           p(i18n$t("Upload Required fields")),
-                          p(tags$sup("†"), i18n$t("Upload Design warning")),
+                          p(tags$sup("**"), i18n$t("Upload Design warning")),
                           br(),
                           
                           ## Add buttons to clear/validate data  
@@ -281,115 +283,120 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  
                  # Data Upload ----
                  
+                 volumes <-c ("Home" = fs::path_home(), "Docker" = "/srv/shiny-server/home")
+                 shinyFileChoose(input, "file1", roots = volumes, filetypes=c('', 'csv'))
+                 
                  ## Update app when file uploaded
                  observeEvent(input$file1, {
-                   
-                   # Reset any input errors and hide validation tab
-                   reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, hide_data = TRUE, parent = parent)
-                   ## Remove validation info
-                   data_upload_values$validation <- NULL
-                   ## Disable Next button
-                   shinyjs::disable("nextDU_btn")
-                   ## Remove "no data" warning
-                   output$no_data_warning <- NULL
-                   ## Reset "survey weights", "clustering" and stratification" checkboxes to null
-                   updateCheckboxInput(session, inputId = "survey_weight_checkbox", value = FALSE)
-                   updateCheckboxInput(session, inputId = "non_response_weight_checkbox", value = FALSE)
-                   updateCheckboxInput(session, inputId = "clustering_checkbox", value = FALSE)
-                   updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
-                   ## Disable "non-response weight" checkbox
-                   shinyjs::disable("non_response_weight_checkbox")
-                   
-                   ## Load in data
-                   ## Save potential error to check for running of code dependent on data upload
-                   error_check <- NA
-                   
-                   error_check <- tryCatch({
+                   if (!is.null(input$file1)){
                      
-                     data_upload_output$data <- NULL ## Clear displayed data
-                     data_upload_values$rawdata <- read.csv(input$file1$datapath)},
-
-                     ## If data does not upload, return error message
-                     error = function(cond) {
-                       ## Output error message
-                       data_upload_values$upload_error <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
-
-                     })
-
-                   ## Carry out data checks if no error in data upload
-                   if (all(!grepl("Error:", error_check))){
-                     try({
+                     # Reset any input errors and hide validation tab
+                     reset_upload_page(reset_errors = TRUE, hide_validation = TRUE, hide_data = TRUE, parent = parent)
+                     ## Remove validation info
+                     data_upload_values$validation <- NULL
+                     ## Disable Next button
+                     shinyjs::disable("nextDU_btn")
+                     ## Remove "no data" warning
+                     output$no_data_warning <- NULL
+                     ## Reset "survey weights", "clustering" and stratification" checkboxes to null
+                     updateCheckboxInput(session, inputId = "survey_weight_checkbox", value = FALSE)
+                     updateCheckboxInput(session, inputId = "non_response_weight_checkbox", value = FALSE)
+                     updateCheckboxInput(session, inputId = "clustering_checkbox", value = FALSE)
+                     updateCheckboxInput(session, inputId = "stratification_checkbox", value = FALSE)
+                     ## Disable "non-response weight" checkbox
+                     shinyjs::disable("non_response_weight_checkbox")
+                     
+                     ## Load in data
+                     ## Save potential error to check for running of code dependent on data upload
+                     error_check <- NA
+                     
+                     error_check <- tryCatch({
                        
-                       ## Show and switch to data tab
-                       showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
-
-                       ## Remove data upload error if present
-                       data_upload_values$upload_error <- NULL
-
-                       ## Save data source
-                       data_upload_values$data_source <- "own"
-
-                       ## Check data upon upload
-                       initial_data_check_ls <- initial_data_check(data_upload_values$rawdata)
-
-                       ## If data is too small give error and delete
-                       if(initial_data_check_ls$small_rows){
-                         data_upload_values$upload_error <- p("Error: Data has too few rows! (<10 rows)", style = "color:red")
-                         data_upload_values$rawdata <- NULL
-                         reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent) 
-                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
+                       data_upload_output$data <- NULL ## Clear displayed data
+                       data_upload_values$rawdata <- read_csv(parseFilePaths(volumes, input$file1)$datapath)},
+  
+                       ## If data does not upload, return error message
+                       error = function(cond) {
+                         ## Output error message
+                         data_upload_values$upload_error <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
+  
+                       })
+  
+                     ## Carry out data checks if no error in data upload
+                     if (all(!grepl("Error:", error_check))){
+                       try({
                          
-                       }
-
-                       if(initial_data_check_ls$small_cols){
-                         data_upload_values$upload_error <- p("Error: Data has too few columns! (<2 columns)", style = "color:red")
-                         data_upload_values$rawdata <- NULL
-                         reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent)
-                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
-                         
-                       }
-
-                       ## If data is contains nonnumeric values, give error, delete and remove data tab
-                       if(initial_data_check_ls$some_nonnumeric){
-                         data_upload_values$upload_error <- p("Error: Non numeric values detected!", style = "color:red")
-                         data_upload_values$rawdata <- NULL
-                         reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent) 
-                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
-                         
-                       }
-
-                       ## If inappropriate data is uploaded:
-                       if(any(c(initial_data_check_ls$small_cols, initial_data_check_ls$small_rows, initial_data_check_ls$some_nonnumeric))){
-
+                         ## Show and switch to data tab
+                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
+  
+                         ## Remove data upload error if present
+                         data_upload_values$upload_error <- NULL
+  
+                         ## Save data source
+                         data_upload_values$data_source <- "own"
+  
+                         ## Check data upon upload
+                         initial_data_check_ls <- initial_data_check(data_upload_values$rawdata)
+  
+                         ## If data is too small give error and delete
+                         if(initial_data_check_ls$small_rows){
+                           data_upload_values$upload_error <- p("Error: Data has too few rows! (<10 rows)", style = "color:red")
+                           data_upload_values$rawdata <- NULL
+                           reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent) 
+                           showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
+                           
+                         }
+  
+                         if(initial_data_check_ls$small_cols){
+                           data_upload_values$upload_error <- p("Error: Data has too few columns! (<2 columns)", style = "color:red")
+                           data_upload_values$rawdata <- NULL
+                           reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent)
+                           showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
+                           
+                         }
+  
+                         ## If data is contains nonnumeric values, give error, delete and remove data tab
+                         if(initial_data_check_ls$some_nonnumeric){
+                           data_upload_values$upload_error <- p("Error: Non numeric values detected!", style = "color:red")
+                           data_upload_values$rawdata <- NULL
+                           reset_upload_page(reset_errors = FALSE, hide_data = TRUE, hide_validation = TRUE, parent = parent) 
+                           showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "data_requirements"), select = TRUE)
+                           
+                         }
+  
+                         ## If inappropriate data is uploaded:
+                         if(any(c(initial_data_check_ls$small_cols, initial_data_check_ls$small_rows, initial_data_check_ls$some_nonnumeric))){
+  
+                           ## Reset variable inputs
+                           updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
+                           updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
+                           updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
+                           updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
+                           updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
+                           
+                           updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
+                           updatePickerInput(session, "clustering_var", choices = names(isolate(data_upload_values$rawdata)))
+                           updatePickerInput(session, "stratification_var", choices = names(isolate(data_upload_values$rawdata)))
+                           
+                         }
+  
+                         ## Get variable classes
+                         categorical_variables <- get_categorical_variables(data_upload_values$rawdata)
+                         continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% categorical_variables]
+  
                          ## Reset variable inputs
                          updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
                          updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
                          updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
                          updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
                          updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
-                         
+  
                          updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
                          updatePickerInput(session, "clustering_var", choices = names(isolate(data_upload_values$rawdata)))
                          updatePickerInput(session, "stratification_var", choices = names(isolate(data_upload_values$rawdata)))
-                         
-                       }
-
-                       ## Get variable classes
-                       categorical_variables <- get_categorical_variables(data_upload_values$rawdata)
-                       continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% categorical_variables]
-
-                       ## Reset variable inputs
-                       updatePickerInput(session, "categorical_vars", choices = names(isolate(data_upload_values$rawdata)), selected=categorical_variables)
-                       updatePickerInput(session, "outcome", choices=continuous_variables, selected = NULL)
-                       updatePickerInput(session, "treatment", choices=names(isolate(data_upload_values$rawdata)), selected = NULL)
-                       updatePickerInput(session, "matchvars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
-                       updatePickerInput(session, "covars", choices=names(isolate(data_upload_values$rawdata)), selected = NULL, clearOptions = TRUE)
-
-                       updatePickerInput(session, "survey_weight_var", choices = names(isolate(data_upload_values$rawdata)))
-                       updatePickerInput(session, "clustering_var", choices = names(isolate(data_upload_values$rawdata)))
-                       updatePickerInput(session, "stratification_var", choices = names(isolate(data_upload_values$rawdata)))
-
-                     })
+  
+                       })
+                     }
                    }
                  })
                  
@@ -580,7 +587,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  observe({
                    data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(data_upload_values$treatment_name, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
-                   data_upload_output$file_path <- input$file1$datapath
+                   data_upload_output$file_path <- parseFilePaths(volumes, input$file1)$datapath
                    data_upload_output$categorical_vars <- input$categorical_vars
                    data_upload_output$outcome <- input$outcome
                    data_upload_output$treatment <- data_upload_values$treatment_name
