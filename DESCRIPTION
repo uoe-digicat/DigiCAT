@@ -39,6 +39,7 @@ Imports:
     shinyWidgets,
     shinycssloaders,
     shinydashboard,
+    shinyFiles,
     bsplus,
     DT,
     cobalt,
