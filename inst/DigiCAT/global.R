@@ -1,1 +1,1 @@
-enable_local_data <- FALSE
+enable_local_data <- TRUE

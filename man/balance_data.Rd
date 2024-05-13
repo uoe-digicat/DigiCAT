@@ -10,6 +10,7 @@ balance_data(
   matching_variable,
   PS_estimation_object,
   missing_method,
+  model_type,
   eff,
   ...
 )

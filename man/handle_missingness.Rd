@@ -8,6 +8,7 @@ handle_missingness(
   .data,
   missing_method = NULL,
   counterfactual_method = NULL,
+  treatment_variable = NULL,
   cluster_variable = NULL,
   weighting_variable = NULL,
   strata_variable = NULL,
