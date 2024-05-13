@@ -312,7 +312,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                      
                      error_check <- tryCatch({
                        
-                       data_upload_values$rawdata <- read_csv(parseFilePaths(volumes, input$file1)$datapath)},
+                       data_upload_values$rawdata <- as.data.frame(read_csv(parseFilePaths(volumes, input$file1)$datapath))},
   
                        ## If data does not upload, return error message
                        error = function(cond) {
