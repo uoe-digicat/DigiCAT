@@ -399,7 +399,7 @@ outcome_unadjusted <- function(balanced_data,
     if (outcome_type == 'Continuous'){
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     } else if (outcome_type == 'Binary'){
-      model_fit = with(mi_matched_design, svyglm(model_formula), family = 'binomial') # leave unpooled until next step
+      model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
     }
     
   }
@@ -928,6 +928,8 @@ outcome_marginal_effects <- function(balanced_data,
       
       
       if (outcome_type == 'Continuous'){
+        model_fit = with(mi_matched_design, svyglm(model_formula)) 
+      } else if (outcome_type == 'Binary'){
         model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) 
       }
       
@@ -1004,7 +1006,98 @@ outcome_marginal_effects <- function(balanced_data,
     
     model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)
     
+  } else if(extracted_balanced_data$process == "cc_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")   
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    updated_design <- svydesign(ids = cluster_formula,
+                                weights = weighting_formula,
+                                strata = strata_formula,
+                                data = data_to_use)
+    
+    if (outcome_type == 'Continuous'){
+      model_fit = svyglm(model_formula, design = updated_design)
+    } else if (outcome_type == 'Binary'){
+      model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+    }
+    
+    model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable, wts = model_fit$weights)
+    
   }
+  else if(extracted_balanced_data$process == "mi_cbps"){
+    data_to_use <- extracted_balanced_data[[1]]
+    
+    # Check if cluster_variable is provided
+    if (!is.null(cluster_variable)) {
+      cluster_formula <- as.formula(paste("~", cluster_variable))
+    } else {
+      # Set cluster_formula to ~1 if cluster_variable is not provided
+      cluster_formula <- as.formula("~1")
+    }
+    
+    # Check if weighting_variable is provided
+    if (!is.null(weighting_variable)) {
+      weighting_formula <- as.formula(paste("~", weighting_variable, "* weights"))
+    } else {
+      # Use another variable as the default if weighting_variable is not provided
+      weighting_formula <- as.formula("~ weights")  
+    }
+    
+    # Check if strata_variable is provided
+    if (!is.null(strata_variable)) {
+      strata_formula <- as.formula(paste("~", strata_variable))
+    } else {
+      # Set strata_formula to NULL if strata_variable is not provided
+      strata_formula <- NULL
+    }
+    
+    mi_matched_design <- svydesign(ids = cluster_formula,
+                                   weights = weighting_formula,
+                                   strata = strata_formula,
+                                   data = imputationList(data_to_use))
+    
+    if (outcome_type == 'Continuous'){
+      model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
+    } else if (outcome_type == 'Binary'){
+      model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
+    }
+    
+    # START HERE ON WEDNESDAY
+    # NEED to aggregate to get the correct estiamte.
+    model_fit = lapply(model_fit, function(fit){
+      marginaleffects::avg_comparisons(fit, newdata = fit$data,
+                                       variables = treatment_variable, wts = "weights", vcov = "HC3")
+    })
+    
+    model_fit <- mice::pool(model_fit)
+    
+  }
+  
+  
+  
   return(model_fit)
 }
 

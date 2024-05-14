@@ -245,7 +245,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            )
                          } else if (outcome_type == 'Binary'){
                            
-                           #### START HERE ON WEDNESDAY ####
+                          
                            outcome_model_values$output <- p(
                              h4("Model Output"),
                              i18n$t("Outcome model output odds ratio description"),
@@ -459,6 +459,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        if (outcome_type == 'Continuous'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
+                                        i18n$t("Outcome LR w covar interaction"),
                                         i18n$t("Outcome LR w covar"),
                                         i18n$t("Outcome LR wo covar")),
                                       selected = character(0),
@@ -467,6 +468,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        } else if (outcome_type == 'Binary'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
+                                        i18n$t("Outcome LogReg w covar interaction"),
                                         i18n$t("Outcome LogReg w covar"),
                                         i18n$t("Outcome LogReg wo covar")),
                                       selected = character(0),
