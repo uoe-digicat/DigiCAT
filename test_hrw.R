@@ -1,8 +1,21 @@
 source("R/propensity_estimation_stage.R")
+source("R/handle_missingness.R")
+source("R/estimate_model.R")
+source("R/get_propensity.R")
 source("R/evaluate_imputations.R")
 source("R/evaluate_propensity_stage.R")
 source("R/balance_data.R")
+source("R/prepare_dataset_nbp.R")
+source("R/make_matrix_nbp.R")
+source("R/Restructure_nbp.R")
+source("R/extract_balanced_data.R")
+source("R/fit_outcome_model.R")
+source("R/extract_outcome_results.R")
+source("R/standardise_outcome_format.R")
 source("R/outcome_analysis_stage.R")
+source("R/run_SA.R")
+
+
 
 N =500
 A = matrix(runif(5^2)*2-1, ncol = 5)
@@ -29,34 +42,33 @@ evaluate_imputations(abc, "convergence") # include guidance line as output maybe
 evaluate_imputations(abc, "eventslog") # depending on logged events, recommend altering parameters xyz accordingly
 evaluate_imputations(abc, "inspect_matrix")
 
-ghi <- balance_data(counterfactual_method = "cbps", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "mi")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "cbps", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
                               missing_method = "mi",
-                              outcome_formula = "unadjusted",
-                              covariates = "d",
-                              weighting_variable = "e")
+                              outcome_formula = "marginal_effects",
+                              covariates = "d")
 
 #### cc
 
-abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "gbm",
+abc <- estimation_stage(.data = df2$amp, missing_method = "complete", model_type = "lm",
                         treatment_variable = "t", matching_variable = c("a", "b")) 
 evaluate_propensity_stage(abc, evaluation_method = "support")
-ghi <- balance_data(counterfactual_method = "cbps", treatment_variable = "t", 
+ghi <- balance_data(counterfactual_method = "iptw", treatment_variable = "t", 
                     matching_variable = c("a", "b"), PS_estimation_object = abc,
                     missing_method = "complete")
-mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "cbps", 
+mno <- outcome_analysis_stage(balanced_data = ghi, counterfactual_method = "iptw", 
                               outcome_variable = "y",
                               treatment_variable = "t", 
                               matching_variable = c("a", "b"), 
                               psmodel_obj = abc,
                               missing_method = "complete",
-                              outcome_formula = "with_matching_variables")
+                              outcome_formula = "marginal_effects")
 
 #### Weighting testing ####
 
@@ -206,6 +218,23 @@ trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "n
                                 covariates = NULL,
                                 outcome_formula = "with_matching_variables",
                                 psmodel_obj = un, missing_method = "mi",
+                                weighting_variable = "income")
+
+
+un <- estimation_stage(.data = simulated_data$amp, missing_method = "weighting", model_type = "poly",
+                       treatment_variable = "treatment", matching_variable = "age",
+                       weighting_variable = "income")
+
+deux <- balance_data(counterfactual_method = "nbp", treatment_variable = "treatment",
+                     matching_variable = "age", PS_estimation_object = un,
+                     missing_method = "weighting")
+
+trois <- outcome_analysis_stage(balanced_data = deux, counterfactual_method = "nbp",
+                                outcome_variable = "continuous_outcome", treatment_variable = "treatment",
+                                matching_variable = "age",
+                                covariates = NULL,
+                                outcome_formula = "unadjusted",
+                                psmodel_obj = un, missing_method = "weighting",
                                 weighting_variable = "income")
 
 data(mtcars)

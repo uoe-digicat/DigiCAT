@@ -1,12 +1,12 @@
 extract_outcome_results <- function(fitted_model, missing_method,...){
   if("comparisons" %in% class(fitted_model) & missing_method == "weighting"){ # weighting ME
-    extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
-    return(list(extracted_outcome_results, process = "weighting"))
+    
+    return(list(extracted_outcome_results = fitted_model, process = "weighting"))
     
   }else if("comparisons" %in% class(fitted_model) & missing_method == "complete"){ # complete ME
-    extracted_outcome_results = data.frame(fitted_model)
-    return(list(extracted_outcome_results, process = "cc"))
-    
+
+    return(list(extracted_outcome_results = fitted_model, process = "cc"))
+
   }
   else if("mipo" %in% class(fitted_model) & missing_method == "mi"){ # MI ME
     extracted_outcome_results = summary(fitted_model, conf.int = TRUE)

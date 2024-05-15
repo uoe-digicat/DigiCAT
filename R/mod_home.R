@@ -1,3 +1,6 @@
+#' @import tidyverse
+#' @import readr
+
 # home module ----
 
 home_ui <- function(id, i18n) {
@@ -51,11 +54,22 @@ home_ui <- function(id, i18n) {
            ),
            br(),br(),
            
+           ## Select Language ----
+           
+           div(style = "text-align: center; position: relative; top: 50%; transform: translateX(35%); z-index:1002;",
+               selectInput(NS(id,"selected_language"),
+                                              i18n$t("Language"),
+                                              choices = i18n$get_languages()[2],
+                                              #choices = "en",
+                                              selected = i18n$get_key_translation()
+           )),
            ## Navigation ----
            div(style="text-align: center; position: relative;",
                uiOutput(ns("warning")),
                actionButton(ns("start_btn"),label=i18n$t("Home Get Started"), class = "default_button")),
            br(),br(),
+           
+
            
            ## Tool description ----
            fluidRow(
@@ -91,6 +105,11 @@ home_server <- function(id, parent, enableLocal, i18n) {
   moduleServer(id,
                function(input, output, session) {
                  
+                 ## Create reactive value for elements on home tab
+                 home_values <- reactiveValues(
+                   select_language = NULL
+                 )
+                 
                  ## If data upload is enabled, give warning about current developemnt
                  if(enableLocal==TRUE){
                    output$warning = renderUI({
@@ -98,7 +117,7 @@ home_server <- function(id, parent, enableLocal, i18n) {
                    })
                  }
                  
-                 ## Start and terms of use ----
+                 ## State and terms of use ----
                  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 
                  observeEvent(input$start_btn,{
                    
@@ -141,5 +160,22 @@ home_server <- function(id, parent, enableLocal, i18n) {
                    addClass(selector = "body", class = "sidebar-collapse") ## Collapse NavBar
                    removeModal() ## remove modal
                  })
+                 
+                 ## Disable select language ----
+                 observeEvent(input$Btn_agree, {
+                   disable(id = "selected_language")
+                 })
+                 
+                 ## Return home output to server ----
+                 
+                 home_output <- reactiveValues(selected_language = NULL
+                 )
+                 
+                 observe({
+                   home_output$selected_language <- input$selected_language
+                 })
+                 
+                 return(home_output)
+
                })
 }

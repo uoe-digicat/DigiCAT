@@ -54,14 +54,6 @@ ui <- fluidPage(
                        menuItem(i18n$t("T and Cs"), tabName = "TC", icon = icon("square-check")),
                        menuItem(i18n$t("About"), tabName = "about", icon = icon("circle-info")),
                        checkboxInput("style", i18n$t("Dark Mode")),
-                       div(class = "selected_language",
-                         selectInput("selected_language",
-                                   i18n$t("Language"),
-                                   choices = i18n$get_languages()[2],
-                                   #choices = "en",
-                                   selected = i18n$get_key_translation()
-                                   )
-                       ),
                        HTML("<br><br><br><br><br><br><br><br><br><br>"),
                        HTML(paste0(
                          "<p style = 'text-align: left; padding-left: 20px; font-size: 12px;'><a href='mailto:uoe_digicat-group@uoe.onmicrosoft.com' target='_blank'> uoe_digicat-group@uoe.onmicrosoft.com</a>",

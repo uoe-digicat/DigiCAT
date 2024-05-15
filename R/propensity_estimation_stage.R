@@ -17,6 +17,7 @@
 #' @return Estimation model object
 #' @import gbm
 #' @import randomForest
+#' @import survey
 #'
 #' @examples 
 #' estimation_stage(
@@ -40,6 +41,7 @@ estimation_stage <- function(.data, missing_method, model_type,
   #browser()
   handled_missingness_objects <- handle_missingness(.data, missing_method,
                                             counterfactual_method,
+                                            treatment_variable,
                                             cluster_variable, weighting_variable,
                                             strata_variable,
                                             ...)
