@@ -161,7 +161,9 @@ desc_global <<- list(
                                    differently so if there isn’t a perfect gender balance there might be some bias in estimating the treatment effect).")),
   
   estimate = p("In counterfactual analysis, the estimate can be used to quantify the potential causal effect of specific factors, interventions, or treatments on mental health outcomes."),
-  
+  odds_ratio = p("The odds ratio tells us the strength of association between treatment and outcome. Explicitly, it quantifies the change in odds for every unit change in treatment.
+                 An odds ratio greater than 1 means that the treatment increases the odds of the outcome while an odds ratio less than 1 suggests the treatment decreases the odds of the outcome."),
+  estimate_bin = p("The estimate produced by a logistic regression analysis estimates the logarithm of the odds ratio (log-odds)"),
   standard_error = p("The standard error is a statistical measure that quantifies the variability or uncertainty associated with the estimate. It provides a measure of how much the estimate 
                      is likely to vary from the true population value."),
   

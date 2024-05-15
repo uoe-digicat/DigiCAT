@@ -42,8 +42,9 @@ outcome_model_ui <- function(id, i18n) {
                    uiOutput(ns("outcome_model_missing_message"), style = "color: red;"), ## If no model selected when "Run" pressed, give warning
                    uiOutput(ns("outcome_model_rerun_message"), style = "color: grey;"), ## Give warning that rerun required upon re-selection
                    br(),
-                   p(h5(i18n$t("Tabs Outcome model")),
-                     i18n$t("Outcome LR description")),
+                   p(h5(i18n$t("Tabs Outcome model"))),
+                     #i18n$t("Outcome LR description")),
+                   uiOutput(ns('outcome_model_description')),
                    br(),
                    uiOutput(ns("outcome_model_description_method_selected"))
                ),
@@ -120,32 +121,70 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  observeEvent(input$next_outcome_model_btn, {
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "get_results-tab")
                  })
-                 
+
+
                  ## Above only works when on appraoch tab, trigger same code when page if is revisted
                  observeEvent(analysis_tab(), {
+                   
+                   outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   output$outcome_model_description <- renderUI(
+                     if (outcome_type == 'Continuous'){
+                       p(i18n$t("Outcome LR description"))
+                     } else if (outcome_type == 'Binary'){
+                       p(i18n$t("Outcome LogReg description"))
+                     })
+                   
                    if(analysis_tab() == "outcome_model-tab"){
                      if(!is.null(outcome_model_values$outcome_model_choice)){ ## Only run if approach has been selected, or if on 
                        if(!is.null(outcome_model_values$outcome_model_choice)){ ## Only run if approach has been selected, or if on 
                          if(outcome_model_values$outcome_model_choice == "marginal_effects"){
-                           updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR w covar interaction"))
-                           outcome_model_values$description_method_selected <- p(
-                             h5(i18n$t("Outcome LR w covar interaction full"),
-                                i18n$t("Outcome LR w covar interaction description"))
-                           )
+                           if (outcome_type == 'Continuous'){
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR w covar interaction"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome LR w covar interaction full"),
+                                  i18n$t("Outcome LR w covar interaction description"))
+                             )
+                           } else if (outcome_type == 'Binary'){
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LogReg w covar interaction"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome LogReg w covar interaction full"),
+                                  i18n$t("Outcome LogReg w covar interaction description"))
+                             )
+                           }
+                           
                          }
                          if(outcome_model_values$outcome_model_choice == "with_matching_variables"){
-                           updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR w covar"))
-                           outcome_model_values$description_method_selected <- p(
-                             h5(i18n$t("Outcome LR w covar full"),
-                                i18n$t("Outcome LR w covar description"))
-                           )
+                           if (outcome_type == 'Continuous'){
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR w covar"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome LR w covar full"),
+                                  i18n$t("Outcome LR w covar description"))
+                             )
+                           } else if (outcome_type == 'Binary'){
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LogReg w covar"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome LogReg w covar full"),
+                                  i18n$t("Outcome LogReg w covar description"))
+                             )
+                           }
+                           
                          }
                          if(outcome_model_values$outcome_model_choice == "unadjusted"){
-                           updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR wo covar"))
-                           outcome_model_values$description_method_selected <- p(
-                             h5(i18n$t("Outcome LR wo covar full"),
-                                i18n$t("Outcome LR wo covar description"))
-                           )
+                           if (outcome_type == 'Continuous'){
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR wo covar"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome LR wo covar full"),
+                                  i18n$t("Outcome LR wo covar description"))
+                             )
+                           } else if (outcome_type == 'Binary'){
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LogReg wo covar"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome LogReg wo covar full"),
+                                  i18n$t("Outcome LogReg wo covar description"))
+                             )
+                             
+                           }
+                          
                          }
                        }
                      }
@@ -153,33 +192,77 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      ## Replace output
                      if (!is.null(outcome_model_values$output) & !is.null(approach())){
                        if(approach() == "nbp"){
-                         outcome_model_values$output <- p(h4("Model Output"),
-                                                          descriptions$estimate,
-                                                          strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                                                          br(),
-                                                          descriptions$standard_error,
-                                                          strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                                                          br(),
-                                                          descriptions$p_value,
-                                                          strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                                                          br(),
-                                                          strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                         )
+                         
+                         if (outcome_type == 'Continuous'){
+                           outcome_model_values$output <- p(h4("Model Output"),
+                                                            descriptions$estimate,
+                                                            strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                            br(),
+                                                            descriptions$standard_error,
+                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                            br(),
+                                                            descriptions$p_value,
+                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                            br(),
+                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                           
+                         } else if (outcome_type == 'Binary'){
+                           outcome_model_values$output <- p(h4("Model Output"),
+                                                            i18n$t("Outcome model output odds ratio description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                            br(),
+                                                            i18n$t("Outcome model output binary estimate description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                            br(),
+                                                            i18n$t("Outcome model output SE description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                            br(),
+                                                            i18n$t("Outcome model output P description"),
+                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                            br(),
+                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                           
+                         }
+                         
                        }
                        if(approach() == "iptw" | approach() == "psm"){
-                         outcome_model_values$output <- p(
-                           h4("Model Output"),
-                           i18n$t("Outcome model output estimate description"),
-                           strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                           br(),
-                           i18n$t("Outcome model output SE description"),
-                           strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                           br(),
-                           i18n$t("Outcome model output P description"),
-                           strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                           br(),
-                           strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                         )
+                         
+                         if (outcome_type == 'Continuous'){
+                           outcome_model_values$output <- p(
+                             h4("Model Output"),
+                             i18n$t("Outcome model output estimate description"),
+                             strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output SE description"),
+                             strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output P description"),
+                             strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                             br(),
+                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                           
+                         } else if(outcome_type == 'Binary'){
+                           outcome_model_values$output <- p(
+                             h4("Model Output"),
+                             i18n$t("Outcome model output odds ratio description"),
+                             strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                             br(),
+                             i18n$t("Outcome model output binary estimate description"),
+                             strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output SE description"),
+                             strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                             br(),
+                             i18n$t("Outcome model output P description"),
+                             strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                             br(),
+                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           )
+                         }
+                         
                        }
                      }
                      
@@ -202,28 +285,63 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Update choice of outcome model when approach is changed
                  observeEvent(approach(),{
                    
+                   outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   
+                   output$outcome_model_description <- renderUI(
+                     if (outcome_type == 'Continuous'){
+                       p(i18n$t("Outcome LR description"))
+                     } else if (outcome_type == 'Binary'){
+                       p(i18n$t("Outcome LogReg description"))
+                     })
+                   
                    ## If NBP selected, remove choice with interaction
                    if(approach() == "nbp" | approach() == "cbps"){
                      
                      output$outcome_model_selection <- renderUI(
-                       radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
-                                  choices = list(
-                                    i18n$t("Outcome LR w covar"),
-                                    i18n$t("Outcome LR wo covar")),
-                                  selected = character(0),
-                                  width = "200%")
-                       )
+                       
+                       if (outcome_type == 'Continuous'){
+                         radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
+                                      choices = list(
+                                        i18n$t("Outcome LR w covar interaction"),
+                                        i18n$t("Outcome LR w covar"),
+                                        i18n$t("Outcome LR wo covar")),
+                                      selected = character(0),
+                                      width = "200%")
+                  
+                       } else if (outcome_type == 'Binary'){
+                         radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
+                                      choices = list(
+                                        i18n$t("Outcome LogReg w covar interaction"),
+                                        i18n$t("Outcome LogReg w covar"),
+                                        i18n$t("Outcome LogReg wo covar")),
+                                      selected = character(0),
+                                      width = "200%")
+        
+                       }
+                     )
                    }
                    ## Give choice with interaction for other approaches
                    if(approach() == "psm" | approach() == "iptw"){
                      output$outcome_model_selection <- renderUI(
-                       radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
-                                    choices = list(
-                                      i18n$t("Outcome LR w covar interaction"),
-                                      i18n$t("Outcome LR w covar"),
-                                      i18n$t("Outcome LR wo covar")),
-                                    selected = character(0),
-                                    width = "200%")
+                       
+                       if (outcome_type == 'Continuous'){
+                         radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
+                                      choices = list(
+                                        i18n$t("Outcome LR w covar interaction"),
+                                        i18n$t("Outcome LR w covar"),
+                                        i18n$t("Outcome LR wo covar")),
+                                      selected = character(0),
+                                      width = "200%")
+                       } else if (outcome_type == 'Binary'){
+                         radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
+                                      choices = list(
+                                        i18n$t("Outcome LogReg w covar interaction"),
+                                        i18n$t("Outcome LogReg w covar"),
+                                        i18n$t("Outcome LogReg wo covar")),
+                                      selected = character(0),
+                                      width = "200%")
+                       }
+                       
                      )
                    }
                  })
@@ -231,25 +349,58 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Update descriptions and rerun message when input changes ----
                  observeEvent( outcome_model_values$outcome_model_choice,{
                    
+                   outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   output$outcome_model_description <- renderUI(
+                     if (outcome_type == 'Continuous'){
+                       p(i18n$t("Outcome LR description"))
+                     } else if (outcome_type == 'Binary'){
+                       p(i18n$t("Outcome LogReg description"))
+                     })
+                   
                    if( outcome_model_values$outcome_model_choice == "marginal_effects"){
-                     outcome_model_values$description_method_selected <- p(
-                       h5(i18n$t("Outcome LR w covar interaction full"),
-                          i18n$t("Outcome LR w covar interaction description"))
-                     )
+                     if (outcome_type == 'Continuous'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome LR w covar interaction full"),
+                            i18n$t("Outcome LR w covar interaction description"))
+                       ) 
+                     } else if (outcome_type == 'Binary'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome LogReg w covar interaction full"),
+                            i18n$t("Outcome LogReg w covar interaction description"))
+                       )
+                     }
+                     
                    }
                    
                    if( outcome_model_values$outcome_model_choice == "with_matching_variables"){
-                     outcome_model_values$description_method_selected <- p(
-                       h5(i18n$t("Outcome LR w covar full"),
-                          i18n$t("Outcome LR w covar description"))
-                     )
+                     if (outcome_type == 'Continuous'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome LR w covar full"),
+                            i18n$t("Outcome LR w covar description"))
+                       )
+                     } else if (outcome_type == 'Binary'){
+                       
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome LogReg w covar full"),
+                            i18n$t("Outcome LogReg w covar description"))
+                       )
+                     }
+
                    }
                    
                    if(outcome_model_values$outcome_model_choice == "unadjusted"){
-                     outcome_model_values$description_method_selected <- p(
-                       h5(i18n$t("Outcome LR wo covar full"),
-                          i18n$t("Outcome LR wo covar description"))
-                     )
+                     if (outcome_type == 'Continuous'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome LR wo covar full"),
+                            i18n$t("Outcome LR wo covar description"))
+                       )
+                     } else if (outcome_type == 'Binary'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome LogReg wo covar full"),
+                            i18n$t("Outcome LogReg wo covar description"))
+                       )
+                     }
+                     
                    }
                    
                    ## Remove missing parameter message if present
@@ -273,6 +424,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  
                  ## Run outcome model ----
                  observeEvent(input$run_outcome_model_btn, {
+                   
+                   outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
                    
                    ## If no outcome model has been selected, give error message
                    if(is.null(input$outcome_model_radio)){
@@ -298,6 +451,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            balanced_data = balancing_stage_res(),
                            counterfactual_method = approach(),
                            outcome_variable = outcome_variable(),
+                           outcome_type = outcome_type,
                            treatment_variable = treatment_variable(),
                            matching_variable = matching_variables(),
                            covariates = covariates(),
@@ -339,34 +493,81 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          ## Output estimate
                          
                          if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
-                           outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
-                                                            i18n$t("Outcome model output estimate description"),
-                                                            strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                                                            br(),
-                                                            i18n$t("Outcome model output SE description"),
-                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                                                            br(),
-                                                            i18n$t("Outcome model output P description"),
-                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                                                            br(),
-                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-
-                           )
+                           
+                           if (outcome_type == 'Continuous'){
+                             
+                             outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
+                                                              i18n$t("Outcome model output estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output SE description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output P description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                                                              
+                             )
+                             
+                           } else if (outcome_type == 'Binary'){
+                             outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
+                                                              i18n$t("Outcome model output odds ratio description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output binary estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output SE description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output P description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                                                              
+                             )
+                           }
+                           
+                           
                          }
                          
                          if(approach() == "nbp"){
-                           outcome_model_values$output <- p(h4("Model Output"),
-                                                            descriptions$estimate,
-                                                            strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                                                            br(),
-                                                            descriptions$standard_error,
-                                                            strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                                                            br(),
-                                                            descriptions$p_value,
-                                                            strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                                                            br(),
-                                                            strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                           )
+                           
+                           if (outcome_type == 'Continuous'){
+                             outcome_model_values$output <- p(h4("Model Output"),
+                                                              descriptions$estimate,
+                                                              strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              descriptions$standard_error,
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              descriptions$p_value,
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                             )
+                             
+                           } else if (outcome_type == 'Binary'){
+                             
+                             outcome_model_values$output <- p(h4("Model Output"),
+                                                              i18n$t("Outcome model output odds ratio description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output binary estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              descriptions$standard_error,
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              descriptions$p_value,
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                             )
+                           }
+                           
+                           
                          }
                          
                          ## Add message noting that parameter reselection will require rerun
@@ -521,13 +722,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Save radio button input ----
                  ## Translation does not allow abbreviation of choices from radiobutton, therefore these must be assigned manually
                  observeEvent(input$outcome_model_radio,{
-                   if (input$outcome_model_radio == i18n$t("Outcome LR w covar interaction")){
+                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR w covar interaction"),i18n$t("Outcome LogReg w covar interaction"))){
                      outcome_model_values$outcome_model_choice <- "marginal_effects"
                    }
-                   if (input$outcome_model_radio == i18n$t("Outcome LR w covar")){
+                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR w covar"), i18n$t("Outcome LogReg w covar"))){
                      outcome_model_values$outcome_model_choice <- "with_matching_variables"
                    }
-                   if (input$outcome_model_radio == i18n$t("Outcome LR wo covar")){
+                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR wo covar"), i18n$t("Outcome LogReg wo covar"))){
                      outcome_model_values$outcome_model_choice <- "unadjusted"
                    }
                  })
