@@ -66,7 +66,7 @@ DigiCAT can now be run locally from the command line. Users must specify the fil
 ```{bash}
 docker run -v </path/to/data>:/srv/shiny-server/home -p 3838:3838 digicatuoe/digicat_tool
 ```
-Once running, visit <http://0.0.0.0:3838/> or <localhost:3838> in Google Chrome of Firefox to use the DigiCAT tool.
+Once running, visit <http://0.0.0.0:3838/> or [localhost:3838](http:localhost:3838) in Google Chrome of Firefox to use the DigiCAT tool.
 
 #### From Docker Desktop 
 
