@@ -134,7 +134,7 @@ data_upload_ui <- function(id, i18n) {
   )
 }
 
-data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, selected_language) {
+data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -289,7 +289,7 @@ data_upload_server <- function(id, parent, enableLocal, analysis_tab, i18n, sele
                  
                  # Data Upload ----
                  
-                 volumes <-c ("Home" = fs::path_home(), "Docker" = "/srv/shiny-server/home")
+                 volumes <-c ("Local" = filePath, "Docker" = "/srv/shiny-server/home")
                  shinyFileChoose(input, "file1", roots = volumes, filetypes=c('', 'csv'))
                  
                  ## Update app when file uploaded

@@ -54,6 +54,7 @@ server <- function(input, output, session) {
   data_upload_output <- DigiCAT:::data_upload_server("data_upload",
                                                      parent = session,
                                                      enableLocal = enable_local_data,
+                                                     filePath = file_path_global,
                                                      analysis_tab = reactive(input$`methods-tabs`),
                                                      i18n = i18n,
                                                      selected_language = reactive(input$selected_language))
