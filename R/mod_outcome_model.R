@@ -347,7 +347,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                               br(),
                                                               i18n$t("Outcome model output P description"),
-                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
                                                               br(),
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                                                               
@@ -365,7 +365,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                               br(),
                                                               i18n$t("Outcome model output P description"),
-                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
                                                               br(),
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                                                               
@@ -386,7 +386,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                               br(),
                                                               descriptions$p_value,
-                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
                                                               br(),
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                              )
@@ -404,7 +404,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                               br(),
                                                               descriptions$p_value,
-                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
                                                               br(),
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                              )
