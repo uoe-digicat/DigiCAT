@@ -102,6 +102,8 @@ outcome_unadjusted <- function(balanced_data,
         model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
       } else if (outcome_type == 'Binary'){
         model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
+      } else if (outcome_type == 'Categorical'){
+        model_fit = with(mi_matched_design, svyVGAM::svy_vglm(model_formula, family = multinomial))
       }
       
 
@@ -143,7 +145,7 @@ outcome_unadjusted <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
-    }
+    } 
   
     } else if(extracted_balanced_data$process == "cc_psm"){ 
       data_to_use <- extracted_balanced_data[[1]]
@@ -182,6 +184,8 @@ outcome_unadjusted <- function(balanced_data,
         model_fit = svyglm(model_formula, design = updated_design)
       } else if (outcome_type == 'Binary'){
         model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+      } else if (outcome_type == 'Categorical'){
+        model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)
       }
       
 
@@ -222,6 +226,8 @@ outcome_unadjusted <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
+    } else if (outcome_type == 'Categorical'){
+      model_fit = with(mi_matched_design, svyVGAM::svy_vglm(model_formula, family = multinomial))
     }
      
     
@@ -263,6 +269,8 @@ outcome_unadjusted <- function(balanced_data,
       model_fit = svyglm(model_formula, design = updated_design)
     } else if (outcome_type == 'Binary'){
       model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+    } else if (outcome_type == 'Categorical'){
+      model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)
     }
     
     
@@ -360,6 +368,8 @@ outcome_unadjusted <- function(balanced_data,
       model_fit = svyglm(model_formula, design = updated_design)
     } else if (outcome_type == 'Binary'){
       model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+    } else if (outcome_type == 'Categorical'){
+      model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)
     }
     
   } 
@@ -399,6 +409,8 @@ outcome_unadjusted <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
+    } else if (outcome_type == 'Categorical'){
+      model_fit = with(mi_matched_design, svyVGAM::svy_vglm(model_formula, family = multinomial))
     }
     
   }
@@ -460,6 +472,8 @@ outcome_matching_variables <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula))
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial'))
+    } else if (outcome_type == 'Categorical'){
+      model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))
     }
      # leave unpooled until next step
     
@@ -501,6 +515,8 @@ outcome_matching_variables <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
+    } else if (outcome_type == 'Categorical'){
+      model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))
     }
     
     
@@ -541,6 +557,8 @@ outcome_matching_variables <- function(balanced_data,
         model_fit = svyglm(model_formula, design = updated_design)
       } else if (outcome_type == 'Binary'){
         model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+      } else if (outcome_type == 'Categorical'){
+        model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design,  family = multinomial)
       }
       
     
@@ -581,6 +599,8 @@ outcome_matching_variables <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
+    } else if (outcome_type == 'Categorical'){
+      model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))
     }
     
     
@@ -623,6 +643,8 @@ outcome_matching_variables <- function(balanced_data,
       model_fit = svyglm(model_formula, design = updated_design)  
     } else if (outcome_type == 'Binary'){
       model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+    } else if (outcome_type == 'Categorical'){
+      model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design,  family = multinomial)
     }
     
     
@@ -680,6 +702,8 @@ outcome_matching_variables <- function(balanced_data,
       model_fit = svyglm(model_formula, design = updated_design)
     } else if (outcome_type == 'Binary'){
       model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+    } else if (outcome_type == 'Categorical'){
+      model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)
     }
   }
   else if(extracted_balanced_data$process == "cc_cbps"){
@@ -718,6 +742,8 @@ outcome_matching_variables <- function(balanced_data,
       model_fit = svyglm(model_formula, design = updated_design)
     } else if (outcome_type == 'Binary'){
       model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
+    } else if (outcome_type == 'Categorical'){
+      model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design,  family = multinomial)
     }
     
   }
@@ -757,6 +783,8 @@ outcome_matching_variables <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula)) # leave unpooled until next step
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step
+    } else if (outcome_type == 'Categorical'){
+      model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))
     }
      
   }
@@ -820,11 +848,10 @@ outcome_marginal_effects <- function(balanced_data,
       model_fit = with(mi_matched_design, svyglm(model_formula))
     } else if (outcome_type == 'Binary'){
       model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial'))
-    }
-    
+    } 
     
     model_fit = lapply(model_fit, function(fit){
-       marginaleffects::avg_comparisons(fit, newdata = subset(fit$data, get(treatment_variable) == 1),
+       marginaleffects::avg_comparisons(fit$fit, newdata = subset(fit$fit, treatment_variable == 1),
                                         variables = treatment_variable, wts = "weights", vcov = ~subclass)
      })
 

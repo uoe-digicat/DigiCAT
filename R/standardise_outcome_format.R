@@ -1,4 +1,4 @@
-standardise_outcome_format <- function(extracted_outcome_results, counterfactual_method, outcome_formula, fitted_model,...){
+standardise_outcome_format <- function(extracted_outcome_results, counterfactual_method, outcome_formula, fitted_model,outcome_type,treatment_variable, ...){
   if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "marginal_effects"){ # ME MI with/without covs
     results_dataframe = extracted_outcome_results[[1]]
     results_dataframe <- results_dataframe[,-c(2, 5, 6)]
@@ -11,13 +11,25 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     colnames(results_dataframe) <- c("Term", "Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
    # rownames(results_dataframe) <- results_dataframe[,1]  
-    results_dataframe <- results_dataframe[2,]
+    
+    if (outcome_type == 'Categorical'){
+      results_dataframe <- results_dataframe %>% filter(grepl(treatment_variable, Term, ignore.case = TRUE))
+    } else {
+      results_dataframe <- results_dataframe[2,]
+    }
+    
+    
     return(results_dataframe)
     
   } else if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "with_matching_variables"){ # adjusted for matching variables with MI with/without covs
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     colnames(results_dataframe) <- c("Term", "Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
-    results_dataframe <- results_dataframe[2,]
+    if (outcome_type == 'Categorical'){
+      results_dataframe <- results_dataframe %>% filter(grepl(treatment_variable, Term, ignore.case = TRUE))
+    } else {
+      results_dataframe <- results_dataframe[2,]
+    }
+    
     return(results_dataframe)
     
     
@@ -37,15 +49,27 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     results_dataframe <- results_dataframe[,-3]
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
-    results_dataframe <- results_dataframe[2,]
+    if (outcome_type == 'Categorical'){
+      results_dataframe <- results_dataframe %>% filter(grepl(treatment_variable, rownames(results_dataframe), ignore.case = TRUE))
+      results_dataframe$Term <- rownames(results_dataframe)
+    } else {
+      results_dataframe <- results_dataframe[2,]
+    }
     return(results_dataframe)
     
     
-  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "with_matching_variables"){ # adjusted for matching variables with CCA with/without covs
+  } else if(extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "with_matching_variables"){# adjusted for matching variables with CCA with/without covs
     results_dataframe = as.data.frame(extracted_outcome_results[[1]])
     results_dataframe <- results_dataframe[,-3]
     colnames(results_dataframe) <- c("Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
-    results_dataframe <- results_dataframe[2,]
+    
+    if (outcome_type == 'Categorical'){
+      results_dataframe <- results_dataframe %>% filter(grepl(treatment_variable, rownames(results_dataframe), ignore.case = TRUE))
+      results_dataframe$Term <- rownames(results_dataframe)
+    } else {
+      results_dataframe <- results_dataframe[2,]
+    }
+    
     return(results_dataframe)
     
     
@@ -84,6 +108,7 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     return(results_dataframe)
   }
   else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "iptw" & outcome_formula == "with_matching_variables"){
+    browser()
     results_dataframe = as.data.frame(extracted_outcome_results[[1]]$coefficients)
     results_dataframe <- results_dataframe[,-3]
     Cis <- confint(fitted_model)
@@ -93,6 +118,7 @@ standardise_outcome_format <- function(extracted_outcome_results, counterfactual
     return(results_dataframe)
   }
   else if(extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "with_matching_variables"){
+    browser()
     results_dataframe = as.data.frame(extracted_outcome_results[[1]]$coefficients)
     results_dataframe <- results_dataframe[,-3]
     Cis <- confint(fitted_model)

@@ -132,6 +132,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        p(i18n$t("Outcome LR description"))
                      } else if (outcome_type == 'Binary'){
                        p(i18n$t("Outcome LogReg description"))
+                     } else if (outcome_type == 'Categorical'){
+                       p(i18n$t("Outcome MNReg description"))
                      })
                    
                    if(analysis_tab() == "outcome_model-tab"){
@@ -150,6 +152,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                h5(i18n$t("Outcome LogReg w covar interaction full"),
                                   i18n$t("Outcome LogReg w covar interaction description"))
                              )
+                           } else if (outcome_type == 'Categorical'){
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome MNReg w covar interaction"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome MNReg w covar interaction full"),
+                                  i18n$t("Outcome MNReg w covar interaction description"))
+                             )
+                             
                            }
                            
                          }
@@ -166,6 +175,14 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                h5(i18n$t("Outcome LogReg w covar full"),
                                   i18n$t("Outcome LogReg w covar description"))
                              )
+                           } else if (outcome_type == 'Categorical'){
+                             
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome MNReg w covar"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome MNReg w covar full"),
+                                  i18n$t("Outcome MNReg w covar description"))
+                             )
+                             
                            }
                            
                          }
@@ -183,6 +200,15 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                   i18n$t("Outcome LogReg wo covar description"))
                              )
                              
+                           }
+                           
+                           else if (outcome_type == 'Categorical'){
+                             
+                             updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome MNReg wo covar"))
+                             outcome_model_values$description_method_selected <- p(
+                               h5(i18n$t("Outcome MNReg wo covar full"),
+                                  i18n$t("Outcome MNReg wo covar description"))
+                             )
                            }
                           
                          }
@@ -261,6 +287,50 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                              br(),
                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                            )
+                         } else if(outcome_type == 'Categorical'){
+                           
+                           browser()
+                           outcome_model_values$output <- p(
+                             apply(outcome_model_values$outcome_analysis_stage_res$standardised_format, 1,
+                                   function(x){
+                                     p(
+                                       h4("Model Output"),
+                                       h3(x['Term']),
+                                       i18n$t("Outcome model output odds ratio description"),
+                                       strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(x["Coefficient Estimate"]), 4)))),
+                                       br(),
+                                       i18n$t("Outcome model output binary estimate description"),
+                                       strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(x["Coefficient Estimate"], 4)))),
+                                       br(),
+                                       i18n$t("Outcome model output SE description"),
+                                       strong(p(paste0(i18n$t("Outcome model output SE")," ", round(x["Standard Error"], 4)))),
+                                       br(),
+                                       i18n$t("Outcome model output P description"),
+                                       strong(p(paste0(i18n$t("Outcome model output P")," ", round(x["P-value"], 4)))),
+                                       br(),
+                                       strong(p(paste0(i18n$t("Outcome model output CI")," ", round(x["Lower CI (2.5%)"], 4), " to ", round(x["Upper CI (97.5%)"], 4))))
+                                     )
+                                   }))
+                           
+                           
+                           
+                           # outcome_model_values$output <- p(
+                           #   h4("Model Output"),
+                           #   i18n$t("Outcome model output odds ratio description"),
+                           #   strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                           #   br(),
+                           #   i18n$t("Outcome model output binary estimate description"),
+                           #   strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                           #   br(),
+                           #   i18n$t("Outcome model output SE description"),
+                           #   strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                           #   br(),
+                           #   i18n$t("Outcome model output P description"),
+                           #   strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
+                           #   br(),
+                           #   strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
+                           # )
+                           
                          }
                          
                        }
@@ -292,6 +362,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        p(i18n$t("Outcome LR description"))
                      } else if (outcome_type == 'Binary'){
                        p(i18n$t("Outcome LogReg description"))
+                     } else if (outcome_type == 'Categorical'){
+                       p(i18n$t("Outcome MNReg description"))
                      })
                    
                    ## If NBP selected, remove choice with interaction
@@ -317,6 +389,14 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                       selected = character(0),
                                       width = "200%")
         
+                       } else if (outcome_type == 'Categorical'){
+                         radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
+                                      choices = list(
+                                        i18n$t("Outcome MNReg w covar interaction"),
+                                        i18n$t("Outcome MNReg w covar"),
+                                        i18n$t("Outcome MNReg wo covar")),
+                                      selected = character(0),
+                                      width = "200%")
                        }
                      )
                    }
@@ -340,6 +420,14 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                         i18n$t("Outcome LogReg wo covar")),
                                       selected = character(0),
                                       width = "200%")
+                       } else if (outcome_type == 'Categorical'){
+                         radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
+                                      choices = list(
+                                        i18n$t("Outcome MNReg w covar interaction"),
+                                        i18n$t("Outcome MNReg w covar"),
+                                        i18n$t("Outcome MNReg wo covar")),
+                                      selected = character(0),
+                                      width = "200%")
                        }
                        
                      )
@@ -355,7 +443,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        p(i18n$t("Outcome LR description"))
                      } else if (outcome_type == 'Binary'){
                        p(i18n$t("Outcome LogReg description"))
-                     })
+                     } else if (outcome_type == 'Categorical'){
+                       p(i18n$t("Outcome MNReg description"))
+                     }
+                     )
                    
                    if( outcome_model_values$outcome_model_choice == "marginal_effects"){
                      if (outcome_type == 'Continuous'){
@@ -367,6 +458,11 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LogReg w covar interaction full"),
                             i18n$t("Outcome LogReg w covar interaction description"))
+                       )
+                     } else if (outcome_type == 'Categorical'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome MNReg w covar interaction full"),
+                            i18n$t("Outcome MNReg w covar interaction description"))
                        )
                      }
                      
@@ -384,6 +480,11 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          h5(i18n$t("Outcome LogReg w covar full"),
                             i18n$t("Outcome LogReg w covar description"))
                        )
+                     } else if (outcome_type == 'Categorical'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome MNReg w covar full"),
+                            i18n$t("Outcome MNReg w covar description"))
+                       )
                      }
 
                    }
@@ -398,6 +499,11 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LogReg wo covar full"),
                             i18n$t("Outcome LogReg wo covar description"))
+                       )
+                     } else if (outcome_type == 'Categorical'){
+                       outcome_model_values$description_method_selected <- p(
+                         h5(i18n$t("Outcome MNReg wo covar full"),
+                            i18n$t("Outcome MNReg wo covar description"))
                        )
                      }
                      
@@ -527,6 +633,29 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                                                               
                              )
+                           } else if (outcome_type == 'Categorical'){
+                             
+                             outcome_model_values$output <- p(
+                               apply(outcome_model_values$outcome_analysis_stage_res$standardised_format, 1,
+                                     function(x){
+                                       p(
+                                         h4("Model Output"),
+                                         h3(x['Term']),
+                                         i18n$t("Outcome model output odds ratio description"),
+                                         strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(as.numeric(x["Coefficient Estimate"])), 4)))),
+                                         br(),
+                                         i18n$t("Outcome model output binary estimate description"),
+                                         strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(as.numeric(x["Coefficient Estimate"]), 4)))),
+                                         br(),
+                                         i18n$t("Outcome model output SE description"),
+                                         strong(p(paste0(i18n$t("Outcome model output SE")," ", round(as.numeric(x["Standard Error"]), 4)))),
+                                         br(),
+                                         i18n$t("Outcome model output P description"),
+                                         strong(p(paste0(i18n$t("Outcome model output P")," ", round(as.numeric(x["P-value"]), 4)))),
+                                         br(),
+                                         strong(p(paste0(i18n$t("Outcome model output CI")," ", round(as.numeric(x["Lower CI (2.5%)"]), 4), " to ", round(as.numeric(x["Upper CI (97.5%)"]), 4))))
+                                       )
+                                     }))
                            }
                            
                            
@@ -722,13 +851,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Save radio button input ----
                  ## Translation does not allow abbreviation of choices from radiobutton, therefore these must be assigned manually
                  observeEvent(input$outcome_model_radio,{
-                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR w covar interaction"),i18n$t("Outcome LogReg w covar interaction"))){
+                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR w covar interaction"),i18n$t("Outcome LogReg w covar interaction"),i18n$t("Outcome MNReg w covar interaction") )){
                      outcome_model_values$outcome_model_choice <- "marginal_effects"
                    }
-                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR w covar"), i18n$t("Outcome LogReg w covar"))){
+                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR w covar"), i18n$t("Outcome LogReg w covar"), i18n$t("Outcome MNReg w covar"))){
                      outcome_model_values$outcome_model_choice <- "with_matching_variables"
                    }
-                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR wo covar"), i18n$t("Outcome LogReg wo covar"))){
+                   if (input$outcome_model_radio %in% c(i18n$t("Outcome LR wo covar"), i18n$t("Outcome LogReg wo covar"),i18n$t("Outcome MNReg wo covar") )){
                      outcome_model_values$outcome_model_choice <- "unadjusted"
                    }
                  })

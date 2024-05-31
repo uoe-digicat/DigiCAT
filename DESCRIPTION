@@ -52,7 +52,8 @@ Imports:
     randomForest,
     gbm,
     parallel,
-    CBPS
+    CBPS,
+    svyVGAM
 Remotes:
     couthcommander/nbpMatching,
     imbs-hl/ranger
