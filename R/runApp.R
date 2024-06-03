@@ -6,7 +6,7 @@
 #' @examples
 #' run_DigiCAT(enableLocal = TRUE)
 
-run_DigiCAT <- function(enableLocal = TRUE) {
+run_DigiCAT <- function(enableLocal = TRUE, filePath = fs::path_home()) {
   ## Check if DigiCAT has been installed
   appDir <- system.file("DigiCAT", package = "DigiCAT")
   if (appDir == "") {
@@ -18,6 +18,9 @@ run_DigiCAT <- function(enableLocal = TRUE) {
   } else {
     cat("enable_local_data <- FALSE", file=paste0(appDir,"/global.R"))
   }
+  ## Save file path to global environment
+  file_path_global <<- filePath
+    
   ## Launch app app
   shiny::runApp(appDir, display.mode = "normal")
 }
