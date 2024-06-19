@@ -7,6 +7,11 @@ i18n <- Translator$new(translation_csvs_path = system.file("DigiCAT/translation/
 ## Increase maximum upload file size
 options(shiny.maxRequestSize = 50*1024^2)
 
+## If file path doesn't exist, default to home directory
+if (!exists("file_path_global")){
+  file_path_global <- fs::path_home()
+}
+
 server <- function(input, output, session) {
   
   
