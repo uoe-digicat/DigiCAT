@@ -44,6 +44,16 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
   
   names(df) <- c(i18n$t("Upload Validation treatment counts group"), i18n$t("Upload Validation treatment counts count"))
   
+  outcome_type <- check_selected_outcome(.data, outcome)
+  
+  # Get the number of observations in each categoru and count the number of obs in each category
+  if (outcome_type %in% c('Categorical', 'Binary')){
+    counts <- table(.data[[outcome]])
+    small_cat <- length(counts[which(counts < 10)])
+    df <- data.frame(table(.data[[treatment]], .data[[outcome]])) %>% pivot_wider(id_cols = 'Var1', names_from = 'Var2', values_from = 'Freq')
+    names(df)[1] <- treatment
+  }
+  
   print_validation <- p(
     h4(i18n$t("Upload Validation dimensions")),
     h5(i18n$t("Upload Validation dimensions columns"), dim(.data)[2]),
@@ -67,21 +77,43 @@ get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_
     
     ## Check outcome variable is continuous
     h4(i18n$t("Upload Validation outcome type")),
-    if(length(unique(.data[[outcome]])) < 5){
-      h5(length(unique(.data[[outcome]])), i18n$t("Upload Validation outcome type incorrect") , style = "color:red")
-    } else{h5(length(unique(.data[[outcome]])), i18n$t("Upload Validation outcome type correct"), style = "color:green")}, br(),
     
-    ## Check outcome variable is normally distributed
-    h4(i18n$t("Upload Validation skewness")),
-    
-    # if (abs(skewness(.data[[outcome]])) <= 0.8){
-    #   h5(i18n$t("Upload Validation skewness correct"), round(skewness(.data[[outcome]]), 2), style = "color:green")
-    # } else{h5(i18n$t("Upload Validation skewness incorrect"), round(skewness(.data[[outcome]]), 2), style = "color:red")},
-    
-    renderPlot(hist(.data[[outcome]], 
-                    main = paste(i18n$t("Upload Validation histogram"), outcome),
-                    xlab = "",
-                    col = "#76b9f5")), br(),
+    if (outcome_type == 'Continuous'){
+      
+      p(
+        h5("Continuous outcome variable selected" , style = "color:green"),
+        br(),
+        h4(i18n$t("Upload Validation skewness")),
+        
+        if (abs(skewness(.data[[outcome]])) <= 0.8){
+          h5(i18n$t("Upload Validation skewness correct"), round(skewness(.data[[outcome]]), 2), style = "color:green")
+        } else{h5(i18n$t("Upload Validation skewness incorrect"), round(skewness(.data[[outcome]]), 2), style = "color:red")},
+        
+        renderPlot(hist(.data[[outcome]], 
+                        main = paste(i18n$t("Upload Validation histogram"), outcome),
+                        xlab = "",
+                        col = "#76b9f5"))
+        )
+    } else if (outcome_type %in% c('Categorical', 'Binary')){
+      
+      p(
+        h5(paste(outcome_type, 'outcome variable selected'), style = 'color:green'),
+        br(),
+        h4('Upload Validation - Small Categories Check'),
+      if (small_cat > 0){
+        p(
+        h5(paste(small_cat, 'categories have been detected with less than 10 observations'), style = 'color:red'),
+        h4(paste('Check the following categories:', paste(names(counts[which(counts < 10)]), collapse = ', ')), style = 'color:red')
+        )
+      } else{
+        h5('No categories with less than 10 observations detected', style = 'color:green')
+      }, br(),
+      
+      renderPlot(barplot(counts,
+                 main = paste('Upload validation outcome distribution:',outcome),
+                 col = "#76b9f5"))
+      )
+    },br(),
     
     ## Check treatment variable is binary/ordinal
     h4(i18n$t("Upload Validation treatment")),

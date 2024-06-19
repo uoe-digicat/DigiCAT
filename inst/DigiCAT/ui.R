@@ -15,6 +15,7 @@ library(see)
 library(patchwork)
 library(DigiCAT)
 library(shiny.i18n)
+library(svyVGAM)
 
 # favicon (icon in browser tab)
 HTML('<link rel="icon" type="www/favicon.ico" href="www/favicon.ico"/>')

@@ -1,24 +1,42 @@
-extract_outcome_results <- function(fitted_model, missing_method,...){
+extract_outcome_results <- function(fitted_model, missing_method, outcome_type, ...){
   if("comparisons" %in% class(fitted_model) & missing_method == "weighting"){ # weighting ME
+    
     return(list(extracted_outcome_results = fitted_model, process = "weighting"))
     
   }else if("comparisons" %in% class(fitted_model) & missing_method == "complete"){ # complete ME
+
     return(list(extracted_outcome_results = fitted_model, process = "cc"))
-    
+
   }
   else if("mipo" %in% class(fitted_model) & missing_method == "mi"){ # MI ME
     extracted_outcome_results = summary(fitted_model, conf.int = TRUE)
     return(list(extracted_outcome_results, process = "mi"))
     
   } else if("list" %in% class(fitted_model) & missing_method == "mi"){
-    df_residuals <- sapply(fitted_model, function(model) {
-      if (!is.null(model$df.residual)) {
-        return(model$df.residual)
-      } else {
-        warning("Degrees of freedom for residuals not available.")
-        return(NA)
-      }
-    })
+    
+    if(outcome_type == 'Categorical'){
+      df_residuals <- sapply(fitted_model, function(model) {
+             if (!is.null(df.residual(model$fit))) {
+                   return(df.residual(model$fit))
+               } else {
+                     warning("Degrees of freedom for residuals not available.")
+                     return(NA)
+                 }
+         })
+    } else {
+      
+      df_residuals <- sapply(fitted_model, function(model) {
+        if (!is.null(model$df.residual)) {
+          return(model$df.residual)
+        } else {
+          warning("Degrees of freedom for residuals not available.")
+          return(NA)
+        }
+      })
+      
+    }
+    
+   
     mean_df <- mean(df_residuals, na.rm = TRUE)
     total_variance <- var(df_residuals, na.rm = TRUE)
     between_imputation_variance <- mean((df_residuals - mean_df)^2, na.rm = TRUE)
@@ -33,6 +51,7 @@ extract_outcome_results <- function(fitted_model, missing_method,...){
     
     # Create a data frame with the extracted information
     extracted_outcome_results <- data.frame(
+      Term = names(coefficients),
       Coefficient = coefficients,
       StandardError = standard_errors,
       PValue = p_value,
@@ -43,8 +62,13 @@ extract_outcome_results <- function(fitted_model, missing_method,...){
     return(list(extracted_outcome_results, process = "mi"))
     
   }
-  else if("lm" %in% class(fitted_model) & missing_method == "complete"){ # LM no ME, complete
-    extracted_outcome_results =as.data.frame(dplyr::bind_cols(coef(summary(fitted_model)), confint(fitted_model)))
+  else if(("lm" %in% class(fitted_model) | "svy_vglm" %in% class(fitted_model)) & missing_method == "complete"){ # LM no ME, complete
+    
+    if ("lm" %in% class(fitted_model)){
+      extracted_outcome_results =dplyr::bind_cols(data.frame(coef(summary(fitted_model))), data.frame(confint(fitted_model)))
+    } else { # Categorical outcome case
+      extracted_outcome_results =dplyr::bind_cols(data.frame(summary(fitted_model)$coeftable), data.frame(confint(fitted_model)))
+    }
     return(list(extracted_outcome_results, process = "cc"))
     
   }else if("svyglm" %in% class(fitted_model) & missing_method == "weighting"){

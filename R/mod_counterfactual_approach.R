@@ -232,73 +232,115 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                       selected = i18n$t("Approach ORL"))))
 
                      }
-
-                     ### Missingness ----
-                     ## Check presents of missing data and non-response variable, update missingness accordingly
-                       ## If no missingness detected and no non repose weight, only offer complete case
-                       if(validation_log()$no_missingness_no_non_response){
-
-                         output$missingness_selection <- renderUI(p(
-                           radioButtons(NS(id, "missingness_radio"),
-                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
-                                        choices = list(
-                                          i18n$t("Approach Choose CC")),
-                                        selected = "complete"),
-                           br(),
-                           p("No missing data detected, please proceed with complete case", style = "color:gray;")
-                         )
-                         )
-                       }
-
-                       ## If no missingness detected but non reponse weight, offer complete case and weighting
-                       if(validation_log()$no_missingness_but_non_response){
-
-                         output$missingness_selection <- renderUI(p(
-                           radioButtons(NS(id, "missingness_radio"),
-                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
-                                        choices = list(
-                                          i18n$t("Approach Choose Weighting"),
-                                          i18n$t("Approach Choose CC")),
-                                        selected = character(0)),
-                           br(),
-                           p("No missing data detected, please proceed with complete case or weighting", style = "color:gray;")
-                         )
-                         )
-                       }
-
-                       ## If there is data missingness and non response weights provided, include weighting as a missingness option
-                       if (validation_log()$some_missingness_but_non_response){
-
-                         output$missingness_selection <- renderUI(p(
-                           radioButtons(NS(id, "missingness_radio"),
-                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
-                                        choices = list(
-                                          i18n$t("Approach Choose MI"),
-                                          i18n$t("Approach Choose Weighting"),
-                                          i18n$t("Approach Choose CC")),
-                                        selected = character(0))
-                         )
-                         )
-                       }
-
-                       ## If there is data missingness and no non response weight provided, don't add weighting
-                       if (validation_log()$some_missingness_no_non_response){
-                         output$missingness_selection <- renderUI(p(
-                           radioButtons(NS(id, "missingness_radio"),
-                                        label = h4("2. Choose a Method of Dealing with Missingess:"),
-                                        choices = list(
-                                          i18n$t("Approach Choose MI"),
-                                          i18n$t("Approach Choose CC")),
-                                        selected = character(0))
-                         ))
-                       }
                      
+                     ## Add message stating missingness depends on appraoch and choices will be displayed after approach selection
+                     output$missingness_selection <- renderUI(p(i18n$t("Approach Missingness initial")))
+
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2){
+                      
                        ## If binary treatment: add message stating balancing model depends on missingness and choices will be displayed after missingness selection
-                     output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model initial")))
-                     }
+                       output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model initial")))
+                       }
                      }
                  })
+                 
+                 
+                 ### Missingness ----
+                 ## Update when appraoch is selected
+                 observeEvent(input$CF_radio,{
+                 ## Check presents of missing data and non-response variable, update missingness accordingly
+                 ## If no missingness detected and no non repose weight, only offer complete case
+                 if(validation_log()$no_missingness_no_non_response){
+                   
+                   output$missingness_selection <- renderUI(p(
+                     radioButtons(NS(id, "missingness_radio"),
+                                  label = h4(p(i18n$t("Approach Choose missingness"))),
+                                  choices = list(
+                                    i18n$t("Approach Choose CC")),
+                                  selected = "complete"),
+                     br(),
+                     p(i18n$t("Approach no missingness"), style = "color:gray;")
+                   )
+                   )
+                 }
+                 
+                 ## If no missingness detected but non reponse weight, offer complete case and weighting
+                 if(validation_log()$no_missingness_but_non_response){
+                   
+                   if(input$CF_radio == i18n$t("Approach NBP") | input$CF_radio == i18n$t("Approach CBPS")){ ## Don't show weighting option for NBP/CBPS
+                     
+                     output$missingness_selection <- renderUI(p(
+                       radioButtons(NS(id, "missingness_radio"),
+                                    label = h4(p(i18n$t("Approach Choose missingness"))),
+                                    choices = list(
+                                      i18n$t("Approach Choose CC")),
+                                    selected = "complete"),
+                       br(),
+                       p(i18n$t("Approach no missingness"), style = "color:gray;")
+                     )
+                     )
+                   } else{
+                     
+                     output$missingness_selection <- renderUI(p(
+                       radioButtons(NS(id, "missingness_radio"),
+                                    label = h4(p(i18n$t("Approach Choose missingness"))),
+                                    choices = list(
+                                      i18n$t("Approach Choose Weighting"),
+                                      i18n$t("Approach Choose CC")),
+                                    selected = character(0)),
+                       br(),
+                       p(i18n$t("Approach no missingness but weighting"), style = "color:gray;")
+                     )
+                     )
+                   }
+                 }
+                   
+                 
+                 ## If there is data missingness and non response weights provided, include weighting as a missingness option
+                 if (validation_log()$some_missingness_but_non_response){
+                   
+                   if(input$CF_radio == i18n$t("Approach NBP") | input$CF_radio == i18n$t("Approach CBPS")){ ## Don't show weighting option for NBP/CBPS
+                     
+                     output$missingness_selection <- renderUI(p(
+                       radioButtons(NS(id, "missingness_radio"),
+                                    label = h4(p(i18n$t("Approach Choose missingness"))),
+                                    choices = list(
+                                      i18n$t("Approach Choose MI"),
+                                      i18n$t("Approach Choose CC")),
+                                    selected = character(0))
+                     )
+                     )
+                   } else{
+                     
+                     output$missingness_selection <- renderUI(p(
+                       radioButtons(NS(id, "missingness_radio"),
+                                    label = h4(p(i18n$t("Approach Choose missingness"))),
+                                    choices = list(
+                                      i18n$t("Approach Choose MI"),
+                                      i18n$t("Approach Choose Weighting"),
+                                      i18n$t("Approach Choose CC")),
+                                    selected = character(0))
+                     )
+                     )
+                   }
+                 }
+                 
+                 ## If there is data missingness and no non response weight provided, don't add weighting
+                 if (validation_log()$some_missingness_no_non_response){
+                   output$missingness_selection <- renderUI(p(
+                     radioButtons(NS(id, "missingness_radio"),
+                                  label = h4(p(i18n$t("Approach Choose missingness"))),
+                                  choices = list(
+                                    i18n$t("Approach Choose MI"),
+                                    i18n$t("Approach Choose CC")),
+                                  selected = character(0))
+                   ))
+                 }
+                 })
+                 
+                 
+                 
+                 
                  
                 ### PS model: binary treatment ----
                  ## Update balancing model choice when approach/missingness changes ----
@@ -309,7 +351,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      
                    }else{
                 
-                     ## If approach is NBP:
+                     ## If treatment is binary
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2){ ## PS model for binary treatments
                        
                        ## If there are more than 50 or more rows in data, include GBM
@@ -332,7 +374,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                           i18n$t("Approach GLM")),
                                         selected = character(0)),
                            br(),
-                           p("Generalized Boosted Models (GBM) not available for small datasets (< 50 rows)", style = "color:gray;"))
+                           p(i18n$t("Approach Too small GBM"), style = "color:gray;"))
                          )
                        }
                          

@@ -388,7 +388,10 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      ## Disable 'Run' button
                      shinyjs::disable("run_balancing_btn")
                      
-                     ## Show output tab 
+                     ## Show output tab - temporarily switch to "descriptive_stats" so unput updates if already on output tabs
+                     updateTabsetPanel(
+                       session = parent, inputId = NS(id,"results_panel"), selected = NS(id, "descriptive_stats")
+                     )
                      updateTabsetPanel(
                        session = parent, inputId = NS(id,"results_panel"), selected = NS(id, "output")
                      )
