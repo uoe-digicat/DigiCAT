@@ -123,7 +123,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  })
 
 
-                 ## Above only works when on appraoch tab, trigger same code when page if is revisted
+                 ## Above only works when on approach tab, trigger same code when page if is revisited
                  observeEvent(analysis_tab(), {
                    
                    outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
@@ -367,14 +367,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      })
                    
                    ## If NBP selected, remove choice with interaction
-                   if(approach() == "nbp" | approach() == "cbps"){
+                   if(approach() == "nbp" ){
                      
                      output$outcome_model_selection <- renderUI(
                        
                        if (outcome_type == 'Continuous'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
-                                        i18n$t("Outcome LR w covar interaction"),
                                         i18n$t("Outcome LR w covar"),
                                         i18n$t("Outcome LR wo covar")),
                                       selected = character(0),
@@ -383,7 +382,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        } else if (outcome_type == 'Binary'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
-                                        i18n$t("Outcome LogReg w covar interaction"),
                                         i18n$t("Outcome LogReg w covar"),
                                         i18n$t("Outcome LogReg wo covar")),
                                       selected = character(0),
@@ -392,7 +390,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        } else if (outcome_type == 'Categorical'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
-                                        i18n$t("Outcome MNReg w covar interaction"),
                                         i18n$t("Outcome MNReg w covar"),
                                         i18n$t("Outcome MNReg wo covar")),
                                       selected = character(0),
@@ -401,7 +398,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      )
                    }
                    ## Give choice with interaction for other approaches
-                   if(approach() == "psm" | approach() == "iptw"){
+                   if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
                      output$outcome_model_selection <- renderUI(
                        
                        if (outcome_type == 'Continuous'){
