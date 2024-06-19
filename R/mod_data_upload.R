@@ -69,17 +69,17 @@ data_upload_ui <- function(id, i18n) {
 
                           ## Add checkbox asking if "survey weight" should be specified
                           div(class = "tab_panel_feature",
-                              checkboxInput(ns("survey_weight_checkbox"), p(i18n$t("Upload Survey weights selection"), tags$sup("**"))),
+                              checkboxInput(ns("survey_weight_checkbox"), p(i18n$t("Upload Survey weights selection"), "**")),
                               ## If check box selected, show picker input
                               uiOutput(ns("survey_weight_var")),
                               uiOutput(ns("survey_weight_name_change")),
                               ## Add checkbox to see if weights compensates for non-response
-                              checkboxInput(ns("non_response_weight_checkbox"), p(i18n$t("Upload nonresponse selection"), tags$sup("**")))
+                              checkboxInput(ns("non_response_weight_checkbox"), p(i18n$t("Upload nonresponse selection"), "**"))
                           ),
                           br(),
                           ## Add checkbox asking if "clustering variable" should be specified
                           div(class = "tab_panel_feature",
-                              checkboxInput(ns("clustering_checkbox"), p(i18n$t("Upload Clustering"), tags$sup("**"))),
+                              checkboxInput(ns("clustering_checkbox"), p(i18n$t("Upload Clustering"), "**")),
                               ## If check box selected, show picker input
                               uiOutput(ns("clustering_var"))
                           ),
@@ -91,7 +91,7 @@ data_upload_ui <- function(id, i18n) {
                               uiOutput(ns("stratification_var"))
                           ),
                           p(i18n$t("Upload Required fields")),
-                          p(tags$sup("**"), i18n$t("Upload Design warning")),
+                          p("**", i18n$t("Upload Design warning")),
                           p(textOutput(ns('outcomeType'))),
                           br(),
                           

@@ -75,7 +75,7 @@ Upload Clustering selection,Select a clustering variable,Temp
 Upload Stratification,Select if data includes a stratification variable,Temp
 Upload Stratification selection,Select a stratification variable,Temp
 Upload Required fields,*Required fields,Temp
-Upload Design warning,Design variables not currently supported for use with ordinal treatment variable,Temp
+Upload Design warning,Non-response weights not currently supported for use with NBP or CBPS,Temp
 Upload Button clear data,Clear Data,Temp
 Upload Button validate,Validate Data,Temp
 Upload Requirements,Requirements,Temp
@@ -211,6 +211,7 @@ Approach ORL,Ordinal Logistic Regression (OGLM),Temp
 Approach Too small GBM,Generalized Boosted Models (GBM) not available for small datasets (< 50 rows),Temp
 Approach Model description,"In order to balance our dataset, we must first calculate the probability each individual has of being in the treatment group, based on their observed characteristics, i.e., their propensity score. On this page, you will select a balancing model to use with your dataset to predict the likelihood of an individual being treated. Different modelling approaches can be used for this step.",Temp
 Approach Model initial,"As the choices of balancing model depends on the counterfactual approach and method of dealing with missingness, balancing model options will appear once these choices have been selected.",Temp
+Approach Missingness initial,"As the choices of dealing with missingness depend on the counterfactual approach, options will appear once an approach has been selected.",Temp
 Approach Model GLM description,"Logistic regression is a method of modelling the relations between a set of predictors (e.g., matching variables) and a binary outcome (such as whether or not someone is in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual.",Temp
 Approach Model GLM tutorial link,See the logistic regression section of our tutorials for more information.,Temp
 Approach Model RF description,Random forest models are meta-estimators that fit decision trees on bootstrapped subsets of a dataset. A final prediction is estimated by aggregating the predictions of these trees through voting or averaging.,Temp
