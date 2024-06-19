@@ -36,10 +36,10 @@ library(DigiCAT)
 
 #### 2. Run DigiCAT locally
 
-Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or a browser. Launching the tool locally with 'enableLocal = TRUE' enables the upload local data for counterfactual analysis.
+Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or a browser. Launching the tool locally with 'enableLocal = TRUE' enables the upload local data for counterfactual analysis. If you would like to upload and analyse your own data, please specify the directory path, otherwise this will default to your home directory.
 
 ``` r
-DigiCAT::run_DigiCAT(enableLocal = TRUE)
+DigiCAT::run_DigiCAT(enableLocal = TRUE, filePath = "this/folder/contains/my/data/")
 ```
 
 ### Container platform
