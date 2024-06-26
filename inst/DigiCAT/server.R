@@ -20,9 +20,7 @@ server <- function(input, output, session) {
     # Update language in session
     shiny.i18n::update_lang(home_output$selected_language)
   })
-  
-  ## Source descriptions
-  source(system.file("DigiCAT/desc_global.R", package = "DigiCAT"), local=TRUE)
+
   ####
   # App theme ----
   ####
@@ -107,7 +105,6 @@ server <- function(input, output, session) {
                                                  approach_display = reactive(CF_approach_output$CF_radio_display),
                                                  missingness_display = reactive(CF_approach_output$missingness_display),
                                                  balancing_model_display = reactive(CF_approach_output$balancing_model_display),
-                                                 descriptions = desc_global,
                                                  analysis_tab = reactive(input$`methods-tabs`),
                                                  i18n = i18n,
                                                  selected_language = reactive(input$selected_language))
@@ -145,7 +142,6 @@ server <- function(input, output, session) {
                                                          observation_table = reactive(balancing_output$observation_table),
                                                          love_plot = reactive(balancing_output$love_plot),
                                                          balance_table = reactive(balancing_output$balance_table),
-                                                         descriptions = desc_global,
                                                          analysis_tab = reactive(input$`methods-tabs`),
                                                          i18n = i18n,
                                                          selected_language = reactive(input$selected_language))

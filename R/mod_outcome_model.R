@@ -76,7 +76,7 @@ outcome_model_ui <- function(id, i18n) {
   )
 }
 
-outcome_model_server <- function(id, parent, data_source, file_path, raw_data, categorical_variables, treatment_variable, outcome_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, matching_method, matching_method_display, matching_ratio, estimation_stage_res, balancing_stage_res, observation_table, common_support_plot, love_plot, balance_table, descriptions, analysis_tab, i18n, selected_language) {
+outcome_model_server <- function(id, parent, data_source, file_path, raw_data, categorical_variables, treatment_variable, outcome_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, matching_method, matching_method_display, matching_ratio, estimation_stage_res, balancing_stage_res, observation_table, common_support_plot, love_plot, balance_table, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -221,13 +221,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          
                          if (outcome_type == 'Continuous'){
                            outcome_model_values$output <- p(h4("Model Output"),
-                                                            descriptions$estimate,
+                                                            p(i18n$t("Outcome model output estimate description")),
                                                             strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
                                                             br(),
-                                                            descriptions$standard_error,
+                                                            p(i18n$t("Outcome model output SE description")),
                                                             strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                             br(),
-                                                            descriptions$p_value,
+                                                            p(i18n$t("Outcome model output P description")),
                                                             strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
                                                             br(),
                                                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
@@ -662,13 +662,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            
                            if (outcome_type == 'Continuous'){
                              outcome_model_values$output <- p(h4("Model Output"),
-                                                              descriptions$estimate,
+                                                              p(i18n$t("Outcome model output estimate description")),
                                                               strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
                                                               br(),
-                                                              descriptions$standard_error,
+                                                              p(i18n$t("Outcome model output SE description")),
                                                               strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                               br(),
-                                                              descriptions$p_value,
+                                                              p(i18n$t("Outcome model output P description")),
                                                               strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
                                                               br(),
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
@@ -683,10 +683,10 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               i18n$t("Outcome model output binary estimate description"),
                                                               strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
                                                               br(),
-                                                              descriptions$standard_error,
+                                                              p(i18n$t("Outcome model output SE description")),
                                                               strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
                                                               br(),
-                                                              descriptions$p_value,
+                                                              p(i18n$t("Outcome model output P description")),
                                                               strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
                                                               br(),
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
