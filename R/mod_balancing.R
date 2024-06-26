@@ -245,7 +245,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                              class = "text_blocks",
                              div(
                                p(
-
+                                 h5(i18n$t("Balancing Matching method title")),
+                                 p(i18n$t("Balancing Matching method description CBPS"))
                                )
                              )
                          )

@@ -409,7 +409,10 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      CF_approach_values$approach_description <- NULL
                    }
                    if (input$CF_radio == i18n$t("Approach CBPS")){
-                     CF_approach_values$approach_description <- NULL
+                     CF_approach_values$approach_description <- p(h5(i18n$t("Approach CBPS")),
+                                                                  p(i18n$t("Approach CBPS description"))
+                                                                  
+                     )
                    }
                    CF_approach_values$approach_missing_message <- NULL
                  })
