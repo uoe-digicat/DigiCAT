@@ -27,9 +27,6 @@ i18n <- Translator$new(translation_csvs_path = system.file("DigiCAT/translation/
 ## Set default language to EN
 i18n$set_translation_language("en") 
 
-## Source descriptions
-source(system.file("DigiCAT/desc_global.R", package = "DigiCAT"), local=TRUE)
-
 ui <- fluidPage(
   shiny.i18n::usei18n(i18n),
   title = "DigiCAT",

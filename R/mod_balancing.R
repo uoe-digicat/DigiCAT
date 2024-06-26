@@ -59,7 +59,7 @@ balancing_ui <- function(id, i18n) {
   )
 }
 
-balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, descriptions, analysis_tab, i18n, selected_language) {
+balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -226,7 +226,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                              class = "text_blocks",
                              div(
                                p(
-                                 h5(i18n$t("Balancing Matching method title")),
+                                 h5(i18n$t("Approach IPTW")),
                                  p(i18n$t("Balancing Matching method description IPTW")),
                                  a(id = "link",i18n$t("Balancing Matching method tutorial link IPTW"), href = "https://uoe-digicat.github.io/04_cfmethod.html#iptw",
                                    target="_blank")
@@ -245,7 +245,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                              class = "text_blocks",
                              div(
                                p(
-                                 h5(i18n$t("Balancing Matching method title")),
+                                 h5(i18n$t("Approach CBPS")),
                                  p(i18n$t("Balancing Matching method description CBPS"))
                                )
                              )
