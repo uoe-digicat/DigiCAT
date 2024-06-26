@@ -8,6 +8,7 @@ outcome_analysis_stage(
   balanced_data,
   counterfactual_method,
   outcome_variable,
+  outcome_type,
   treatment_variable,
   matching_variable,
   covariates = NULL,
