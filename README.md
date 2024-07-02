@@ -24,7 +24,7 @@ Our [online tool](https://digicatapp.shinyapps.io/DigiCAT/) allows users to use 
 
 ### Local Tool
 
-DigiCAT is available as a downloadable R package that enables users to run the tool locally and use real data. R (\>= 2.10) required.
+DigiCAT is available as a downloadable R package that enables users to run the tool locally and use real data. R (\>= 3.3.0) required.
 
 #### 1. Install DigiCAT
 
@@ -51,7 +51,7 @@ DigiCAT is also available as a container, meaning all required software is combi
 
 <https://docs.docker.com/get-docker/>
 
-##### 2. Download DigiCAT
+#####  Download DigiCAT
 
 This can be done from the command line and requires approximately 3 gigabytes of storage.
 
