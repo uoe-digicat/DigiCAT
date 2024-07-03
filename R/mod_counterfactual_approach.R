@@ -193,7 +193,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                        output$approach_selection <- renderUI(radioButtons(NS(id, "CF_radio"),
                                                                           label = h4(i18n$t("Approach Choose CA")),
                                                                           choices = i18n$t("Approach CBPS"),
-                                                                          selected = i18n$t("Approach CBPS"))
+                                                                          selected = character(0))
                        )
 
                        output$approach_description_general <- renderUI(p(h5(i18n$t("Approach Description")),
@@ -215,12 +215,13 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                          output$approach_selection <- renderUI(radioButtons(ns("CF_radio"),
                                                                             label = h4("1. Choose a Counterfactual Approach:"),
                                                                             choices = i18n$t("Approach NBP"),
-                                                                            selected = i18n$t("Approach NBP")))
+                                                                            selected = character(0)))
 
                        output$approach_description_general <- renderUI(p(h5(i18n$t("Approach Description")),
                                                                          p(i18n$t("Approach NBP description")),
                                                                          a(id = "link",i18n$t("Approach NBP tutorial link"), href = "https://uoe-digicat.github.io/04_cfmethod.html#nbp",  target="_blank"))
                                                                        )
+                       CF_approach_values$approach_description <- NULL
 
                       
 
@@ -229,7 +230,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                          radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                       choices = list(
                                         i18n$t("Approach ORL")),
-                                      selected = i18n$t("Approach ORL"))))
+                                      selected = character(0))))
 
                      }
                      
@@ -246,7 +247,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                  
                  
                  ### Missingness ----
-                 ## Update when appraoch is selected
+                 ## Update when approach is selected
                  observeEvent(input$CF_radio,{
                  ## Check presents of missing data and non-response variable, update missingness accordingly
                  ## If no missingness detected and no non repose weight, only offer complete case
@@ -257,7 +258,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                   label = h4(p(i18n$t("Approach Choose missingness"))),
                                   choices = list(
                                     i18n$t("Approach Choose CC")),
-                                  selected = "complete"),
+                                  selected = character(0)),
                      br(),
                      p(i18n$t("Approach no missingness"), style = "color:gray;")
                    )
@@ -274,7 +275,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                     label = h4(p(i18n$t("Approach Choose missingness"))),
                                     choices = list(
                                       i18n$t("Approach Choose CC")),
-                                    selected = "complete"),
+                                    selected = character(0)),
                        br(),
                        p(i18n$t("Approach no missingness"), style = "color:gray;")
                      )

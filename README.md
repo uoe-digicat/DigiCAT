@@ -24,7 +24,7 @@ Our [online tool](https://digicatapp.shinyapps.io/DigiCAT/) allows users to use 
 
 ### Local Tool
 
-DigiCAT is available as a downloadable R package that enables users to run the tool locally and use real data. R (\>= 2.10) required.
+DigiCAT is available as a downloadable R package that enables users to run the tool locally and use real data. R (\>= 3.3.0) required.
 
 #### 1. Install DigiCAT
 
@@ -36,10 +36,10 @@ library(DigiCAT)
 
 #### 2. Run DigiCAT locally
 
-Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or a browser. Launching the tool locally with 'enableLocal = TRUE' enables the upload local data for counterfactual analysis.
+Once DigiCAT has been installed, the DigiCAT tool can be launched in RStudio or a browser. Launching the tool locally with 'enableLocal = TRUE' enables the upload local data for counterfactual analysis. If you would like to upload and analyse your own data, please specify the directory path, otherwise this will default to your home directory.
 
 ``` r
-DigiCAT::run_DigiCAT(enableLocal = TRUE)
+DigiCAT::run_DigiCAT(enableLocal = TRUE, filePath = "this/folder/contains/my/data/")
 ```
 
 ### Container platform
@@ -51,7 +51,7 @@ DigiCAT is also available as a container, meaning all required software is combi
 
 <https://docs.docker.com/get-docker/>
 
-##### 2. Download DigiCAT
+#####  Download DigiCAT
 
 This can be done from the command line and requires approximately 3 gigabytes of storage.
 
