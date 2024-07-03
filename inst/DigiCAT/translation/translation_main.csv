@@ -266,6 +266,8 @@ Balancing Balance table,Balance Table,Temp
 Balancing Warning no method,Please select a matching method before proceeding,Temp
 Balancing Warning no ratio,Please select a matching ratio before proceeding,Temp
 Balancing Warning change rerun,Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.,Temp
+Balancing Button download balanced RData,Download Balanced Data (RData),
+Balancing Button download balanced CSV,Download Balanced Data (CSV),
 Outcome Choose model,Choose an Outcome Model:,Temp
 Outcome LR w covar interaction,Linear Regression (Outcome ~ Treatment * Matching Variables),Temp
 Outcome LR w covar,Linear Regression (Outcome ~ Treatment + Matching Variables),Temp

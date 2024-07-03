@@ -53,8 +53,16 @@ balancing_ui <- function(id, i18n) {
                                                         value = NS(id,"output"),
                                                         br(),
                                                         withSpinner(uiOutput(ns("balancing_output"))))
+                                   ),
+                                   
+                                   br(),
+                                   
+                                   ## Downloadable Output ----
+                                   div(align="center",
+                                       uiOutput(ns("download_options"))
                                    )
-               ))
+               )),
+              
            )
   )
 }
@@ -303,6 +311,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
+                     
+                     ## Remove Ddwnload button
+                     output$download_options <- NULL
                    }
                  })
                  
@@ -366,6 +377,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
+                     
+                     ## Remove Ddwnload button
+                     output$download_options <- NULL
                    }
                  })
                  
@@ -475,7 +489,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    })
                    
                    
-                   ## Output balance plots and tables if no error in balancing
+                   ## Output balance plots and tables and enable downloadables if no error in balancing
                    if (all(!grepl("Error:", error_check))){
                      try({
                        
@@ -587,6 +601,13 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        ## Add message noting that parameter reselection will require rerun
                        balancing_values$matching_method_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
                        balancing_values$matching_ratio_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
+                       
+                       ### Add download buttons ----
+                       output$download_options <- renderUI({
+                         div(
+                           downloadButton(session$ns("download_balanced_rdata"), i18n$t("Balancing Button download balanced RData"), class = "default_button"),
+                         downloadButton(session$ns("download_balanced_csv"), i18n$t("Balancing Button download balanced CSV"), class = "default_button"))
+                       })
                      })
                    }
                    ## Update reactive value so balancing only runs when "Run" clicked
@@ -611,6 +632,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
                      
+                     ## Remove Ddwnload button
+                     output$download_options <- NULL
                    }
                  })
                  
@@ -633,6 +656,68 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$ratio_choice <- "one_to_k"
                    }
                  })
+                 
+                 ## Download balanced data when "download balanced data" clicked
+                 downloadable_balanced <- reactiveValues()
+                 observe({
+                   if(!is.null(balancing_values$balancing_stage_res))
+                     isolate(
+                       downloadable_balanced <<- balancing_values$balancing_stage_res
+                     )
+                 })
+                 
+                 output$download_balanced_rdata <- 
+                   
+                   downloadHandler(
+                     filename = "DigiCAT_balanced.RData",
+                     content =
+                       function(file) {
+                         shinyjs::disable("download_balanced")
+                         on.exit(shinyjs::enable("download_balanced"))
+                         save(downloadable_balanced, file = file)
+                       }
+                   )
+                 
+                 output$download_balanced_csv <- downloadHandler(
+                   filename = "DigiCAT_balanced.zip",
+                   content = 
+                     function(file){
+                     #go to a temp dir to avoid permission issues
+                     owd <- setwd(tempdir())
+                     on.exit(setwd(owd))
+                     files <- NULL;
+                     
+                     if (class(downloadable_balanced) == "matchit" | class(downloadable_balanced) == "weightit"){
+                       
+                       data_fileName <- "matched_data.csv"
+                       write.table(match.data(downloadable_balanced),
+                                   data_fileName,sep = ';', row.names = F, col.names = T)
+                       
+                       weights_fileName <- "weights.csv"
+                       write.table(as.data.frame(downloadable_balanced$weights),
+                                   weights_fileName,sep = ';', row.names = T, col.names = T)
+                       
+                       files <- c(data_fileName, weights_fileName)
+                       
+                     } else{  ## If MI, iterate through imputations
+                       
+                       for (i in 1:length(downloadable_balanced)){
+                         
+                         data_fileName <- paste0("matched_data_", i, ".csv")
+                         write.table(complete(downloadable_balanced, i),
+                                     data_fileName,sep = ';', row.names = F, col.names = T)
+                         
+                         ## Weights included in balanced dataframe
+                         files <- c(data_fileName, files)
+                       }
+                     }
+                     #create the zip file
+                     zip(file,files)
+                   }
+                 )
+                 
+                 
+                 
                  
                  ## Pass output to UI ----
                  

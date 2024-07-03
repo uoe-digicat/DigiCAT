@@ -726,14 +726,14 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          #   DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results)
                          
                          
-                         ## Add download script button
+                         ### Add download buttons ----
                          output$download_options <- renderUI({
                            div(
                              #downloadButton(session$ns("download_script"), i18n$t("Outcome Button download script"), class = "default_button"),
                              downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
                          })
                          
-                         ## Add sensitivity analysis option
+                         ### Add sensitivity analysis option ----
                          # output$sensitivity_analysis_button <- renderUI({
                          #   div(
                          #     actionButton(session$ns("sensitivity_analysis_button"), i18n$t("Outcome Button sensitivity"), class = "default_button")
