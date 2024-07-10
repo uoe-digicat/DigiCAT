@@ -340,20 +340,33 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                  
                  
                  
-                ### PS model: binary treatment ----
+                ### PS model ----
                  ## Update balancing model choice when approach/missingness changes ----
                  observeEvent(c(input$CF_radio, input$missingness_radio), {
                    
-                   ## Do nothing if approach and missingess have not both been selected unless CBPS has been selected
-                   if(is.null(input$CF_radio) | is.null(input$missingness_radio) | input$CF_radio == i18n$t("Approach CBPS")){
+                   
+                   ## If CPBS selected, update PS model selection to remove options
+                   
+                   if(!is.null(input$CF_radio)){
                      
-                     output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model CBPS"))
-                     )
+                     if(input$CF_radio == i18n$t("Approach CBPS")){
+                       output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model CBPS")))
+                       output$balancing_model_description <- NULL
+                     } else{
+                       
+                       if(is.null(input$missingness_radio)){ ## If approach changed and no missingness selected, set ps model to inital message
+                         output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model initial")))
+                         output$balancing_model_description <- NULL
+                       }
+                     }
+                   }
+                   
+                   
+                   #### Binary treatments ----
+                   ## If both appraoch and missingness have been selected and CBPS not selected
+                   if(!is.null(input$CF_radio) & !is.null(input$missingness_radio)){
                      
-                   }else{
-                
-                     ## If treatment is binary
-                     if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2){ ## PS model for binary treatments
+                     if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2 & !input$CF_radio == i18n$t("Approach CBPS")){ ## PS model for binary treatments - don't apply when CBPS selected
                        
                        ## If there are more than 50 or more rows in data, include GBM
                        if (!validation_log()$no_GBM){
