@@ -212,6 +212,7 @@ Approach ORL,Ordinal Logistic Regression (OGLM),Temp
 Approach Too small GBM,Generalized Boosted Models (GBM) not available for small datasets (< 50 rows),Temp
 Approach Model description,"In order to balance our dataset, we must first calculate the probability each individual has of being in the treatment group, based on their observed characteristics, i.e., their propensity score. On this page, you will select a balancing model to use with your dataset to predict the likelihood of an individual being treated. Different modelling approaches can be used for this step.",Temp
 Approach Model initial,"As the choices of balancing model depends on the counterfactual approach and method of dealing with missingness, balancing model options will appear once these choices have been selected.",Temp
+Approach Model CBPS,"As CBPS has been selected, the choice of propensity model will be automatically selected based on the type of the treatment variable being used, eliminating the need for manual model selection. For binary treatments, a generalised linear model is used, for nominal treatments a multinomial logistic regression model is used and for continuous treatments, a linear regression model is used.",
 Approach Missingness initial,"As the choices of dealing with missingness depend on the counterfactual approach, options will appear once an approach has been selected.",Temp
 Approach Model GLM description,"Logistic regression is a method of modelling the relations between a set of predictors (e.g., matching variables) and a binary outcome (such as whether or not someone is in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual.",Temp
 Approach Model GLM tutorial link,See the logistic regression section of our tutorials for more information.,Temp
@@ -263,6 +264,7 @@ Balancing Love plot,Love Plot,Temp
 Balancing Balance plot dots,Dots indicate standardised mean differences in matching variables before and after adjusting.,Temp
 Balancing Balance plot dots MI,Dots indicate standardised mean differences in matching variables before and after adjusting. Bars represent the range across imputations.,Temp
 Balancing Balance table,Balance Table,Temp
+Balancing Balance advice,"The standardised mean difference (SMD) is the standardised difference in the means of matching variables between treatment groups. Good balance has been achieved when SMDs are close to zero. Researchers can objectively access balancing performance by setting an acceptable threshold for the SMD of each matching variable. Commonly used thresholds are 0.2 and 0.1. If balancing does not perform well, other approaches should be explored.",
 Balancing Warning no method,Please select a matching method before proceeding,Temp
 Balancing Warning no ratio,Please select a matching ratio before proceeding,Temp
 Balancing Warning change rerun,Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.,Temp

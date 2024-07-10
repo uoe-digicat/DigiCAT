@@ -590,7 +590,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                                      tabPanel(title = "Balance Table",
                                               value = NS(id, 'balance_table_tab'),
                                               br(),
-                                              withSpinner(DT::dataTableOutput(session$ns("balance_table")))
+                                              withSpinner(DT::dataTableOutput(session$ns("balance_table"))),
+                                              p(i18n$t("Balancing Balance advice"))
                                      ))
                        )
                        
