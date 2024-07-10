@@ -694,11 +694,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        write.table(match.data(downloadable_balanced),
                                    data_fileName,sep = ';', row.names = F, col.names = T)
                        
-                       weights_fileName <- "weights.csv"
-                       write.table(as.data.frame(downloadable_balanced$weights),
-                                   weights_fileName,sep = ';', row.names = T, col.names = T)
-                       
-                       files <- c(data_fileName, weights_fileName)
+                       files <- data_fileName
                        
                      } else{  ## If MI, iterate through imputations
                        
