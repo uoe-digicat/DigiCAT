@@ -128,11 +128,11 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    if(is.null(input$missingness_radio)){
                      CF_approach_values$missingness_missing_message <- p(i18n$t("Approach Warning no missingness"), style = "color:red")
                    }
-                   if(is.null(input$balancing_model_radio)){
+                   if(is.null(input$balancing_model_radio) & !input$CF_radio == i18n$t("Approach CBPS")){
                      CF_approach_values$balancing_model_missing_message <- p(i18n$t("Approach Warning no model"), style = "color:red")
                    }
                    ## Only continue if all required input is given
-                   if(!is.null(input$CF_radio) & !is.null(input$missingness_radio) & !is.null(input$balancing_model_radio)){
+                   if((!is.null(input$CF_radio) & !is.null(input$missingness_radio) & !is.null(input$balancing_model_radio)) | (!is.null(input$CF_radio) & !is.null(input$missingness_radio) & input$CF_radio == i18n$t("Approach CBPS"))){
                      ## Record page completion
                      CF_approach_values$page_complete <- 1
                      ## Add rerun warning to each parameter
@@ -201,12 +201,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                                                          a(id = "link",i18n$t("Approach CA link"), href = "https://uoe-digicat.github.io/03_choosecf.html",  target="_blank"))
                        )
                        
-                       output$balancing_model_selection <- renderUI(p(
-                         radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
-                                      choices = list(
-                                        i18n$t("Approach LR")),
-                                      selected = i18n$t("Approach LR")))
-                       )
+                       output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model CBPS"))
+                                                                    )
+
 
                      }
                      ### Approach and PS model: ordinal treatment ----
@@ -347,8 +344,11 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                  ## Update balancing model choice when approach/missingness changes ----
                  observeEvent(c(input$CF_radio, input$missingness_radio), {
                    
-                   ## Do nothing if approach and missingess have not both been selected
-                   if(is.null(input$CF_radio) | is.null(input$missingness_radio)){
+                   ## Do nothing if approach and missingess have not both been selected unless CBPS has been selected
+                   if(is.null(input$CF_radio) | is.null(input$missingness_radio) | input$CF_radio == i18n$t("Approach CBPS")){
+                     
+                     output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model CBPS"))
+                     )
                      
                    }else{
                 
