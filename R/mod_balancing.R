@@ -665,6 +665,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      isolate(
                        downloadable_balanced <<- balancing_values$balancing_stage_res
                      )
+                   isolate(
+                     downloadable_estimation_stage <<- balancing_values$estimation_stage_res
+                   )
                  })
                  
                  output$download_balanced_rdata <- 
@@ -688,28 +691,65 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      on.exit(setwd(owd))
                      files <- NULL;
                      
-                     if (class(downloadable_balanced) == "matchit" | class(downloadable_balanced) == "weightit"){
+                     if (approach() == "psm"){
                        
+                       if(missingness() == "complete" | missingness() == "weighted"){
+                         
                        data_fileName <- "matched_data.csv"
-                       write.table(match.data(downloadable_balanced),
-                                   data_fileName,sep = ';', row.names = F, col.names = T)
+                       write.table(match.data(downloadable_balanced), data_fileName,sep = ';', row.names = F, col.names = T)
+                       files <- data_fileName
                        
-                       weights_fileName <- "weights.csv"
-                       write.table(as.data.frame(downloadable_balanced$weights),
-                                   weights_fileName,sep = ';', row.names = T, col.names = T)
-                       
-                       files <- c(data_fileName, weights_fileName)
-                       
-                     } else{  ## If MI, iterate through imputations
-                       
-                       for (i in 1:length(downloadable_balanced)){
+                       }
+                       if(missingness() == "mi"){
                          
-                         data_fileName <- paste0("matched_data_", i, ".csv")
-                         write.table(complete(downloadable_balanced, i),
-                                     data_fileName,sep = ';', row.names = F, col.names = T)
+                         for (i in 1:length(downloadable_balanced)){
+                           
+                           data_fileName <- paste0("matched_data_", i, ".csv")
+                           write.table(complete(downloadable_balanced, i), data_fileName,sep = ';', row.names = F, col.names = T)
+                           ## Weights included in balanced dataframe
+                           files <- c(data_fileName, files)
+                         }
                          
-                         ## Weights included in balanced dataframe
-                         files <- c(data_fileName, files)
+                       }
+                     } 
+                     if (approach() == "iptw" | approach() == "cbps"){
+
+                       if(missingness() == "complete" | missingness() == "weighted"){
+                         
+                         data_fileName <- "weighted_data.csv"
+                         df <- downloadable_estimation_stage$missingness_treated_dataset
+                         df$iptw_weights <- downloadable_balanced$weights
+                         write.table(df, data_fileName,sep = ';', row.names = F, col.names = T)
+                         files <- data_fileName
+                       }
+                       
+                       if(missingness() == "mi"){
+                         
+                         for (i in 1:length(downloadable_balanced)){
+                           
+                           data_fileName <- paste0("matched_data_", i, ".csv")
+                           write.table(complete(downloadable_balanced, i), data_fileName,sep = ';', row.names = F, col.names = T)
+                           ## Weights included in balanced dataframe
+                           files <- c(data_fileName, files)
+                         }
+                         
+                       }
+                     }
+                     if (approach() == "nbp"){
+                       if(missingness() == "complete" | missingness() == "weighted"){
+                         data_fileName <- "matched_nbp_data.csv"
+                         write.table(downloadable_balanced, data_fileName,sep = ';', row.names = F, col.names = T)
+                         files <- data_fileName
+                       }
+                       if(missingness() == "mi"){
+                         
+                         for (i in 1:length(downloadable_balanced)){
+                           
+                           data_fileName <- paste0("matched_nbp_data_", i, ".csv")
+                           write.table(downloadable_balanced[[i]], data_fileName,sep = ';', row.names = F, col.names = T)
+                           ## Weights included in balanced dataframe
+                           files <- c(data_fileName, files)
+                         }
                        }
                      }
                      #create the zip file
