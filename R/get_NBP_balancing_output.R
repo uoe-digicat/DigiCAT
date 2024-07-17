@@ -84,7 +84,7 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
     for (i in 1:length(balanced_data)){
       
       ## Get pooled distance between treatment groups - maximum distance between groups
-      balance_table_unadjusted <- bal.tab(as.tible(estimation_model_object$propensity_scores)[estimation_model_object$propensity_scores$impset == i,c(matching_variables)],
+      balance_table_unadjusted <- bal.tab(estimation_model_object$propensity_scores[estimation_model_object$propensity_scores$impset == i,c(matching_variables)],
                                treat = relevel(estimation_model_object$propensity_scores[[treatment_variable]][estimation_model_object$propensity_scores$impset == 1], ref = 1),
       distance = estimation_model_object$propensity_scores$`polly$lp`[estimation_model_object$propensity_scores$impset == i])
       
