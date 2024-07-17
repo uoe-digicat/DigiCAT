@@ -185,8 +185,8 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                                                          p(i18n$t("Approach Binary description")),
                                                                          a(id = "link",i18n$t("Approach CA link"), href = "https://uoe-digicat.github.io/03_choosecf.html",  target="_blank"))
                                                                        )
-
                      }
+                     
                      ### Approach and PS model: continuous treatment ----
                      if (!any(treatment_variable() %in% categorical_variables())){ ## Continuous treatment approaches
 
@@ -221,7 +221,6 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                        CF_approach_values$approach_description <- NULL
 
                       
-
                        ## OLR available as balancing model
                        output$balancing_model_selection <- renderUI(p(
                          radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
@@ -354,7 +353,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                        output$balancing_model_description <- NULL
                      } else{
                        
-                       if(is.null(input$missingness_radio)){ ## If approach changed and no missingness selected, set ps model to inital message
+                       if(is.null(input$missingness_radio) & input$CF_radio != i18n$t("Approach NBP")){ ## If approach changed and no missingness selected, set ps model to inital message, unless NBP
                          output$balancing_model_selection <- renderUI(p(i18n$t("Approach Model initial")))
                          output$balancing_model_description <- NULL
                        }
@@ -362,15 +361,15 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    }
                    
                    
-                   #### Binary treatments ----
-                   ## If both appraoch and missingness have been selected and CBPS not selected
+                   ### Binary treatments ----
+                   # If both appraoch and missingness have been selected and CBPS not selected
                    if(!is.null(input$CF_radio) & !is.null(input$missingness_radio)){
-                     
+
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2 & !input$CF_radio == i18n$t("Approach CBPS")){ ## PS model for binary treatments - don't apply when CBPS selected
-                       
+
                        ## If there are more than 50 or more rows in data, include GBM
                        if (!validation_log()$no_GBM){
-                         
+
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
                                         choices = list(
@@ -391,7 +390,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                            p(i18n$t("Approach Too small GBM"), style = "color:gray;"))
                          )
                        }
-                         
+
                        if (input$missingness_radio == i18n$t("Approach Choose Weighting")){
                          output$balancing_model_selection <- renderUI(p(
                            radioButtons(NS(id, "balancing_model_radio"), label = h4("3. Choose a Balancing Model:"),
