@@ -62,7 +62,7 @@ get_NBP_balancing_output <- function(estimation_model_object, balanced_data, tre
                                       treat = relevel(balanced_data[[treatment_variable]], ref = "low"), 
                                       distance = balanced_data$`estimated_propensity_model$lp`)
     
-    balance_table_unajusted <- bal.tab(estimation_model_object$propensity_scores[,c(matching_variables)], 
+    balance_table_unajusted <- bal.tab(as_tibble(estimation_model_object$propensity_scores)[,c(matching_variables)], 
                                       treat = relevel(as.factor(estimation_model_object$propensity_scores[[treatment_variable]]), ref = 1), 
                                       distance = estimation_model_object$propensity_scores$`estimated_propensity_model$lp`)
     
