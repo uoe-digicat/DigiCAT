@@ -53,13 +53,21 @@ balancing_ui <- function(id, i18n) {
                                                         value = NS(id,"output"),
                                                         br(),
                                                         withSpinner(uiOutput(ns("balancing_output"))))
+                                   ),
+                                   
+                                   br(),
+                                   
+                                   ## Downloadable Output ----
+                                   div(align="center",
+                                       uiOutput(ns("download_options"))
                                    )
-               ))
+               )),
+              
            )
   )
 }
 
-balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, descriptions, analysis_tab, i18n, selected_language) {
+balancing_server <- function(id, parent, raw_data, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -226,7 +234,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                              class = "text_blocks",
                              div(
                                p(
-                                 h5(i18n$t("Balancing Matching method title")),
+                                 h5(i18n$t("Approach IPTW")),
                                  p(i18n$t("Balancing Matching method description IPTW")),
                                  a(id = "link",i18n$t("Balancing Matching method tutorial link IPTW"), href = "https://uoe-digicat.github.io/04_cfmethod.html#iptw",
                                    target="_blank")
@@ -245,7 +253,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                              class = "text_blocks",
                              div(
                                p(
-
+                                 h5(i18n$t("Approach CBPS")),
+                                 p(i18n$t("Balancing Matching method description CBPS"))
                                )
                              )
                          )
@@ -302,6 +311,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
+                     
+                     ## Remove Ddwnload button
+                     output$download_options <- NULL
                    }
                  })
                  
@@ -365,6 +377,9 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
+                     
+                     ## Remove Ddwnload button
+                     output$download_options <- NULL
                    }
                  })
                  
@@ -474,7 +489,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    })
                    
                    
-                   ## Output balance plots and tables if no error in balancing
+                   ## Output balance plots and tables and enable downloadables if no error in balancing
                    if (all(!grepl("Error:", error_check))){
                      try({
                        
@@ -575,7 +590,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                                      tabPanel(title = "Balance Table",
                                               value = NS(id, 'balance_table_tab'),
                                               br(),
-                                              withSpinner(DT::dataTableOutput(session$ns("balance_table")))
+                                              withSpinner(DT::dataTableOutput(session$ns("balance_table"))),
+                                              p(i18n$t("Balancing Balance advice"))
                                      ))
                        )
                        
@@ -586,6 +602,13 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        ## Add message noting that parameter reselection will require rerun
                        balancing_values$matching_method_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
                        balancing_values$matching_ratio_rerun_message <- p(i18n$t("Balancing Warning change rerun"))
+                       
+                       ### Add download buttons ----
+                       output$download_options <- renderUI({
+                         div(
+                           downloadButton(session$ns("download_balanced_rdata"), i18n$t("Balancing Button download balanced RData"), class = "default_button"),
+                         downloadButton(session$ns("download_balanced_csv"), i18n$t("Balancing Button download balanced CSV"), class = "default_button"))
+                       })
                      })
                    }
                    ## Update reactive value so balancing only runs when "Run" clicked
@@ -610,6 +633,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      ## Disable "Next" button to force a rerun before proceeding to next step
                      shinyjs::disable("next_balancing_btn")
                      
+                     ## Remove Ddwnload button
+                     output$download_options <- NULL
                    }
                  })
                  
@@ -632,6 +657,108 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                      balancing_values$ratio_choice <- "one_to_k"
                    }
                  })
+                 
+                 ## Download balanced data when "download balanced data" clicked
+                 downloadable_balanced <- reactiveValues()
+                 observe({
+                   if(!is.null(balancing_values$balancing_stage_res))
+                     isolate(
+                       downloadable_balanced <<- balancing_values$balancing_stage_res
+                     )
+                   isolate(
+                     downloadable_estimation_stage <<- balancing_values$estimation_stage_res
+                   )
+                 })
+                 
+                 output$download_balanced_rdata <- 
+                   
+                   downloadHandler(
+                     filename = "DigiCAT_balanced.RData",
+                     content =
+                       function(file) {
+                         shinyjs::disable("download_balanced")
+                         on.exit(shinyjs::enable("download_balanced"))
+                         save(downloadable_balanced, file = file)
+                       }
+                   )
+                 
+                 output$download_balanced_csv <- downloadHandler(
+                   filename = "DigiCAT_balanced.zip",
+                   content = 
+                     function(file){
+                     #go to a temp dir to avoid permission issues
+                     owd <- setwd(tempdir())
+                     on.exit(setwd(owd))
+                     files <- NULL;
+                     
+                     if (approach() == "psm"){
+                       
+                       if(missingness() == "complete" | missingness() == "weighted"){
+                         
+                       data_fileName <- "matched_data.csv"
+                       write.table(match.data(downloadable_balanced), data_fileName,sep = ';', row.names = F, col.names = T)
+                       files <- data_fileName
+                       
+                       }
+                       if(missingness() == "mi"){
+                         
+                         for (i in 1:length(downloadable_balanced)){
+                           
+                           data_fileName <- paste0("matched_data_", i, ".csv")
+                           write.table(complete(downloadable_balanced, i), data_fileName,sep = ';', row.names = F, col.names = T)
+                           ## Weights included in balanced dataframe
+                           files <- c(data_fileName, files)
+                         }
+                         
+                       }
+                     } 
+                     if (approach() == "iptw" | approach() == "cbps"){
+
+                       if(missingness() == "complete" | missingness() == "weighted"){
+                         
+                         data_fileName <- "weighted_data.csv"
+                         df <- downloadable_estimation_stage$missingness_treated_dataset
+                         df$iptw_weights <- downloadable_balanced$weights
+                         write.table(df, data_fileName,sep = ';', row.names = F, col.names = T)
+                         files <- data_fileName
+                       }
+                       
+                       if(missingness() == "mi"){
+                         
+                         for (i in 1:length(downloadable_balanced)){
+                           
+                           data_fileName <- paste0("matched_data_", i, ".csv")
+                           write.table(complete(downloadable_balanced, i), data_fileName,sep = ';', row.names = F, col.names = T)
+                           ## Weights included in balanced dataframe
+                           files <- c(data_fileName, files)
+                         }
+                         
+                       }
+                     }
+                     if (approach() == "nbp"){
+                       if(missingness() == "complete" | missingness() == "weighted"){
+                         data_fileName <- "matched_nbp_data.csv"
+                         write.table(downloadable_balanced, data_fileName,sep = ';', row.names = F, col.names = T)
+                         files <- data_fileName
+                       }
+                       if(missingness() == "mi"){
+                         
+                         for (i in 1:length(downloadable_balanced)){
+                           
+                           data_fileName <- paste0("matched_nbp_data_", i, ".csv")
+                           write.table(downloadable_balanced[[i]], data_fileName,sep = ';', row.names = F, col.names = T)
+                           ## Weights included in balanced dataframe
+                           files <- c(data_fileName, files)
+                         }
+                       }
+                     }
+                     #create the zip file
+                     zip(file,files)
+                   }
+                 )
+                 
+                 
+                 
                  
                  ## Pass output to UI ----
                  

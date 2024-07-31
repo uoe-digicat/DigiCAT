@@ -97,7 +97,7 @@ Upload Data requirements categorical description,"Any variables with 5 or fewer 
 Upload Data requirements outcome,Outcome:,Temp
 Upload Data requirements outcome description,Only continuous variables can be selected as your outcome (i.e. not categorical),Temp
 Upload Data requirements treatment,Treatment:,Temp
-Upload Data requirements treatment description,"Binary, ordinal and continuous variables can be selected as your treatment.",Temp
+Upload Data requirements treatment description,"Binary, ordinal and continuous variables can be selected as your treatment. Note: binary treatment groups should be coded as 0 = not treated and 1 = treated.",Temp
 Upload Data requirements matching,Matching variables: ,Temp
 Upload Data requirements matching description,Matching variables are the set of variables that you want to balance your groups on to ‘recreate’ a randomised controlled trial.,Temp
 Upload Data requirements covariates,Covariates:,Temp
@@ -187,6 +187,7 @@ Approach IPTW description,"You’ve chosen IPTW. IPTW aims to rebalance treated 
 Approach IPTW link,See the ‘IPTW’ section of the tutorials for more information.,Temp
 Approach NBP description,"As you have an ordinal treatment variable (i.e., an ordered categorical treatment variable) an appropriate counterfactual analysis approach is non-bipartite propensity matching (NBP). NBP finds pairs of people who differ in their treatment dosage but who have similar treatment propensities based on their matching variables and compares their outcome variable levels. As the treatment is ordinal, this might involve matching and comparing people with for example, low with medium treatment doses and medium with high doses.",Temp
 Approach NBP tutorial link,Please see the 'NBP' section of the tutorials for more information.,Temp
+Approach CBPS description,"You’ve chosen Covariate Balancing Propensity Score (CBPS). Here coefficients of a generalised linear model (for binary treatments), multinomial logistic regression model (for multi-category treatments), or linear regression model (for continuous treatments) are estimated and used to compute propensity scores. Standard regression score equations are replaced with balance constraints in a generalised method of moments estimation, maximising both covariate balance and prediction of treatment assignment.",
 Approach Select approach,Please click on the approach you would like to take. We will give you more information about each approach as you select them.,Temp
 Approach Choose missingness,2. Choose a Method of Dealing with Missingess:,Temp
 Approach Choose MI,Multiple Imputation,Temp
@@ -211,6 +212,7 @@ Approach ORL,Ordinal Logistic Regression (OGLM),Temp
 Approach Too small GBM,Generalized Boosted Models (GBM) not available for small datasets (< 50 rows),Temp
 Approach Model description,"In order to balance our dataset, we must first calculate the probability each individual has of being in the treatment group, based on their observed characteristics, i.e., their propensity score. On this page, you will select a balancing model to use with your dataset to predict the likelihood of an individual being treated. Different modelling approaches can be used for this step.",Temp
 Approach Model initial,"As the choices of balancing model depends on the counterfactual approach and method of dealing with missingness, balancing model options will appear once these choices have been selected.",Temp
+Approach Model CBPS,"As CBPS has been selected, the choice of propensity model will be automatically selected based on the type of the treatment variable being used, eliminating the need for manual model selection. For binary treatments, a generalised linear model is used, for nominal treatments a multinomial logistic regression model is used and for continuous treatments, a linear regression model is used.",
 Approach Missingness initial,"As the choices of dealing with missingness depend on the counterfactual approach, options will appear once an approach has been selected.",Temp
 Approach Model GLM description,"Logistic regression is a method of modelling the relations between a set of predictors (e.g., matching variables) and a binary outcome (such as whether or not someone is in the treatment group). In propensity score analysis it can be used to estimate the propensity scores for each individual.",Temp
 Approach Model GLM tutorial link,See the logistic regression section of our tutorials for more information.,Temp
@@ -234,6 +236,7 @@ Balancing Matching method description PSM,"In order to balance covariates betwee
 Balancing Matching method tutorial link PSM,See our tutorial section on propensity score matching for more detailed guidance on choosing an appropriate matching method.,Temp
 Balancing Matching method description IPTW,"In IPTW, the propensity scores estimated based on the set of matching variables are transformed to provide weights to be used in the outcome model. All the data are used (unlike in some methods where some cases might not achieve a match and be discarded). In DigiCAT the ATE is estimated which means that the weights used essentially down-weight treated cases with a high propensity score and up-weight control cases with a low propensity score. This ‘re-balances’ the treatment and control groups to make them more similar.",Temp
 Balancing Matching method tutorial link IPTW,See the ‘IPTW’ section of the tutorials for more information.,Temp
+Balancing Matching method description CBPS,"In CBPS, propensity scores are estimated to maximise both covariate balance and prediction of treatment assignment. This avoids the iterative process between model fitting and balance checking that may be required in other counterfactual approaches. All the data are used (unlike in some methods where some cases might not achieve a match and be discarded). In DigiCAT the ATE is estimated which means that the weights used essentially up-weight/down-weight individuals accordingly to achieve covariate balance.",
 Balancing Optimal description,You've chosen optimal matching. This method matches treated and untreated cases in a way that minimises the average propensity score difference within the match pairs in the sample. ,Temp
 Balancing Optimal tutorial link,See the optimal matching tutorial section for more detail.,Temp
 Balancing NN description,"Nearest neighbour matching is used in counterfactual analysis as a method for pairing treated and control cases with similar propensity scores. In DigiCat, nearest neighbour greedy matching is implemented whereby the most similar treated and control cases are matched first. Then, from those left the remaining most similar treated and control cases are paired and so on and so forth until all viable matches have been made. ",Temp
@@ -261,9 +264,12 @@ Balancing Love plot,Love Plot,Temp
 Balancing Balance plot dots,Dots indicate standardised mean differences in matching variables before and after adjusting.,Temp
 Balancing Balance plot dots MI,Dots indicate standardised mean differences in matching variables before and after adjusting. Bars represent the range across imputations.,Temp
 Balancing Balance table,Balance Table,Temp
+Balancing Balance advice,"The standardised mean difference (SMD) is the standardised difference in the means of matching variables between treatment groups. Good balance has been achieved when SMDs are close to zero. Researchers can objectively access balancing performance by setting an acceptable threshold for the SMD of each matching variable. Commonly used thresholds are 0.2 and 0.1. If balancing does not perform well, other approaches should be explored.",
 Balancing Warning no method,Please select a matching method before proceeding,Temp
 Balancing Warning no ratio,Please select a matching ratio before proceeding,Temp
 Balancing Warning change rerun,Note: Changing this parameter will require balancing to be rerun along with all subsequent steps.,Temp
+Balancing Button download balanced RData,Download Balanced Data (RData),
+Balancing Button download balanced CSV,Download Balanced Data (CSV),
 Outcome Choose model,Choose an Outcome Model:,Temp
 Outcome LR w covar interaction,Linear Regression (Outcome ~ Treatment * Matching Variables),Temp
 Outcome LR w covar,Linear Regression (Outcome ~ Treatment + Matching Variables),Temp

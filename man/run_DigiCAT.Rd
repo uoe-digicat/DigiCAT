@@ -4,7 +4,7 @@
 \alias{run_DigiCAT}
 \title{Run DigiCAT locally}
 \usage{
-run_DigiCAT(enableLocal = TRUE)
+run_DigiCAT(enableLocal = TRUE, filePath = fs::path_home())
 }
 \arguments{
 \item{enableLocal}{Enable the upload of local data \code{TRUE} or \code{FALSE}. Default is \code{TRUE}.}

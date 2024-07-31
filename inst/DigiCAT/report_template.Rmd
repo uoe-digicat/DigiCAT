@@ -23,6 +23,7 @@ params:
   love_plot: NA
   balance_table: NA
   outcome_formula: NA
+  outcome_variable_type : NA
   outcome_res: NA
 editor_options: 
   markdown: 
@@ -94,6 +95,11 @@ if(params$CF_approach == "iptw"){
 ## NBP
 if(params$CF_approach == "nbp"){
    CF_approach <- c(CF_approach, paste0("Non-bipartite propensity matching (NBP) was used to carry out counterfactual analysis."))
+}
+
+## CBPS
+if(params$CF_approach == "cbps"){
+   CF_approach <- c(CF_approach, paste0("Covariate balancing propensity score (CBPS) was used to carry out counterfactual analysis."))
 }
 
 
@@ -250,15 +256,42 @@ knitr::kable(params$balance_table, caption = "Balance table", format="latex",
 outcome_model <- NULL
 
 if(params$outcome_formula == "unadjusted"){
-  outcome_model <- paste0("Linear regression without matching variables as covariates was used as the outcome model in this analysis.")
+  
+  if(params$outcome_variable_type == "Continuous"){
+      outcome_model <- paste0("Linear regression without matching variables as covariates was used as the outcome model in this analysis.")
+  }   
+  if(params$outcome_variable_type == "Binary"){
+          outcome_model <- paste0("Logisitic regression without matching variables as covariates was used as the outcome model in this analysis.")
+  }  
+  if(params$outcome_variable_type == "Categorical"){
+              outcome_model <- paste0("Multinomial logistic regression without matching variables as covariates was used as the outcome model in this analysis.")
+  }
 }
 
 if(params$outcome_formula == "with_matching_variables"){
-  outcome_model <- paste0("Linear regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
+  
+  if(params$outcome_variable_type == "Continuous"){
+      outcome_model <- paste0("Linear regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
+  }   
+  if(params$outcome_variable_type == "Binary"){
+          outcome_model <- paste0("Logisitic regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
+  }  
+  if(params$outcome_variable_type == "Categorical"){
+              outcome_model <- paste0("Multinomial logistic regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
+  }
 }
 
 if(params$outcome_formula == "marginal_effects"){
-  outcome_model <- paste0("Linear regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
+  
+    if(params$outcome_variable_type == "Continuous"){
+      outcome_model <- paste0("Linear regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
+  }   
+  if(params$outcome_variable_type == "Binary"){
+          outcome_model <- paste0("Logisitic regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
+  }  
+  if(params$outcome_variable_type == "Categorical"){
+              outcome_model <- paste0("Multinomial logistic regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
+  }
 }
 
 outcome_model <- paste0(outcome_model," From this analysis, the estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " is ", round(params$outcome_res[1,"Coefficient Estimate"], 4), "(p-value = ", round(params$outcome_res[1,"P-value"], 4), ", standard error = ", round(params$outcome_res[1,"Standard Error"], 4), ", 95% confidence interval:", round(params$outcome_res[1,"Lower CI (2.5%)"], 4), " to ", round(params$outcome_res[1,"Upper CI (97.5%)"], 4),  ")" )
@@ -267,10 +300,16 @@ outcome_model <- paste0(outcome_model," From this analysis, the estimated effect
 
 `r outcome_model`
 
-<!-- \newpage -->
+\newpage
 
-<!-- ## R session information: -->
+## R package version information:
 
-<!-- ```{r session info, echo=FALSE, include=TRUE, } -->
-<!-- sessionInfo() -->
-<!-- ``` -->
+```{r session info, echo=FALSE, include=TRUE, }
+package_versions <- as.data.frame(installed.packages()[,c(1,3:4)])
+rownames(package_versions) <- NULL
+package_versions <- package_versions[is.na(package_versions$Priority),1:2,drop=FALSE]
+
+package_versions
+
+
+```

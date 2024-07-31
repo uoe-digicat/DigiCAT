@@ -53,7 +53,8 @@ Imports:
     gbm,
     parallel,
     CBPS,
-    svyVGAM
+    svyVGAM,
+    knitr
 Remotes:
     couthcommander/nbpMatching,
     imbs-hl/ranger
