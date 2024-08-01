@@ -2,6 +2,7 @@
 #'@import cobalt
 #'@import shinycssloaders
 #'@import CBPS
+#'@import DT
 
 balancing_ui <- function(id, i18n) {
   ns <- NS(id)
