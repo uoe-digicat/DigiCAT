@@ -54,6 +54,7 @@ Imports:
     parallel,
     CBPS,
     svyVGAM,
+    patchwork,
     knitr
 Remotes:
     couthcommander/nbpMatching,

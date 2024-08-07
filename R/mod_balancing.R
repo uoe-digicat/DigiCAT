@@ -2,6 +2,7 @@
 #'@import cobalt
 #'@import shinycssloaders
 #'@import CBPS
+#'@import DT
 
 balancing_ui <- function(id, i18n) {
   ns <- NS(id)
@@ -579,13 +580,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                                      tabPanel(title =i18n$t("Balancing Love plot"),
                                               value = NS(id, 'love_plot_tab'),
                                               br(),
-                                              withSpinner(plotOutput(session$ns("love_plot"))),
-                                              if(missingness() == "mi"){
-                                                p(i18n$t("Balancing Balance plot dots MI"))
-                                              },
-                                              if(missingness() == "complete"){
-                                                p(i18n$t("Balancing Balance plot dots"))
-                                              }
+                                              withSpinner(plotOutput(session$ns("love_plot")))
                                      ),
                                      tabPanel(title = "Balance Table",
                                               value = NS(id, 'balance_table_tab'),
