@@ -573,6 +573,7 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    }
                    if (input$CF_radio == i18n$t("Approach CBPS")){
                      CF_approach_values$approach_choice <- "cbps"
+                     CF_approach_values$model_choice <- "lm" ## To be removed when CBPS updated
                    }
                  })
                  observeEvent(input$missingness_radio,{
