@@ -111,6 +111,12 @@ outcome_unadjusted <- function(balanced_data,
     
     data_to_use <- extracted_balanced_data[[1]]
     
+    ## Set <treatment variable>:low as reference group
+    data_to_use <- lapply(data_to_use, function(df) {
+      df[[treatment_variable]] <- relevel(df[[treatment_variable]], ref = "low")
+      return(df)
+    })
+    
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
       cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
@@ -295,7 +301,8 @@ outcome_unadjusted <- function(balanced_data,
     
     data_to_use <- extracted_balanced_data[[1]]
    
-  
+    ## Set <treatment variable>:low as reference group
+    data_to_use[[treatment_variable]] <- relevel(data_to_use[[treatment_variable]], ref= "low")
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
@@ -480,6 +487,12 @@ outcome_matching_variables <- function(balanced_data,
   } else if(extracted_balanced_data$process == "mi_nbp"){
 
     data_to_use <- extracted_balanced_data[[1]]
+    
+    ## Set <treatment variable>:low as reference group
+    data_to_use <- lapply(data_to_use, function(df) {
+      df[[treatment_variable]] <- relevel(df[[treatment_variable]], ref = "low")
+      return(df)
+    })
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
@@ -667,6 +680,9 @@ outcome_matching_variables <- function(balanced_data,
   else if (extracted_balanced_data$process == "cc_nbp" | extracted_balanced_data$process == "weighting_nbp"){
     
     data_to_use <- extracted_balanced_data[[1]]
+    
+    ## Set <treatment variable>:low as reference group
+    data_to_use[[treatment_variable]] <- relevel(data_to_use[[treatment_variable]], ref= "low")
 
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
