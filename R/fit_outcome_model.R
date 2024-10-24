@@ -301,7 +301,8 @@ outcome_unadjusted <- function(balanced_data,
     
     data_to_use <- extracted_balanced_data[[1]]
    
-  
+    ## Set <treatment variable>:low as reference group
+    data_to_use[[treatment_variable]] <- relevel(data_to_use[[treatment_variable]], ref= "low")
     
     # Check if cluster_variable is provided
     if (!is.null(cluster_variable)) {
