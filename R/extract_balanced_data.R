@@ -104,10 +104,7 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     return(list(extracted_balanced_data, process = "mi_nbp"))
   }
   else if(counterfactual_method == "cbps" & missing_method == "complete"){
-    extracted_balanced_data = cbind(psmodel_obj$missingness_treated_dataset, 
-                                    psmodel_obj$propensity_scores,
-                                    balanced_data$weights)
-    colnames(extracted_balanced_data)[colnames(extracted_balanced_data) == "psmodel_obj$propensity_scores"] <- "propensity_scores"
+    extracted_balanced_data = cbind(psmodel_obj$missingness_treated_dataset,balanced_data$weights)
     colnames(extracted_balanced_data)[colnames(extracted_balanced_data) == "balanced_data$weights"] <- "weights"
    return(list(extracted_balanced_data, process = "cc_cbps")) 
   }

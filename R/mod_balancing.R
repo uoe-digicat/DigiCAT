@@ -565,13 +565,15 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        ## Add tabs to display output
                        balancing_values$output <- renderUI(
                          tabsetPanel(id = "well_panel",
-                                     ## Don't include common support graph if propensity model other than GLM used or CBPS approach had been taken
-                                     if(balancing_model() == "glm" & !approach() == "cbps"){
-                                       tabPanel(title = i18n$t("Balancing Common support graph"),
-                                                value = NS(id, 'common_support_graph_tab'),
-                                                br(),
-                                                withSpinner(uiOutput(session$ns("common_support"))))
-                                     },
+                                     ## Don't include common support graph if propensity model other than GLM used
+                                     if(!is.null(balancing_model())){
+                                       if(balancing_model() == "glm"){
+                                         tabPanel(title = i18n$t("Balancing Common support graph"),
+                                                  value = NS(id, 'common_support_graph_tab'),
+                                                  br(),
+                                                  withSpinner(uiOutput(session$ns("common_support"))))
+                                         }
+                                       },
                                      tabPanel(title = i18n$t("Balancing Observation table"),
                                               value = NS(id, 'observation_table_tab'),
                                               br(),
