@@ -165,23 +165,25 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
 balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_object, model_type,
                            missing_method,...){
   
-  if (model_type == "gbm"){
-    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
-  } else{
-    f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
-  }
+  f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
   
   if(missing_method == "complete"){
-    data_to_use = cbind(PS_estimation_object$missingness_treated_dataset, PS_estimation_object$propensity_scores)
-    balanced_data = weightit(as.formula(f), data = data_to_use, method = "cbps",
-                             cbps.args = list(model = PS_estimation_object$estimated_propensity_model))
+    
+    data_to_use = PS_estimation_object$missingness_treated_dataset
+    balanced_data = weightit(as.formula(f), data = data_to_use, method = "cbps")
+
   } else if(missing_method == "mi"){
+    
     balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
                                approach = "within", method = "cbps")
-  } else if(missing_method == "weighting"){
-    balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
-                             method = "cbps", ...)
-  }
+  } 
+  
+  ## Code below not used in tool - check with Helen
+  # else if(missing_method == "weighting"){
+  #   balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables,
+  #                            method = "cbps", ...)
+  # }
+  
   return(balanced_data)
 }
 

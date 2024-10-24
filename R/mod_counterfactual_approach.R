@@ -573,7 +573,6 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    }
                    if (input$CF_radio == i18n$t("Approach CBPS")){
                      CF_approach_values$approach_choice <- "cbps"
-                     CF_approach_values$model_choice <- "lm" ## To be removed when CBPS updated
                    }
                  })
                  observeEvent(input$missingness_radio,{
@@ -601,9 +600,9 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                    if (input$balancing_model_radio == i18n$t("Approach ORL")){
                      CF_approach_values$model_choice <- "poly"
                    }
-                   if (input$balancing_model_radio == i18n$t("Approach LR")){
-                     CF_approach_values$model_choice <- "lm"
-                   }
+                   # if (input$balancing_model_radio == i18n$t("Approach LR")){
+                   #   CF_approach_values$model_choice <- "lm"
+                   # }
                    if (input$CF_radio == i18n$t("Approach CBPS")){
                      ## Remove PS model if approach is CBPS
                      CF_approach_values$model_choice <- NULL

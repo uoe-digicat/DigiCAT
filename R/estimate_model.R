@@ -1,11 +1,12 @@
 estimate_model <- function(handled_missingness, model_type = NULL, treatment_variable, matching_variable, 
                            missing_method,...){
   
-  if (model_type == "gbm" | model_type == "glm" | model_type == "lm"){
-    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
-  } else if (model_type == "poly" | model_type == "randomforest"){
-    f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
-  }
+  if (!is.null(model_type)){ ## Only run if model type given
+    if (model_type == "gbm" | model_type == "glm" | model_type == "lm"){
+      f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
+    } else if (model_type == "poly" | model_type == "randomforest"){
+      f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
+    }
   
   switch(model_type, 
          
@@ -79,21 +80,23 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
              
            }
            
-         },
-         lm = {
-           if(missing_method == "mi"){
-             estimated_propensity_model = lapply(complete(handled_missingness, "all"), 
-                                                 function(x) glm(f, data = x, family = gaussian(link = "identity"), ...))
-           } else if(missing_method == "complete"){
-             estimated_propensity_model = glm(f, data = handled_missingness,
-                                              family = gaussian(link = "identity"),...)
-           } else if(missing_method == "weighting"){
-             estimated_propensity_model = svyglm(f, design = handled_missingness) 
-           }
-         },
+         }
+         # lm = {
+         #   if(missing_method == "mi"){
+         #     estimated_propensity_model = lapply(complete(handled_missingness, "all"), 
+         #                                         function(x) glm(f, data = x, family = gaussian(link = "identity"), ...))
+         #   } else if(missing_method == "complete"){
+         #     estimated_propensity_model = glm(f, data = handled_missingness,
+         #                                      family = gaussian(link = "identity"),...)
+         #   } else if(missing_method == "weighting"){
+         #     estimated_propensity_model = svyglm(f, design = handled_missingness) 
+         #   }
+         # }
          
-         stop("I need a valid model! (glm, gbm, randomforest, poly, lm)")
-  )
+  )} else{ ## If no mpdel given, return empty `estimated_propensity_model` object
+    estimated_propensity_model <- NULL
+    }
+    
   return(estimated_propensity_model)
 }
 
