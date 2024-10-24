@@ -420,7 +420,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        } else if (outcome_model_values$outcome_type == 'Categorical'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
-                                        i18n$t("Outcome MNReg w covar interaction"),
+                                        #i18n$t("Outcome MNReg w covar interaction"),
                                         i18n$t("Outcome MNReg w covar"),
                                         i18n$t("Outcome MNReg wo covar")),
                                       selected = character(0),

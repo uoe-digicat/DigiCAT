@@ -1136,8 +1136,6 @@ outcome_marginal_effects <- function(balanced_data,
     
   }
   
-  
-  
   return(model_fit)
 }
 
