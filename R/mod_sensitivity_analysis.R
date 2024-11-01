@@ -29,18 +29,30 @@ sensitivity_analysis_ui <- function(id, i18n) {
            
            ## Navigation ----
            div(align="center",
-               actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button")
+               actionButton(NS(id, 'prev_outcome_model_btn'), 'Prev', class = "default_button"),
+               actionButton(NS(id, 'run_sensitivity_analysis_btn'), i18n$t("Sensitivity Abalysis Button Run"), class = "default_button")
            ),
            br(),
-           p("This is where sensitivity analysis will go."),
+           mainPanel(wellPanel(id = "well_panel",
+                               tabsetPanel(id = NS(id,"results_panel"),
+                                           tabPanel(title = i18n$t("Sensitivity Analysis title"),
+                                                    value = NS(id,'sensitivity_analysis'),
+                                                    ## Sensitivity analysis information 
+                                                    p(br(),
+                                                      i18n$t("Sensitivity Analysis description")
+                                                      ),
+                                                    withSpinner(uiOutput(ns("sensitivity_analysis_output"))),
+                                                    p(uiOutput(ns("sensitivity_analysis_output_error")))
+                                           )
+                               )
+           )),
            br(),
-           p("Once run download options will reappear? these will now include sensitivity abnalysis step(s). Can remove download options from previous page
-             simultaneously.")
+           p("Report + script download options to reappear")
            
   )
 }
 
-sensitivity_analysis_server <- function(id, parent, outcome_variable, treatment_variable, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, matching_method, matching_method_display, matching_ratio, outcome_model_display, outcome_model, analysis_tab, i18n, selected_language) {
+sensitivity_analysis_server <- function(id, parent, outcome_variable, treatment_variable, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, matching_method, matching_method_display, matching_ratio, estimation_stage_res, balancing_stage_res, outcome_model_display, outcome_model_res, outcome_variable_type, outcome_model, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -71,8 +83,96 @@ sensitivity_analysis_server <- function(id, parent, outcome_variable, treatment_
                    updateTabsetPanel(session = parent, inputId = "methods-tabs", selected = "outcome_model-tab")
                  })
                  
+                 ## Define reactives ----
+                 ## Create reactive value for approach description
+                 sensitivity_analysis_values <- reactiveValues(
+                   output_RB = NULL,
+                   output_EV = NULL
+                 )
                  
+                 ## Run sensitivity analysis ----
+                 observeEvent(input$run_sensitivity_analysis_btn, {
+                   
+                     ## Save potential error to check for running of code dependent on sensitivity analysis
+                     error_check <- NA
+                     error_check <- tryCatch({
+
+                       if(approach() == "psm"){
+
+                         sensitivity_analysis_values$output_RB <- run_sensitivity(
+                           PS_object = estimation_stage_res(),
+                           balanced_data = balancing_stage_res(),
+                           missing_method = missingness(),
+                           outcome_variable =  outcome_variable(),
+                           sensitivity_type = "rosenbaum_sensitivity",
+                           outcome_results = outcome_model_res(),
+                           outcome_type = outcome_variable_type())
+                         
+                         sensitivity_analysis_values$output_EV <- run_sensitivity(
+                           PS_object = estimation_stage_res(),
+                           balanced_data = balancing_stage_res(),
+                           missing_method = missingness(),
+                           outcome_variable =  outcome_variable(),
+                           sensitivity_type = "VW_Evalue",
+                           outcome_results = outcome_model_res(),
+                           outcome_type = outcome_variable_type())
+
+                       } else{
+                         
+                         sensitivity_analysis_values$output_RB <- NULL
+                         
+                         sensitivity_analysis_values$output_EV <- run_sensitivity(
+                           PS_object = estimation_stage_res(),
+                           balanced_data = balancing_stage_res(),
+                           missing_method = missingness(),
+                           outcome_variable =  outcome_variable(),
+                           sensitivity_type = "VW_Evalue",
+                           outcome_results = outcome_model_res(),
+                           outcome_type = outcome_variable_type())
+
+                         }
+                 },
+                     
+                     ## If sensitivity analysis does not run, return error message and enable run button 
+                     error = function(cond) {
+                       ## Enable "Run" button
+                       sensitivity_analysis_values$output_error <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
+                     })
+                     
+                     # Display output and show download buttons if no error in outcome model
+                     if (all(!grepl("Error:", error_check))){
+                       try({
+                        
+                         ## Display description and output of Rosenbaum bounds analysis
+                         if(approach() == "psm"){
+                           
+                           sensitivity_analysis_values$output <- p(h3(i18n$t("Sensitivity Analysis RR title")),
+                                                                   br(),
+                                                                   i18n$t("Sensitivity Analysis RR description"),
+                                                                   br(),
+                                                                   renderPrint({print(sensitivity_analysis_values$output_RB)}),
+                                                                   br(),
+                                                                   h3(i18n$t("Sensitivity Analysis EV title")),
+                                                                   br(),
+                                                                   i18n$t("Sensitivity Analysis EV description"),
+                                                                   br(),
+                                                                   sensitivity_analysis_values$output_EV)
+                           
+                         } else{
+                         
+                         sensitivity_analysis_values$output <- p(h3(i18n$t("Sensitivity Analysis EV title")),
+                                                                 br(),
+                                                                 i18n$t("Sensitivity Analysis EV description"),
+                                                                 br(),
+                                                                 DT::renderDataTable({DT::datatable((sensitivity_analysis_values$output_EV))})
+                         )}
+                       })
+                     }
+                     })
                  
+                 ## Pass output to UI ----
+                 output$sensitivity_analysis_output <- renderUI(sensitivity_analysis_values$output)
+                 output$sensitivity_analysis_output_error <- renderUI(sensitivity_analysis_values$output_error)
                  
-               })
+                 })
 }

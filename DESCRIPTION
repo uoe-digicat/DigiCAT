@@ -55,7 +55,9 @@ Imports:
     CBPS,
     svyVGAM,
     patchwork,
-    knitr
+    knitr,
+    rbounds,
+    EValue
 Remotes:
     couthcommander/nbpMatching,
     imbs-hl/ranger
