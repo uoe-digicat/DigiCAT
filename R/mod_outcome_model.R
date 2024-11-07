@@ -736,11 +736,15 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          })
                          
                          ## Add sensitivity analysis option ----
-                         output$sensitivity_analysis_button <- renderUI({
-                           div(
-                             actionButton(session$ns("sensitivity_analysis_button"), i18n$t("Outcome Button sensitivity"), class = "default_button")
-                             )
-                         })
+                         ## Only add if outcome variable is binary or continuous
+                         if(outcome_model_values$outcome_type == "continuous" | outcome_model_values$outcome_type == "binary"){
+                         
+                           output$sensitivity_analysis_button <- renderUI({
+                             div(
+                               actionButton(session$ns("sensitivity_analysis_button"), i18n$t("Outcome Button sensitivity"), class = "default_button")
+                               )
+                           })
+                         }
                          
                          ## If file path is NULL (when example data used), create new variable to record this
                          if (is.null(file_path())){
