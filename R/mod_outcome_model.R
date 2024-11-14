@@ -736,8 +736,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          })
                          
                          ## Add sensitivity analysis option ----
-                         ## Only add if outcome variable is binary or continuous
-                         if(outcome_model_values$outcome_type == "continuous" | outcome_model_values$outcome_type == "binary"){
+                         ## Only add if treatment variable is binary and outcome variable is binary or continuous
+                         if(length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2 & (outcome_model_values$outcome_type == "continuous" | outcome_model_values$outcome_type == "binary")){
                          
                            output$sensitivity_analysis_button <- renderUI({
                              div(
