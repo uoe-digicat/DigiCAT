@@ -85,7 +85,7 @@ perform_rosenbaum_sensitivity <- function(PS_object, balanced_data, missing_meth
   return(sensitivity_result)
 }
 
-perform_VW_Evalue <- function(outcome_results, outcome_type, outcome_variable, missing_method, use_ci = TRUE, ...) {
+perform_VW_Evalue <- function(outcome_results, outcome_type, outcome_variable, missing_method, use_ci = FALSE, ...) {
   #browser()
   # Check if confidence intervals should be used
   if (use_ci) {
@@ -108,11 +108,10 @@ perform_VW_Evalue <- function(outcome_results, outcome_type, outcome_variable, m
     sd <- sd(outcome_results$extracted_balanced_data[[1]][[outcome_variable]])
     
     if (outcome_type == "continuous") {
-      sensitivity_result <- evalues.OLS(estimate, sd)  # for continuous outcome
+      sensitivity_result <- evalues.OLS(estimate, sd = sd)  # for continuous outcome
     } else if (outcome_type == "binary") {
       sensitivity_result <- evalues.OR(estimate)  # for binary outcome
     }
   }
-  
   return(sensitivity_result)
 }
