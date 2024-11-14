@@ -112,6 +112,10 @@ perform_VW_Evalue <- function(outcome_results, outcome_type, outcome_variable, m
     } else if (outcome_type == "binary") {
       sensitivity_result <- evalues.OR(estimate)  # for binary outcome
     }
+    
+    ## Remove empty columns "lower" and "upper"
+    sensitivity_result <- as.data.frame(sensitivity_result[,-c(2,3)])
+    names(sensitivity_result) <- "point"
   }
   return(sensitivity_result)
 }

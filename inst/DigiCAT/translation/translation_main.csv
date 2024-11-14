@@ -321,7 +321,8 @@ Outcome Button sensitivity,Go to Sensitivity Analysis Tab,Temp
 Outcome Warning rerun,Note: Changing this parameter will require outcome model to be rerun,Temp
 Outcome Warning no model,Please select an outcome model before proceeding,Temp
 Sensitivity Analysis title,Sensitivity Analysis:,
-Sensitivity Analysis description,"Following propensity score analysis, sensitivity analyses test the robustness of causal claims by addressing potential unmeasured confounding variables. ",
+Sensitivity Analysis description,"After completing a propensity score analysis,  it is important to perform sensitivity analyses afterwards, in order to examine the robustness of their causal claims. Whilst propensity score methods aim to balance observed covariates between groups, accounting for measured confounding, it cannot address unmeasured confounding variables that may continue to have an impact on the results.  
+There are several means of conducting sensitivity analyses, a selection of which are available in DigiCAT at present, for continuous and binary outcomes.",
 Sensitivity Analysis RR title,Rosenbaum’s Bounds: ,
 Sensitivity Analysis RR description,"Rosenbaum’s bounds assess how hidden bias may affect study results using a sensitivity parameter, Gamma (Γ). If p-values stay significant at higher Γ values, results are robust; otherwise, they may be sensitive to hidden bias. DigiCAT computes Γ from X to Y. ",
 Sensitivity Analysis EV title,E-Values: ,

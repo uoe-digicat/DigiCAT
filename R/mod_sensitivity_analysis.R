@@ -184,7 +184,7 @@ sensitivity_analysis_server <- function(id, parent, outcome_variable, treatment_
                              br(),
                              i18n$t("Sensitivity Analysis EV description"),
                              br(),
-                             DT::renderDataTable({DT::datatable((sensitivity_analysis_values$output_EV))})
+                             renderTable(round(sensitivity_analysis_values$output_EV, digits = 3), rownames = TRUE)
                            )
                            
                          } else{
@@ -194,7 +194,7 @@ sensitivity_analysis_server <- function(id, parent, outcome_variable, treatment_
                            br(),
                            i18n$t("Sensitivity Analysis EV description"),
                            br(),
-                           DT::renderDataTable({DT::datatable((sensitivity_analysis_values$output_EV))})
+                           renderTable(round(sensitivity_analysis_values$output_EV, digits = 3), rownames = TRUE)
                          )}
                        })
                      }
