@@ -105,10 +105,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    description_method_selected = NULL,
                    R_script = NULL,
                    report = NULL,
-                   output_initial = p(h4(i18n$t("Balancing Tab output")),
-                                      p(i18n$t("Outcome model output initial"))),
-                   output = NULL,
-                   sensitivity_analysis_output = NULL
+                   output_initial = NULL,
+                   output = NULL
                  )
                  
                  ## Navigation ----
@@ -128,11 +126,11 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    
                    outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
                    output$outcome_model_description <- renderUI(
-                     if (outcome_model_values$outcome_type == 'Continuous'){
+                     if (outcome_model_values$outcome_type == 'continuous'){
                        p(i18n$t("Outcome LR description"))
-                     } else if (outcome_model_values$outcome_type == 'Binary'){
+                     } else if (outcome_model_values$outcome_type == 'binary'){
                        p(i18n$t("Outcome LogReg description"))
-                     } else if (outcome_model_values$outcome_type == 'Categorical'){
+                     } else if (outcome_model_values$outcome_type == 'categorical'){
                        p(i18n$t("Outcome MNReg description"))
                      })
                    
@@ -140,19 +138,19 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      if(!is.null(outcome_model_values$outcome_model_choice)){ ## Only run if approach has been selected, or if on 
                        if(!is.null(outcome_model_values$outcome_model_choice)){ ## Only run if approach has been selected, or if on 
                          if(outcome_model_values$outcome_model_choice == "marginal_effects"){
-                           if (outcome_model_values$outcome_type == 'Continuous'){
+                           if (outcome_model_values$outcome_type == 'continuous'){
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR w covar interaction"))
                              outcome_model_values$description_method_selected <- p(
                                h5(i18n$t("Outcome LR w covar interaction full"),
                                   i18n$t("Outcome LR w covar interaction description"))
                              )
-                           } else if (outcome_model_values$outcome_type == 'Binary'){
+                           } else if (outcome_model_values$outcome_type == 'binary'){
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LogReg w covar interaction"))
                              outcome_model_values$description_method_selected <- p(
                                h5(i18n$t("Outcome LogReg w covar interaction full"),
                                   i18n$t("Outcome LogReg w covar interaction description"))
                              )
-                           } else if (outcome_model_values$outcome_type == 'Categorical'){
+                           } else if (outcome_model_values$outcome_type == 'categorical'){
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome MNReg w covar interaction"))
                              outcome_model_values$description_method_selected <- p(
                                h5(i18n$t("Outcome MNReg w covar interaction full"),
@@ -163,19 +161,19 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            
                          }
                          if(outcome_model_values$outcome_model_choice == "with_matching_variables"){
-                           if (outcome_model_values$outcome_type == 'Continuous'){
+                           if (outcome_model_values$outcome_type == 'continuous'){
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR w covar"))
                              outcome_model_values$description_method_selected <- p(
                                h5(i18n$t("Outcome LR w covar full"),
                                   i18n$t("Outcome LR w covar description"))
                              )
-                           } else if (outcome_model_values$outcome_type == 'Binary'){
+                           } else if (outcome_model_values$outcome_type == 'binary'){
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LogReg w covar"))
                              outcome_model_values$description_method_selected <- p(
                                h5(i18n$t("Outcome LogReg w covar full"),
                                   i18n$t("Outcome LogReg w covar description"))
                              )
-                           } else if (outcome_model_values$outcome_type == 'Categorical'){
+                           } else if (outcome_model_values$outcome_type == 'categorical'){
                              
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome MNReg w covar"))
                              outcome_model_values$description_method_selected <- p(
@@ -187,13 +185,13 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            
                          }
                          if(outcome_model_values$outcome_model_choice == "unadjusted"){
-                           if (outcome_model_values$outcome_type == 'Continuous'){
+                           if (outcome_model_values$outcome_type == 'continuous'){
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LR wo covar"))
                              outcome_model_values$description_method_selected <- p(
                                h5(i18n$t("Outcome LR wo covar full"),
                                   i18n$t("Outcome LR wo covar description"))
                              )
-                           } else if (outcome_model_values$outcome_type == 'Binary'){
+                           } else if (outcome_model_values$outcome_type == 'binary'){
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome LogReg wo covar"))
                              outcome_model_values$description_method_selected <- p(
                                h5(i18n$t("Outcome LogReg wo covar full"),
@@ -202,7 +200,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                              
                            }
                            
-                           else if (outcome_model_values$outcome_type == 'Categorical'){
+                           else if (outcome_model_values$outcome_type == 'categorical'){
                              
                              updateRadioButtons(session, "outcome_model_radio", selected=i18n$t("Outcome MNReg wo covar"))
                              outcome_model_values$description_method_selected <- p(
@@ -219,7 +217,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      if (!is.null(outcome_model_values$output) & !is.null(approach())){
                        if(approach() == "nbp"){
                          
-                         if (outcome_model_values$outcome_type == 'Continuous'){
+                         if (outcome_model_values$outcome_type == 'continuous'){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             p(i18n$t("Outcome model output estimate description")),
                                                             strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
@@ -233,7 +231,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                             strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                            )
                            
-                         } else if (outcome_model_values$outcome_type == 'Binary'){
+                         } else if (outcome_model_values$outcome_type == 'binary'){
                            outcome_model_values$output <- p(h4("Model Output"),
                                                             i18n$t("Outcome model output odds ratio description"),
                                                             strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
@@ -255,7 +253,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        }
                        if(approach() == "iptw" | approach() == "psm"){
                          
-                         if (outcome_model_values$outcome_type == 'Continuous'){
+                         if (outcome_model_values$outcome_type == 'continuous'){
                            outcome_model_values$output <- p(
                              h4("Model Output"),
                              i18n$t("Outcome model output estimate description"),
@@ -270,7 +268,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                            )
                            
-                         } else if(outcome_model_values$outcome_type == 'Binary'){
+                         } else if(outcome_model_values$outcome_type == 'binary'){
                            outcome_model_values$output <- p(
                              h4("Model Output"),
                              i18n$t("Outcome model output odds ratio description"),
@@ -287,7 +285,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                              br(),
                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                            )
-                         } else if(outcome_model_values$outcome_type == 'Categorical'){
+                         } else if(outcome_model_values$outcome_type == 'categorical'){
                            
                            browser()
                            outcome_model_values$output <- p(
@@ -355,14 +353,18 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Update choice of outcome model when approach is changed
                  observeEvent(approach(),{
                    
+                   ## Add initial outcome model output message
+                   outcome_model_values$output_initial <- p(h4(i18n$t("Balancing Tab output")),
+                     p(i18n$t("Outcome model output initial")))
+                   
                    outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
                    
                    output$outcome_model_description <- renderUI(
-                     if (outcome_model_values$outcome_type == 'Continuous'){
+                     if (outcome_model_values$outcome_type == 'continuous'){
                        p(i18n$t("Outcome LR description"))
-                     } else if (outcome_model_values$outcome_type == 'Binary'){
+                     } else if (outcome_model_values$outcome_type == 'binary'){
                        p(i18n$t("Outcome LogReg description"))
-                     } else if (outcome_model_values$outcome_type == 'Categorical'){
+                     } else if (outcome_model_values$outcome_type == 'categorical'){
                        p(i18n$t("Outcome MNReg description"))
                      })
                    
@@ -371,7 +373,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      
                      output$outcome_model_selection <- renderUI(
                        
-                       if (outcome_model_values$outcome_type == 'Continuous'){
+                       if (outcome_model_values$outcome_type == 'continuous'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
                                         i18n$t("Outcome LR w covar"),
@@ -379,7 +381,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                       selected = character(0),
                                       width = "200%")
                          
-                       } else if (outcome_model_values$outcome_type == 'Binary'){
+                       } else if (outcome_model_values$outcome_type == 'binary'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
                                         i18n$t("Outcome LogReg w covar"),
@@ -387,7 +389,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                       selected = character(0),
                                       width = "200%")
                          
-                       } else if (outcome_model_values$outcome_type == 'Categorical'){
+                       } else if (outcome_model_values$outcome_type == 'categorical'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
                                         i18n$t("Outcome MNReg w covar"),
@@ -401,7 +403,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
                      output$outcome_model_selection <- renderUI(
                        
-                       if (outcome_model_values$outcome_type == 'Continuous'){
+                       if (outcome_model_values$outcome_type == 'continuous'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
                                         i18n$t("Outcome LR w covar interaction"),
@@ -409,7 +411,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                         i18n$t("Outcome LR wo covar")),
                                       selected = character(0),
                                       width = "200%")
-                       } else if (outcome_model_values$outcome_type == 'Binary'){
+                       } else if (outcome_model_values$outcome_type == 'binary'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
                                         i18n$t("Outcome LogReg w covar interaction"),
@@ -417,7 +419,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                         i18n$t("Outcome LogReg wo covar")),
                                       selected = character(0),
                                       width = "200%")
-                       } else if (outcome_model_values$outcome_type == 'Categorical'){
+                       } else if (outcome_model_values$outcome_type == 'categorical'){
                          radioButtons(NS(id, "outcome_model_radio"), label = h4(i18n$t("Outcome Choose model")),
                                       choices = list(
                                         #i18n$t("Outcome MNReg w covar interaction"),
@@ -436,27 +438,27 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    
                    outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
                    output$outcome_model_description <- renderUI(
-                     if (outcome_model_values$outcome_type == 'Continuous'){
+                     if (outcome_model_values$outcome_type == 'continuous'){
                        p(i18n$t("Outcome LR description"))
-                     } else if (outcome_model_values$outcome_type == 'Binary'){
+                     } else if (outcome_model_values$outcome_type == 'binary'){
                        p(i18n$t("Outcome LogReg description"))
-                     } else if (outcome_model_values$outcome_type == 'Categorical'){
+                     } else if (outcome_model_values$outcome_type == 'categorical'){
                        p(i18n$t("Outcome MNReg description"))
                      }
                    )
                    
                    if( outcome_model_values$outcome_model_choice == "marginal_effects"){
-                     if (outcome_model_values$outcome_type == 'Continuous'){
+                     if (outcome_model_values$outcome_type == 'continuous'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LR w covar interaction full"),
                             i18n$t("Outcome LR w covar interaction description"))
                        ) 
-                     } else if (outcome_model_values$outcome_type == 'Binary'){
+                     } else if (outcome_model_values$outcome_type == 'binary'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LogReg w covar interaction full"),
                             i18n$t("Outcome LogReg w covar interaction description"))
                        )
-                     } else if (outcome_model_values$outcome_type == 'Categorical'){
+                     } else if (outcome_model_values$outcome_type == 'categorical'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome MNReg w covar interaction full"),
                             i18n$t("Outcome MNReg w covar interaction description"))
@@ -466,18 +468,18 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    }
                    
                    if( outcome_model_values$outcome_model_choice == "with_matching_variables"){
-                     if (outcome_model_values$outcome_type == 'Continuous'){
+                     if (outcome_model_values$outcome_type == 'continuous'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LR w covar full"),
                             i18n$t("Outcome LR w covar description"))
                        )
-                     } else if (outcome_model_values$outcome_type == 'Binary'){
+                     } else if (outcome_model_values$outcome_type == 'binary'){
                        
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LogReg w covar full"),
                             i18n$t("Outcome LogReg w covar description"))
                        )
-                     } else if (outcome_model_values$outcome_type == 'Categorical'){
+                     } else if (outcome_model_values$outcome_type == 'categorical'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome MNReg w covar full"),
                             i18n$t("Outcome MNReg w covar description"))
@@ -487,17 +489,17 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    }
                    
                    if(outcome_model_values$outcome_model_choice == "unadjusted"){
-                     if (outcome_model_values$outcome_type == 'Continuous'){
+                     if (outcome_model_values$outcome_type == 'continuous'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LR wo covar full"),
                             i18n$t("Outcome LR wo covar description"))
                        )
-                     } else if (outcome_model_values$outcome_type == 'Binary'){
+                     } else if (outcome_model_values$outcome_type == 'binary'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome LogReg wo covar full"),
                             i18n$t("Outcome LogReg wo covar description"))
                        )
-                     } else if (outcome_model_values$outcome_type == 'Categorical'){
+                     } else if (outcome_model_values$outcome_type == 'categorical'){
                        outcome_model_values$description_method_selected <- p(
                          h5(i18n$t("Outcome MNReg wo covar full"),
                             i18n$t("Outcome MNReg wo covar description"))
@@ -597,7 +599,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          
                          if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
                            
-                           if (outcome_model_values$outcome_type == 'Continuous'){
+                           if (outcome_model_values$outcome_type == 'continuous'){
                              
                              outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
                                                               i18n$t("Outcome model output estimate description"),
@@ -613,7 +615,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               
                              )
                              
-                           } else if (outcome_model_values$outcome_type == 'Binary'){
+                           } else if (outcome_model_values$outcome_type == 'binary'){
                              outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
                                                               i18n$t("Outcome model output odds ratio description"),
                                                               strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
@@ -630,7 +632,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                                                               
                              )
-                           } else if (outcome_model_values$outcome_type == 'Categorical'){
+                           } else if (outcome_model_values$outcome_type == 'categorical'){
                              
                              outcome_model_values$output <- p(
                                apply(outcome_model_values$outcome_analysis_stage_res$standardised_format, 1,
@@ -660,7 +662,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          
                          if(approach() == "nbp"){
                            
-                           if (outcome_model_values$outcome_type == 'Continuous'){
+                           if (outcome_model_values$outcome_type == 'continuous'){
                              outcome_model_values$output <- p(h4("Model Output"),
                                                               p(i18n$t("Outcome model output estimate description")),
                                                               strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
@@ -674,7 +676,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                                               strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
                              )
                              
-                           } else if (outcome_model_values$outcome_type == 'Binary'){
+                           } else if (outcome_model_values$outcome_type == 'binary'){
                              
                              outcome_model_values$output <- p(h4("Model Output"),
                                                               i18n$t("Outcome model output odds ratio description"),
@@ -733,12 +735,16 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                              downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
                          })
                          
-                         ### Add sensitivity analysis option ----
-                         # output$sensitivity_analysis_button <- renderUI({
-                         #   div(
-                         #     actionButton(session$ns("sensitivity_analysis_button"), i18n$t("Outcome Button sensitivity"), class = "default_button")
-                         #     )
-                         # })
+                         ## Add sensitivity analysis option ----
+                         ## Only add if treatment variable is binary and outcome variable is binary or continuous
+                         if(length(unique(na.omit(raw_data()[,treatment_variable()]))) == 2 & (outcome_model_values$outcome_type == "continuous" | outcome_model_values$outcome_type == "binary")){
+                         
+                           output$sensitivity_analysis_button <- renderUI({
+                             div(
+                               actionButton(session$ns("sensitivity_analysis_button"), i18n$t("Outcome Button sensitivity"), class = "default_button")
+                               )
+                           })
+                         }
                          
                          ## If file path is NULL (when example data used), create new variable to record this
                          if (is.null(file_path())){
@@ -869,9 +875,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  output$outcome_model_output_initial <- renderUI(outcome_model_values$output_initial)
                  output$outcome_model_output_error <- renderUI(outcome_model_values$output_error)
                  output$outcome_model_output_change <- renderUI(outcome_model_values$output_change)
-                 output$sensitivity_analysis_output <- renderUI(outcome_model_values$sensitivity_analysis_output)
-                 
-                 
+
                  ## Return outcome model output to server ----
                  
                  outcome_model_output <- reactiveValues()
@@ -879,6 +883,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  observe({
                    outcome_model_output$outcome_formula_display  <-  input$outcome_model_radio
                    outcome_model_output$outcome_formula <-  outcome_model_values$outcome_model_choice
+                   outcome_model_output$outcome_model_output <- outcome_model_values$outcome_analysis_stage_res
+                   outcome_model_output$outcome_variable_type <- outcome_model_values$outcome_type
                  })
                  
                  return(outcome_model_output)

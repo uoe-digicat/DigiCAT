@@ -163,8 +163,12 @@ server <- function(input, output, session) {
                                                                        matching_method = reactive(balancing_output$method_radio),
                                                                        matching_method_display = reactive(balancing_output$method_radio_display),
                                                                        matching_ratio = reactive(balancing_output$ratio_radio),
+                                                                       estimation_stage_res = reactive(balancing_output$estimation_stage_res),
+                                                                       balancing_stage_res = reactive(balancing_output$balancing_stage_res),
                                                                        outcome_model = reactive(outcome_model_output$outcome_formula),
                                                                        outcome_model_display = reactive(outcome_model_output$outcome_formula_display),
+                                                                       outcome_model_res = reactive(outcome_model_output$outcome_model_output),
+                                                                       outcome_variable_type = reactive(outcome_model_output$outcome_variable_type),
                                                                        analysis_tab = reactive(input$`methods-tabs`),
                                                                        i18n = i18n,
                                                                        selected_language = reactive(input$selected_language)
