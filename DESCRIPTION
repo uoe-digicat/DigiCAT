@@ -55,6 +55,7 @@ Imports:
     svyVGAM,
     patchwork,
     knitr
+Remotes:
 Depends: 
     R (>= 2.10)
 LazyData: true
