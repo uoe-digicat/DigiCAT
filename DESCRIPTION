@@ -54,7 +54,10 @@ Imports:
     CBPS,
     svyVGAM,
     patchwork,
-    knitr
+    knitr,
+    DigiCAT
+Remotes:
+    uoe-digicat/DigiCAT
 Depends: 
     R (>= 2.10)
 LazyData: true
