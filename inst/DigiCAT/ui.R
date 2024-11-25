@@ -13,7 +13,6 @@ library(marginaleffects)
 library(performance)
 library(see)
 library(patchwork)
-library(DigiCAT)
 library(shiny.i18n)
 library(svyVGAM)
 
