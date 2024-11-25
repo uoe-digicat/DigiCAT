@@ -9,7 +9,7 @@
 #' @param non_response_weight Is there a non-response weight variable?
 #' @param clustering_var Name of clustering variable.
 #' @param stratification_var Name of stratification variable.
-get_validation <- function(.data, categorical_variables, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight, clustering_var, stratification_var, i18n){
+get_validation <- function(.data, treatment, outcome, matchvars, covars, survey_weight_var, non_response_weight, clustering_var, stratification_var, i18n){
   
   ## Keep log of data validation
   validation_log <- list(
@@ -44,7 +44,7 @@ get_validation <- function(.data, categorical_variables, treatment, outcome, mat
   
   names(df) <- c(i18n$t("Upload Validation treatment counts group"), i18n$t("Upload Validation treatment counts count"))
   
-  outcome_type <- check_selected_outcome(.data, outcome, categorical_variables)
+  outcome_type <- check_selected_outcome(.data, outcome)
   
   # Get the number of observations in each categoru and count the number of obs in each category
   if (outcome_type %in% c('Categorical', 'Binary')){
