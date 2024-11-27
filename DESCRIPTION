@@ -50,12 +50,14 @@ Imports:
     nbpMatching,
     randomForest,
     gbm,
+    ranger,
     parallel,
     CBPS,
     svyVGAM,
     patchwork,
     knitr
 Remotes:
+    imbs-hl/ranger
 Depends: 
     R (>= 2.10)
 LazyData: true
