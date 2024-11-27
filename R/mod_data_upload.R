@@ -144,7 +144,7 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                    if (length(input$outcome) == 0){
                      out = 'No outcome variable selected'
                    } else {
-                     out = paste(check_selected_outcome(data_upload_values$rawdata, input$outcome), 'outcome variable selected.')
+                     out = paste(check_selected_outcome(data_upload_values$rawdata, input$outcome, input$categorical_vars), 'outcome variable selected.')
                    }
                    out
                  })
@@ -515,6 +515,7 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                          data_upload_values$rawdata <- mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x)))
                          
                          data_upload_values$validation  <- get_validation(.data = data_upload_values$rawdata, 
+                                                                          categorical_variables = isolate(input$categorical_vars),
                                                                           outcome = isolate(input$outcome), 
                                                                           treatment = isolate(input$treatment), 
                                                                           matchvars = isolate(input$matchvars), 

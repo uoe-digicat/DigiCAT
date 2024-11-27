@@ -124,7 +124,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Above only works when on approach tab, trigger same code when page if is revisited
                  observeEvent(analysis_tab(), {
                    
-                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable(), categorical_variables())
                    output$outcome_model_description <- renderUI(
                      if (outcome_model_values$outcome_type == 'continuous'){
                        p(i18n$t("Outcome LR description"))
@@ -357,7 +357,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    outcome_model_values$output_initial <- p(h4(i18n$t("Balancing Tab output")),
                      p(i18n$t("Outcome model output initial")))
                    
-                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable(), categorical_variables())
                    
                    output$outcome_model_description <- renderUI(
                      if (outcome_model_values$outcome_type == 'continuous'){
@@ -436,7 +436,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Update descriptions and rerun message when input changes ----
                  observeEvent(outcome_model_values$outcome_model_choice,{
                    
-                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable(), categorical_variables())
                    output$outcome_model_description <- renderUI(
                      if (outcome_model_values$outcome_type == 'continuous'){
                        p(i18n$t("Outcome LR description"))
@@ -530,7 +530,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                  ## Run outcome model ----
                  observeEvent(input$run_outcome_model_btn, {
                    
-                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable())
+                   outcome_model_values$outcome_type <- check_selected_outcome(raw_data(), outcome_variable(), categorical_variables())
                    
                    ## If no outcome model has been selected, give error message
                    if(is.null(input$outcome_model_radio)){
