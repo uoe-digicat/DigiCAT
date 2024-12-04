@@ -6,6 +6,7 @@
 \usage{
 get_validation(
   .data,
+  categorical_variables,
   treatment,
   outcome,
   matchvars,

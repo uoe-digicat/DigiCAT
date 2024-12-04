@@ -1,6 +1,6 @@
 Package: DigiCAT
 Title: DigiCAT: Digital Counterfactual Analysis Tool
-Version: 1.0.0
+Version: 1.0.1
 Authors@R:
   c(person(given = "Aja",
            family = "Murray",
@@ -21,7 +21,7 @@ Description: With the DigiCAT app, you can upload your own data and leverage pro
 License: use_gpl3_license()
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Imports: 
     MatchIt,
     MatchThem,
@@ -30,7 +30,6 @@ Imports:
     marginaleffects,
     mice,
     moments,
-    ranger,
     shinyFeedback,
     survey,
     shiny,
@@ -51,6 +50,7 @@ Imports:
     nbpMatching,
     randomForest,
     gbm,
+    ranger,
     parallel,
     CBPS,
     svyVGAM,
@@ -59,7 +59,6 @@ Imports:
     rbounds,
     EValue
 Remotes:
-    couthcommander/nbpMatching,
     imbs-hl/ranger
 Depends: 
     R (>= 2.10)
