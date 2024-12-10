@@ -119,6 +119,14 @@ Upload Validation dimensions correct rows,Your data has an appropriate number of
 Upload Validation dimensions incorrect rows,"It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.",Temp
 Upload Validation no GBM,"As your data contains fewer than 50 rows, Generalized Boosted Models (GBM) will not be available for generating propensity scores.",Temp
 Upload Validation outcome type,Outcome Variable Type: ,Temp
+Upload Validation outcome type binary,Binary outcome variable selected,
+Upload Validation outcome type continuous,Continuous outcome variable selected,
+Upload Validation outcome type categorical,Categorical outcome variable selected,
+Upload Validation small category check,Upload Validation - Small Categories Check,
+Upload Validation small category warning,Categories have been detected with less than 10 observations,
+Upload Validation small category action,Check the following categories:,
+Upload Validation small category none,No categories with less than 10 observations detected,
+Upload Validation outcome distribution,Upload validation outcome distribution:,
 Upload Validation outcome type incorrect,: Unique observations are in your chosen outcome variable. This seems a bit low for a continuous variable. We recommend you double check this before continuing.,Temp
 Upload Validation outcome type correct,: Unique observations are in your chosen outcome variable.,Temp
 Upload Validation skewness,Outcome Variable Skewness:,Temp

@@ -47,7 +47,7 @@ get_validation <- function(.data, categorical_variables, treatment, outcome, mat
   outcome_type <- check_selected_outcome(.data, outcome, categorical_variables)
   
   # Get the number of observations in each categoru and count the number of obs in each category
-  if (outcome_type %in% c('Categorical', 'Binary')){
+  if (outcome_type %in% c('categorical', 'binary')){
     counts <- table(.data[[outcome]])
     small_cat <- length(counts[which(counts < 10)])
     df <- data.frame(table(.data[[treatment]], .data[[outcome]])) %>% pivot_wider(id_cols = 'Var1', names_from = 'Var2', values_from = 'Freq')
@@ -78,10 +78,10 @@ get_validation <- function(.data, categorical_variables, treatment, outcome, mat
     ## Check outcome variable is continuous
     h4(i18n$t("Upload Validation outcome type")),
     
-    if (outcome_type == 'Continuous'){
+    if (outcome_type == 'continuous'){
       
       p(
-        h5("Continuous outcome variable selected" , style = "color:green"),
+        h5(i18n$t("Upload Validation outcome type continuous") , style = "color:green"),
         br(),
         h4(i18n$t("Upload Validation skewness")),
         
@@ -94,23 +94,27 @@ get_validation <- function(.data, categorical_variables, treatment, outcome, mat
                         xlab = "",
                         col = "#76b9f5"))
         )
-    } else if (outcome_type %in% c('Categorical', 'Binary')){
+    } else if (outcome_type %in% c('categorical', 'binary')){
       
       p(
-        h5(paste(outcome_type, 'outcome variable selected'), style = 'color:green'),
+        if(outcome_type == "categorical"){
+          i18n$t("Upload Validation outcome type categorical")
+        } else{
+          i18n$t("Upload Validation outcome type binary")
+        },
         br(),
         h4('Upload Validation - Small Categories Check'),
       if (small_cat > 0){
         p(
-        h5(paste(small_cat, 'categories have been detected with less than 10 observations'), style = 'color:red'),
-        h4(paste('Check the following categories:', paste(names(counts[which(counts < 10)]), collapse = ', ')), style = 'color:red')
+        h5(i18n$t("Upload Validation small category warning"), style = 'color:red'),
+        h4(paste(i18n$t("Upload Validation small category action"), paste(names(counts[which(counts < 10)]), collapse = ', ')), style = 'color:red')
         )
       } else{
-        h5('No categories with less than 10 observations detected', style = 'color:green')
+        h5(i18n$t("Upload Validation small category none"), style = 'color:green')
       }, br(),
       
       renderPlot(barplot(counts,
-                 main = paste('Upload validation outcome distribution:',outcome),
+                 main = paste(i18n$t("Upload Validation outcome distribution"),outcome),
                  col = "#76b9f5"))
       )
     },br(),
