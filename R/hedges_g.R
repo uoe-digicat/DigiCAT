@@ -30,7 +30,7 @@ hedges_g <- function(treatment_variable, missing_method, outcome_variable, balan
     N_t <- length(MD[outcome_variable][MD[treatment_variable]==1]) #NB I don't think we want to use length to calculate N more generally ?
     
     ## N control
-    N_c < -length(MD[outcome_variable][MD[treatment_variable]==0])
+    N_c <- length(MD[outcome_variable][MD[treatment_variable]==0])
     
     ## Hedge's g calculation
     g <- mean_diff/(((SD_t^2)*(N_t-1)+(SD_c^2)*(N_c-1))/((N_t+N_c-2)))^0.5
