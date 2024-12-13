@@ -218,6 +218,13 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      
                      ### Approach and PS model: continuous treatment ----
                      if (!any(treatment_variable() %in% categorical_variables())){ ## Continuous treatment approaches
+                       
+                       ## Required to reset radiobutton to unselected
+                       CF_approach_values$approach_selection <- radioButtons(NS(id, "CF_radio"),
+                                                                             label = h4(i18n$t("Approach Choose CA")),
+                                                                             choices = list(),
+                                                                             selected = character(0)
+                       )
 
                        CF_approach_values$approach_selection <- radioButtons(NS(id, "CF_radio"),
                                                                           label = h4(i18n$t("Approach Choose CA")),
@@ -249,8 +256,15 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                      ### Approach and PS model: ordinal treatment ----
                      if (length(unique(na.omit(raw_data()[,treatment_variable()]))) > 2 & any(treatment_variable() %in% categorical_variables())){ ## Ordinal treatment approaches
 
+                       ## Required to reset radiobutton to unselected
+                       CF_approach_values$approach_selection <- radioButtons(NS(id, "CF_radio"),
+                                                                             label = h4(i18n$t("Approach Choose CA")),
+                                                                             choices = list(),
+                                                                             selected = character(0)
+                       )
+                       
                        CF_approach_values$approach_selection <- radioButtons(ns("CF_radio"),
-                                                                            label = h4("1. Choose a Counterfactual Approach:"),
+                                                                             label = h4(i18n$t("Approach Choose CA")),
                                                                             choices = i18n$t("Approach NBP"),
                                                                             selected = character(0))
 

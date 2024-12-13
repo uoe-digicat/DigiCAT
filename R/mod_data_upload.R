@@ -198,13 +198,14 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                    output$no_data_warning <- NULL 
                  })
                  
-                 ## If treatment variable is labelled "treatment" flag and rename
+                 ## If treatment variable is labelled "treatment", rename
                  observeEvent(input$treatment, {
                    
                    if (input$treatment == "treatment"){
                      ## Change treatment variable name in uploaded data
                      data_upload_values$rawdata[, "uploaded_treatment"] <- data_upload_values$rawdata[, input$treatment]
                      data_upload_values$treatment_name <- "uploaded_treatment"
+                     
                    } else{
                      data_upload_values$treatment_name <- input$treatment
                      output$treatment_name_change <- NULL
@@ -225,13 +226,14 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                    
                  })
                  
-                 ## When categorical variable selection changed, update what can be selected as the outcome variable
-                 # observeEvent(input$categorical_vars, {
-                 #     ## Get names of continuous variables
-                 #     continuous_variables <- names(isolate(data_upload_values$rawdata))[!names(isolate(data_upload_values$rawdata)) %in% input$categorical_vars]
-                 #     ## Only allow selection from continuous variables
-                 #     updatePickerInput(session, "outcome", selected=continuous_variables[1], choices = continuous_variables)
-                 # }, ignoreNULL = FALSE, ignoreInit = TRUE)
+                 ## When categorical variable selection changed, raname "treatment" and "weights" if present
+                 observeEvent(input$categorical_vars, {
+                   
+                   data_upload_values$categorical_vars <- input$categorical_vars
+                   data_upload_values$categorical_vars[which("treatment" %in% data_upload_values$categorical_vars)] <- "uploaded_treatment"
+                   data_upload_values$categorical_vars[which("weights" %in% data_upload_values$categorical_vars)] <- "uploaded_weights"
+                   
+                 }, ignoreNULL = FALSE, ignoreInit = TRUE)
                  
                  ## If "survey weight" checked, show picker selection
                  observeEvent(input$survey_weight_checkbox, {
@@ -596,7 +598,7 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                    data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(data_upload_values$treatment_name, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- parseFilePaths(volumes, input$file1)$datapath
-                   data_upload_output$categorical_vars <- input$categorical_vars
+                   data_upload_output$categorical_vars <- data_upload_values$categorical_vars
                    data_upload_output$outcome <- input$outcome
                    data_upload_output$treatment <- data_upload_values$treatment_name
                    data_upload_output$matchvars <- input$matchvars
