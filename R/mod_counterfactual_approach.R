@@ -263,8 +263,15 @@ CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variab
                                                                              selected = character(0)
                        )
 
+                       ## Required to reset radiobutton to unselected
+                       CF_approach_values$approach_selection <- radioButtons(NS(id, "CF_radio"),
+                                                                             label = h4(i18n$t("Approach Choose CA")),
+                                                                             choices = list(),
+                                                                             selected = character(0)
+                       )
+                       
                        CF_approach_values$approach_selection <- radioButtons(ns("CF_radio"),
-                                                                            label = h4("1. Choose a Counterfactual Approach:"),
+                                                                             label = h4(i18n$t("Approach Choose CA")),
                                                                             choices = i18n$t("Approach NBP"),
                                                                             selected = character(0))
 
