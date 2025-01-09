@@ -1,7 +1,6 @@
 
 check_selected_outcome <- function(data, outcome, categorical_variables){
   
-
   ## If no categorical variables, outcome is continuous
   if(is.null(categorical_variables)){
     var_type = 'continuous'
