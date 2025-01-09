@@ -78,7 +78,7 @@ CF_approach_ui <- function(id, i18n) {
   )
 }
 
-CF_approach_server <- function(id, parent, enableLocal, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, analysis_tab, i18n, selected_language) {
+CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment_variable, matching_variables, categorical_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {

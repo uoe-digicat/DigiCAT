@@ -47,7 +47,6 @@ server <- function(input, output, session) {
   
   home_output <- DigiCAT:::home_server("home",
                         parent = session,
-                        enableLocal = enable_local_data,
                         i18n = i18n)
   
   ####
@@ -57,6 +56,7 @@ server <- function(input, output, session) {
   data_upload_output <- DigiCAT:::data_upload_server("data_upload",
                                                      parent = session,
                                                      enableLocal = enable_local_data,
+                                                     docker_version = docker_version_global,
                                                      filePath = file_path_global,
                                                      analysis_tab = reactive(input$`methods-tabs`),
                                                      i18n = i18n,
@@ -68,7 +68,6 @@ server <- function(input, output, session) {
   
   CF_approach_output <- DigiCAT:::CF_approach_server("CF_approach",
                                                      parent = session,
-                                                     enableLocal = enable_local_data,
                                                      raw_data = reactive(data_upload_output$data),
                                                      categorical_variables = reactive(data_upload_output$categorical_vars),
                                                      outcome_variable = reactive(data_upload_output$outcome),

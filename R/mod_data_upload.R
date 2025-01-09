@@ -47,8 +47,12 @@ data_upload_ui <- function(id, i18n) {
                           div(style="margin: 0 auto;",
                               actionButton(NS(id,"Btn_sampledata"), i18n$t("Upload Button example data"), width = "100%"), ## Add button to load sample data
                               p(i18n$t("Upload OR"), style="text-align: center; padding-top:5px;"),
-                              shinyFilesButton(ns("file1"), label = i18n$t("Upload Upload data"), title = NULL, multiple = FALSE)),
-                              #fileInput(ns("file1"), label = NULL, buttonLabel = i18n$t("Upload Upload data"), placeholder = "", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))),  ## Add file input for user to upload own data 
+                              uiOutput(ns("file_upload"))),
+                              
+                              # shinyFilesButton(ns("file1"), label = i18n$t("Upload Upload data"), title = NULL, multiple = FALSE)),
+                              # fileInput(ns("file1"), label = NULL, buttonLabel = i18n$t("Upload Upload data"), placeholder = "", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))),  ## Add file input for user to upload own data 
+                              
+                              
                           ## Add variable inputs
                           pickerInput(inputId=ns("categorical_vars"), label = i18n$t("Upload Select categorical"), multiple = TRUE, options = pickerOptions(title = "---"),
                                       choices=NULL, selected=NULL
@@ -134,7 +138,7 @@ data_upload_ui <- function(id, i18n) {
   )
 }
 
-data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, i18n, selected_language) {
+data_upload_server <- function(id, parent, enableLocal, docker_version, filePath, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -149,9 +153,13 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                    out
                  })
                  
+                 
+                 ## If statment here docerkised version
                  observe({
                    shinyjs::toggleState("file1", enableLocal)
                  })
+                 
+                 
                  if(enableLocal==FALSE){
                    output$local_disabled = renderUI({
                      p("Please install DigiCAT locally to enable file upload. See ",  a(id = "link", "the DigiCAT github page.", href = "https://github.com/uoe-digicat/DigiCAT"))
@@ -161,7 +169,9 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                  ## Define Reactives ----
                  
                  ## Save data, data source and validation as a reactive variable
-                 data_upload_values <- reactiveValues()
+                 data_upload_values <- reactiveValues(
+                   file_upload = NULL
+                 )
                  
                  # Setup Page ----
                  
@@ -290,9 +300,21 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                  })
                  
                  # Data Upload ----
-                 
-                 volumes <-c ("Local" = filePath, "Docker" = "/srv/shiny-server/home")
-                 shinyFileChoose(input, "file1", roots = volumes, filetypes=c('', 'csv'))
+
+                 ## Set up file upload UI depending on whether or not dockerised version being used and if local upload is enabled
+                 if (enableLocal){
+                   if (docker_version){
+    
+                       data_upload_values$file_upload <- shinyFilesButton(NS(id, "file1"), label = i18n$t("Upload Upload data"), title = NULL, multiple = FALSE)
+                       volumes <-c ("Local" = filePath, "Docker" = "/srv/shiny-server/home")
+                       shinyFileChoose(input, "file1", roots = volumes, filetypes=c('', 'csv'))
+    
+                     } else{
+                       data_upload_values$file_upload <- fileInput(NS(id, "file1"), label = NULL, buttonLabel = i18n$t("Upload Upload data"), placeholder = "", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))
+                     }
+                 } else{
+                   data_upload_values$file_upload <- p("Local Data Upload Not Available")
+                 }
                  
                  ## Update app when file uploaded
                  observeEvent(input$file1, {
@@ -320,7 +342,15 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                      
                      error_check <- tryCatch({
                        
-                       data_upload_values$rawdata <- as.data.frame(read_csv(parseFilePaths(volumes, input$file1)$datapath))},
+                       if (docker_version){
+                         data_upload_values$rawdata <- as.data.frame(read_csv(parseFilePaths(volumes, input$file1)$datapath))
+                         data_upload_values$file_path <- parseFilePaths(volumes, input$file1)$datapath ## Save path file
+                         }
+                       else{
+                         data_upload_values$rawdata <- as.data.frame(read_csv(input$file1$datapath))
+                         data_upload_values$file_path <- input$file1$datapath ## Save path file
+                         }
+                       },
   
                        ## If data does not upload, return error message
                        error = function(cond) {
@@ -577,6 +607,7 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                  output$data_validation <- renderUI(p(data_upload_values$validation$print))
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
+                 output$file_upload <- renderUI(data_upload_values$file_upload)
                  
                  ## Return data upload output to server ----
                  
@@ -597,7 +628,7 @@ data_upload_server <- function(id, parent, enableLocal, filePath, analysis_tab, 
                  observe({
                    data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(data_upload_values$treatment_name, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
-                   data_upload_output$file_path <- parseFilePaths(volumes, input$file1)$datapath
+                   data_upload_output$file_path <- data_upload_values$file_path
                    data_upload_output$categorical_vars <- data_upload_values$categorical_vars
                    data_upload_output$outcome <- input$outcome
                    data_upload_output$treatment <- data_upload_values$treatment_name
