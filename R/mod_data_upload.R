@@ -310,7 +310,7 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                        shinyFileChoose(input, "file1", roots = volumes, filetypes=c('', 'csv'))
     
                      } else{
-                       data_upload_values$file_upload <- fileInput(NS(id, "file1"), label = NULL, buttonLabel = i18n$t("Upload Upload data"), placeholder = "", accept=c("text/csv","text/comma-separated-values,text/plain",".csv"))
+                       data_upload_values$file_upload <- fileInput(NS(id, "file1"), label = NULL, buttonLabel = i18n$t("Upload Upload data"), placeholder = "", accept = c(".csv", "text/csv", "application/vnd.ms-excel"))
                      }
                  } else{
                    data_upload_values$file_upload <- p("Local Data Upload Not Available")
