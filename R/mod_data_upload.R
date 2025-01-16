@@ -301,8 +301,6 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                  
                  # Data Upload ----
                  
-                 
-
                  ## Set up file upload UI depending on whether or not dockerised version being used and if local upload is enabled
                  if (enableLocal){
                    if (docker_version){
@@ -346,13 +344,11 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                      error_check <- tryCatch({
                        
                        if (docker_version){
-                         data_upload_values$rawdata <- as.data.frame(read_csv(parseFilePaths(volumes, input$file1)$datapath))
                          data_upload_values$file_path <- parseFilePaths(volumes, input$file1)$datapath ## Save path file
-                         }
-                       else{
-                         data_upload_values$rawdata <- as.data.frame(read_csv(input$file1$datapath))
+                         } else{
                          data_upload_values$file_path <- input$file1$datapath ## Save path file
                          }
+                       data_upload_values$rawdata <- as.data.frame(read_csv(data_upload_values$file_path))
                        },
   
                        ## If data does not upload, return error message
@@ -363,7 +359,7 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                        })
   
                      ## Carry out data checks if no error in data upload and data had been uplaoded
-                     if (!is.null(data_upload_values$rawdata) && error_check != "Error"){
+                     if (all(!grepl("Error:", error_check)) & length(data_upload_values$rawdata)>1){
                        try({
                          
                          ## Show and switch to data tab
