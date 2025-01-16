@@ -300,6 +300,8 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                  })
                  
                  # Data Upload ----
+                 
+                 
 
                  ## Set up file upload UI depending on whether or not dockerised version being used and if local upload is enabled
                  if (enableLocal){
@@ -318,6 +320,7 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                  
                  ## Update app when file uploaded
                  observeEvent(input$file1, {
+                   
                    if (!is.null(input$file1)){
                      
                      # Reset any input errors and hide validation tab
@@ -356,15 +359,15 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                        error = function(cond) {
                          ## Output error message
                          data_upload_values$upload_error <- p(p(paste0("Error: ", conditionMessage(cond)) , style = "color:red"))
-  
+                         return("Error")
                        })
   
                      ## Carry out data checks if no error in data upload and data had been uplaoded
-                     if (all(!grepl("Error:", error_check)) & length(data_upload_values$rawdata)>1){
+                     if (!is.null(data_upload_values$rawdata) && error_check != "Error"){
                        try({
                          
                          ## Show and switch to data tab
-                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = TRUE)
+                         showTab(session = parent, inputId = NS(id,"data_panel"), target = NS(id, "raw_data"), select = T)
   
                          ## Remove data upload error if present
                          data_upload_values$upload_error <- NULL
@@ -603,7 +606,10 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                  
                  ## Pass output to UI ----
                  
-                 output$contents <- DT::renderDataTable({DT::datatable(round(mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x))), 2), options = list(scrollX = TRUE, scrollY = TRUE))})
+                 output$contents <- DT::renderDataTable({
+                   req(data_upload_values$rawdata)
+                   DT::datatable(round(mutate_all(data_upload_values$rawdata, function(x) as.numeric(as.character(x))), 2), options = list(scrollX = TRUE, scrollY = TRUE))
+                   })
                  output$data_validation <- renderUI(p(data_upload_values$validation$print))
                  output$data_upload_rerun_message <- renderUI(data_upload_output$data_upload_rerun_message)
                  output$upload_error <- renderUI(data_upload_values$upload_error)
