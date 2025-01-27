@@ -20,7 +20,7 @@
 #' @param DigiCAT_extracted_outcome_results Extracted outcome model results from tool
 
 get_R_script <- function(
-    ## Data upload
+  ## Data upload
   data_source, 
   file_path = NULL,
   categorical_variables = NULL,
@@ -106,124 +106,143 @@ library(randomForest)"
   }
   
   ## Reduce dataframe to inputted variables ----
-  
   reduce_data_code <- paste0("\n","\n", "## Reduce df to selected columns \n", "df <- df[,unique(c(treatment_variable, outcome_variable, matching_variable, covariates, weighting_var, cluster_var, stratification_var))]")
   
-  ## Create design matrix----
-  ## Code taken from 'create_design.R'
-  
-  if (!is.null(weighting_variable) & is.null(cluster_variable) & is.null(strata_variable)) { # currently as sampling & NR have same workflow, is not controlled by NR = TRUE
-    design_matrix_code <- paste0("\n","\n", "## Create design matrix \n",
-    "data_complete = subset(df, !is.na(df[[weighting_variable]])) # only weighting
-    design_object = svydesign(ids = ~1, 
-                              weights = data_complete[[weighting_variable]], 
-                              data = data_complete)"
-    )
-  }
-  
-  if(!is.null(cluster_variable) & !is.null(weighting_variable) & is.null(strata_variable)){
-
-    design_matrix_code <- paste0("\n","\n", "## Create design matrix \n",
-                                 "data_complete = subset(df, (!is.na(df[[weighting_variable]])) & (!is.na(df[[cluster_variable]]))) # weighting and ids
-    design_object = svydesign(ids = data_complete[[cluster_variable]],  
-                              weights = data_complete[[weighting_variable]], 
-                              data = data_complete) "
-    )
-  }
-  
-  if(!is.null(strata_variable) & is.null(cluster_variable) & !is.null(weighting_variable)){
-    
-    design_matrix_code <- paste0("\n","\n", "## Create design matrix \n",
-                                 "data_complete = subset(df, (!is.na(df[[weighting_variable]])) & (!is.na(df[[strata_variable]]))) # weighting and strata
-    design_object = svydesign(ids = ~1, 
-                              weights = data_complete[[weighting_variable]], 
-                              strata = data_complete[[strata_variable]], 
-                              data = data_complete)"
-    )
-    }
-  
-  if(!is.null(strata_variable) & !is.null(cluster_variable) & !is.null(weighting_variable)){
-    
-    design_matrix_code <- paste0("\n","\n", "## Create design matrix \n",
-                                 "    data_complete = subset(df, (!is.na(df[[weighting_variable]])) & (!is.na(df[[strata_variable]])) & (!is.na(df[[cluster_variable]]))) # all 3
-    tryCatch(
-      expr = {
-        design_object = svydesign(ids = data_complete[[cluster_variable]], 
-                                  weights = data_complete[[weighting_variable]], 
-                                  strata = data_complete[[strata_variable]], 
-                                  data = data_complete) 
-      },
-      error = function(e) {
-        design_object = svydesign(ids = data_complete[[cluster_variable]], 
-                                  weights = data_complete[[weighting_variable]], 
-                                  strata = data_complete[[strata_variable]], 
-                                  data = data_complete, nest = TRUE) 
-      }
-    )"
-    )
-    }
-  if(!is.null(cluster_variable) & is.null(weighting_variable) & is.null(strata_variable)){
-    
-    design_matrix_code <- paste0("\n","\n", "## Create design matrix \n",
-                                 "data_complete = subset(df, !is.na(df[[cluster_variable]])) # ids only
-    design_object = svydesign(ids = data_complete[[cluster_variable]], 
-                              data = data_complete) "
-    )
-  }
-  if(!is.null(strata_variable) & is.null(weighting_variable) & is.null(cluster_variable)){
-    
-    design_matrix_code <- paste0("\n","\n", "## Create design matrix \n",
-                                 "    data_complete = subset(df, !is.na(df[[strata_variable]])) # strata only
-    design_object = svydesign(ids = ~1, 
-                              strata = data_complete[[strata_variable]],
-                              data = data_complete)"
-    )
-  }
-  if(!is.null(strata_variable) & is.null(weighting_variable) & !is.null(cluster_variable)){
-    
-    design_matrix_code <- paste0("\n","\n", "## Create design matrix \n",
-                                 "data_complete = subset(df, (!is.na(df[[strata_variable]])) & (!is.na(df[[cluster_variable]]))) # strata only
-    tryCatch(
-      expr = {
-        design_object = svydesign(ids = data_complete[[cluster_variable]], 
-                                  strata = data_complete[[strata_variable]], 
-                                  data = data_complete) 
-      },
-      error = function(e) {
-        design_object = svydesign(ids = data_complete[[cluster_variable]], 
-                                  strata = data_complete[[strata_variable]], 
-                                  data = data_complete, nest = TRUE) 
-      }
-    )"
-    )
-  }
-  if(is.null(strata_variable) & is.null(weighting_variable) & is.null(cluster_variable)){
-    
-    design_matrix_code <-paste0("\n","\n", "## No design matrix \n")
-  }
-  
-  
-  ## Deal with data missingness----
-  
-  if (missing_method == "complete"){
-    handled_missingness_code <- paste0("\n","\n", 
-                                       "## Handle missingness \n", 
-                                       "handled_missingness <- na.omit(df)")
-  }
-  if (missing_method == "mi"){
-    handled_missingness_code <- paste0("\n","\n", 
-                                       "## Handle missingness \n", 
-                                       "handled_missingness = mice(df, m = 5, maxit = 20,
-                                      method = 'rf')")
-  }
-  if (missing_method == "weighting"){
-    handled_missingness_code <- paste0("\n","\n", 
-                                       "## Handle missingness \n", 
-                                       "handled_missingness = design_object")
-  }
+  ## Factorise categorical variables
+  factorise_categorical_code <- paste0("\n","\n", "## Factorise categorical variables \n", "df[categorical_vars] <- lapply(df[categorical_vars], factor)")
   
   ## Propensity score estimation----
-  ### estimate_model.R----
+  ### handle_missingness.R ----
+  
+  if (missing_method == "complete"){
+    handled_missingness_code <- paste0(
+"\n","\n", 
+"## Handle missingness \n", 
+"handled_missingness <- na.omit(df)
+
+if (!is.null(cluster_variable)) {
+  cluster_formula <- as.formula(paste('~as.numeric(as.character(', cluster_variable, '))'))
+  } else {
+  # Set cluster_formula to ~1 if cluster_variable is not provided
+  cluster_formula <- as.formula('~1')
+  }
+
+# Check if weighting_variable is provided
+if (!is.null(weighting_variable)) {
+  # Convert weighting_variable to a formula
+  weighting_formula <- as.formula(paste('~as.numeric(as.character(', weighting_variable, '))'))
+} else {
+  # Use another variable as the default if weighting_variable is not provided
+  weighting_formula <- NULL
+}
+     
+# Check if strata_variable is provided
+if (!is.null(strata_variable)) {
+ strata_formula <- as.formula(paste('~as.numeric(as.character(', strata_variable, '))'))
+} else {
+ # Set strata_formula to NULL if strata_variable is not provided
+ strata_formula <- NULL
+}
+     
+design_object <- svydesign(ids = cluster_formula,
+                            weights = weighting_formula,
+                            strata = strata_formula,
+                            data = handled_missingness)")
+    }
+  
+  if (missing_method == "mi"){
+    handled_missingness_code <- paste0(
+      
+"\n","\n", 
+"## Handle missingness \n", 
+"## Remove any rows without treatment data
+.data <- .data[!is.na(.data[,treatment_variable]),]
+ 
+ ## Perform MI without treatment
+ handled_missingness = mice(.data, m = 5, maxit = 20,
+                            method = 'rf',
+                            quickpred(.data, exclude = treatment_variable)) # default options
+
+ complete_imps <- complete(handled_missingness, 'all')
+
+ # Check if cluster_variable is provided
+ if (!is.null(cluster_variable)) {
+   cluster_formula <- as.formula(paste('~as.numeric(as.character(', cluster_variable, '))'))
+ } else {
+   # Set cluster_formula to ~1 if cluster_variable is not provided
+   cluster_formula <- as.formula('~1')
+ }
+ 
+ # Check if weighting_variable is provided
+ if (!is.null(weighting_variable)) {
+   # Convert weighting_variable to a formula
+   weighting_formula <- as.formula(paste('~as.numeric(as.character(', weighting_variable, '))'))
+ } else {
+   # Use another variable as the default if weighting_variable is not provided
+  weighting_formula <- NULL
+ }
+ 
+ # Check if strata_variable is provided
+ if (!is.null(strata_variable)) {
+   strata_formula <- as.formula(paste('~as.numeric(as.character(', strata_variable, '))'))
+ } else {
+   # Set strata_formula to NULL if strata_variable is not provided
+   strata_formula <- NULL
+ }
+ 
+ design_object <- svydesign(ids = cluster_formula,
+                                weights = weighting_formula,
+                                strata = strata_formula,
+                                data = imputationList(complete_imps))")
+  }
+  
+  if (missing_method == "weighting"){
+    handled_missingness_code <- paste0(
+      
+"\n","\n", 
+"## Handle missingness \n", 
+"if (!is.null(cluster_variable)) {
+  cluster_formula <- as.formula(paste('~as.numeric(as.character(', cluster_variable, '))'))
+} else {
+  # Set cluster_formula to ~1 if cluster_variable is not provided
+  cluster_formula <- as.formula('~1')
+}
+
+# Check if weighting_variable is provided
+if (!is.null(weighting_variable)) {
+  # Convert weighting_variable to a formula
+  weighting_formula <- as.formula(paste('~as.numeric(as.character(', weighting_variable, '))'))
+} else {
+  # Use another variable as the default if weighting_variable is not provided
+  weighting_formula <- NULL
+}
+
+# Check if strata_variable is provided
+if (!is.null(strata_variable)) {
+  strata_formula <- as.formula(paste('~as.numeric(as.character(', strata_variable, '))'))
+} else {
+  # Set strata_formula to NULL if strata_variable is not provided
+  strata_formula <- NULL
+}
+
+.data = subset(.data, (!is.na(.data[[weighting_variable]])))
+
+design_object <- svydesign(ids = cluster_formula,
+                           weights = weighting_formula,
+                           strata = NULL,
+                           data = .data)
+
+handled_missingness = design_object 
+design_object = design_object")
+  }
+
+handled_missingness_code <- c(handled_missingness_code, "\n\nhandled_missingness_objects[[1]]")
+  
+  ### estimate_model.R ----
+
+
+grep("## Only run if model type given", capture.output(estimate_model), value = T)
+
   propensity_score_model_code <- paste0("\n\n## Get propensity scores")
   
   if (balancing_model != "poly"){
@@ -829,28 +848,29 @@ results_dataframe <- results_dataframe[2,]'
   }
   
   ## Create R script ----
-  r_script <- c(library_code, data_source_code, variable_input_code, reduce_data_code, design_matrix_code, handled_missingness_code, propensity_score_model_code, balancing_code, outcome_model_code)
+  r_script <- c(library_code, data_source_code, variable_input_code, reduce_data_code, factorise_categorical_code, design_matrix_code, handled_missingness_code, propensity_score_model_code, balancing_code, outcome_model_code)
   noquote(capture.output(cat(r_script)))
   
 }
 
-# get_R_script(data_source = "sample", 
-#              file_path = NULL,
-#              categorical_variables = c("Gender", "Reading_age15"),
-#              outcome_variable = "Anxiety_age17",
-#              treatment_variable = "Reading_age15",
-#              matching_variables = names(DigiCAT::zp_eg)[-c(1:3)],
-#              covariates = NULL,
-#              weighting_variable = NULL,
-#              cluster_variable = NULL,
-#              strata_variable = NULL,
-#              CF_approach = "psm",
-#              balancing_model = "glm",
-#              missing_method = "mi",
-#              matching_method = "NN",
-#              matching_ratio = 1,
-#              DigiCAT_balanced_data = ghi,
-#              DigiCAT_extracted_balanced_data = mno$extracted_balanced_data,
-#              DigiCAT_fitted_model = mno$fitted_model,
-#              DigiCAT_extracted_outcome_results  = mno$extracted_outcome_results
-#              )
+get_R_script(data_source = "sample",
+             file_path = NULL,
+             categorical_variables = c("Gender", "Reading_age15"),
+             outcome_variable = "Anxiety_age17",
+             treatment_variable = "Reading_age15",
+             matching_variables = names(DigiCAT::zp_eg)[-c(1:3)],
+             covariates = NULL,
+             weighting_variable = NULL,
+             cluster_variable = NULL,
+             strata_variable = NULL,
+             CF_approach = "psm",
+             balancing_model = "glm",
+             missing_method = "mi",
+             matching_method = "NN",
+             matching_ratio = 1,
+             outcome_formula = "unadjusted",
+             DigiCAT_balanced_data = ghi,
+             DigiCAT_extracted_balanced_data = mno$extracted_balanced_data,
+             DigiCAT_fitted_model = mno$fitted_model,
+             DigiCAT_extracted_outcome_results  = mno$extracted_outcome_results
+             )
