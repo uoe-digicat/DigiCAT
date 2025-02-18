@@ -62,6 +62,7 @@ balance_data <- function(counterfactual_method, treatment_variable, matching_var
 
 balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method, model_type,...){
   
+  ## Balance Data: IPTW
   if (model_type == "gbm"){
     f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
   } else{
@@ -89,6 +90,7 @@ balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_
 
 balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method, model_type, ...){
   
+  ## Balance Data: PSM
   if (model_type == "gbm"){
     f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
   } else{
@@ -120,6 +122,7 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
 
 
 balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_method, model_type,...){ 
+  ## Balance Data: NBP
   if(missing_method == "complete"){
     
     propensity_scores <- PS_estimation_object[[2]]
@@ -131,8 +134,7 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
     #performed_matching$halves <- performed_matching$halves[-(n + 1), ]
     matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-    
-      } 
+    } 
   
   else if(missing_method == "mi"){
     propensity_scores <- PS_estimation_object[[2]]
@@ -164,7 +166,7 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
 
 balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_object, model_type,
                            missing_method,...){
-  
+  ## Balance Data: CBPS
   f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
   
   if(missing_method == "complete"){
@@ -177,13 +179,6 @@ balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_
     balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
                                approach = "within", method = "cbps")
   } 
-  
-  ## Code below not used in tool - check with Helen
-  # else if(missing_method == "weighting"){
-  #   balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables,
-  #                            method = "cbps", ...)
-  # }
-  
   return(balanced_data)
 }
 

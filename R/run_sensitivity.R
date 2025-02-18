@@ -2,18 +2,18 @@
 #' @import rbounds
 #' @import EValue
 
-run_sensitivity <- function(PS_object, balanced_data, missing_method, outcome_variable, sensitivity_type, 
+run_sensitivity <- function(PS_estimation_object, balanced_data, missing_method, outcome_variable, sensitivity_type, 
                             outcome_results, outcome_type,...) { 
   # sensitivity analysis type
   switch(sensitivity_type,
          rosenbaum_sensitivity = { #
-           sensitivity_results = perform_rosenbaum_sensitivity(PS_object, balanced_data, missing_method, outcome_variable, ...)
+           sensitivity_results = perform_rosenbaum_sensitivity(PS_estimation_object, balanced_data, missing_method, outcome_variable, ...)
          },
          PS_calibration = { # may require further upload
-           sensitivity_results = perform_PS_calibration(PS_object, unmeasured_confounder, ...)
+           sensitivity_results = perform_PS_calibration(PS_estimation_object, unmeasured_confounder, ...)
          },
          VW_A_formula = { # may require further tuning/checks
-           sensitivity_results = perform_VW_A_formula(PS_object, balanced_data, missing_method, sensitivity_parameter, ...)
+           sensitivity_results = perform_VW_A_formula(PS_estimation_object, balanced_data, missing_method, sensitivity_parameter, ...)
          },
          VW_Evalue = { # 
            sensitivity_results = perform_VW_Evalue(outcome_results, outcome_type, outcome_variable, missing_method, ...)
@@ -23,11 +23,11 @@ run_sensitivity <- function(PS_object, balanced_data, missing_method, outcome_va
   return(sensitivity_results)
 }
 
-perform_rosenbaum_sensitivity <- function(PS_object, balanced_data, missing_method, outcome_variable, ...) {
+perform_rosenbaum_sensitivity <- function(PS_estimation_object, balanced_data, missing_method, outcome_variable, ...) {
   if (missing_method == "complete") {
     mpairs <- cbind(
-      PS_object$missingness_treated_dataset[row.names(balanced_data$match.matrix), outcome_variable, drop = FALSE],
-      PS_object$missingness_treated_dataset[balanced_data$match.matrix, outcome_variable, drop = FALSE]
+      PS_estimation_object$missingness_treated_dataset[row.names(balanced_data$match.matrix), outcome_variable, drop = FALSE],
+      PS_estimation_object$missingness_treated_dataset[balanced_data$match.matrix, outcome_variable, drop = FALSE]
     )
     
     mpairs <- na.omit(mpairs)
@@ -40,8 +40,8 @@ perform_rosenbaum_sensitivity <- function(PS_object, balanced_data, missing_meth
   } else if (missing_method == "mi") {
    # browser()
     matchit_list <- balanced_data$models
-    imputed_data <- PS_object$missingness_treated_dataset
-    avg_upper_bounds <- numeric(length = PS_object$missingness_treated_dataset$m)  
+    imputed_data <- PS_estimation_object$missingness_treated_dataset
+    avg_upper_bounds <- numeric(length = PS_estimation_object$missingness_treated_dataset$m)  
     
     for (i in seq_along(matchit_list)) {
       match_matrix <- matchit_list[[i]]$match.matrix
@@ -66,8 +66,8 @@ perform_rosenbaum_sensitivity <- function(PS_object, balanced_data, missing_meth
     
   } else if (missing_method == "weighting") {
     mpairs <- cbind(
-      PS_object$missingness_treated_dataset$variables[row.names(balanced_data$match.matrix), outcome_variable, drop = FALSE],
-      PS_object$missingness_treated_dataset$variables[balanced_data$match.matrix, outcome_variable, drop = FALSE]
+      PS_estimation_object$missingness_treated_dataset$variables[row.names(balanced_data$match.matrix), outcome_variable, drop = FALSE],
+      PS_estimation_object$missingness_treated_dataset$variables[balanced_data$match.matrix, outcome_variable, drop = FALSE]
     )
     
     # Remove rows with NA values

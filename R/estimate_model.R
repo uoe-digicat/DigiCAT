@@ -7,6 +7,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
     } else if (model_type == "poly" | model_type == "randomforest"){
       f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
     }
+    ## Formula Defined
   
   switch(model_type, 
          
@@ -44,10 +45,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
          
          poly = {
            if(missing_method == "mi"){
-             
-             # estimated_propensity_model = lapply(complete(handled_missingness, "all"),
-             #                                    function(x) MASS::polr(f, data = x, Hess =T,...))
-             
+
              comp <- mice::complete(handled_missingness, "long", include = TRUE)
              comp[[treatment_variable]] <- as.factor(comp[[treatment_variable]])
              handled_missingness <- as.mids(comp)
@@ -77,9 +75,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            } else if(missing_method == "weighting"){
              handled_missingness[[7]][[treatment_variable]] <- as.factor(handled_missingness[[7]][[treatment_variable]])
              estimated_propensity_model = svyolr(f, design=handled_missingness)
-             
            }
-           
          }
          # lm = {
          #   if(missing_method == "mi"){
@@ -93,7 +89,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
          #   }
          # }
          
-  )} else{ ## If no mpdel given, return empty `estimated_propensity_model` object
+  )} else{ ## If no model given, return empty `estimated_propensity_model` object
     estimated_propensity_model <- NULL
     }
     

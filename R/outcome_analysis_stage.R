@@ -8,7 +8,7 @@
 #' @param outcome_variable Character string matching column name of your outcome variable
 #' @param treatment_variable Character string matching column name of your treatment variable
 #' @param matching_variable Character vector matching column name(s) of your matching variable(s)
-#' @param psmodel_obj Propensity score estimation object
+#' @param PS_estimation_object Propensity score estimation object
 #' @param cluster_variable Character string matching column name of your clustering variable
 #' @param nonresponse_weights Character string matching column name of your non-response weight variable
 #' @param sampling_weights Character string matching column name of your sampling weight variable
@@ -46,22 +46,22 @@
 #' outcome_variable = "Anxiety_age17",
 #' treatment_variable = "Reading_age15",
 #' matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
-#' psmodel_obj = estimates
+#' PS_estimation_object = estimates
 #' )
 
 
 outcome_analysis_stage <- function(balanced_data, counterfactual_method, outcome_variable, outcome_type,
-                                   treatment_variable, matching_variable, covariates = NULL, psmodel_obj,
+                                   treatment_variable, matching_variable, covariates = NULL, PS_estimation_object,
                                    cluster_variable = NULL, weighting_variable = NULL, strata_variable = NULL,
                                    missing_method, outcome_formula,...){
-  extracted_balanced_data <- extract_balanced_data(balanced_data, psmodel_obj, 
+  extracted_balanced_data <- extract_balanced_data(balanced_data, PS_estimation_object, 
                                                    missing_method, weighting_variable,
                                                    counterfactual_method, cluster_variable,
                                                    strata_variable,...)
   fitted_model <- fit_outcome_model(balanced_data,extracted_balanced_data,
                                     outcome_variable, outcome_type, treatment_variable, matching_variable,
                                     covariates, outcome_formula, missing_method,
-                                    psmodel_obj, cluster_variable, weighting_variable,
+                                    PS_estimation_object, cluster_variable, weighting_variable,
                                     strata_variable,
                                     ...) 
   extracted_outcome_results <- extract_outcome_results(fitted_model, missing_method, counterfactual_method, outcome_type = outcome_type,...) # 

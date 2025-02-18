@@ -1,4 +1,4 @@
-extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = NULL,
+extract_balanced_data <- function(balanced_data, PS_estimation_object, missing_method = NULL,
                                   weighting_variable = NULL, counterfactual_method, treatment_variable,
                                   cluster_variable = NULL, strata_variable = NULL,...){
   
@@ -52,13 +52,13 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     return(list(extracted_balanced_data, process = "weighting_psm"))
     
   } else if ( "weightit" %in% class(balanced_data) & missing_method == "complete" & counterfactual_method == "iptw"){
-    psmodel_obj$missingness_treated_dataset = cbind(psmodel_obj$missingness_treated_dataset,balanced_data$weights)
-    colnames(psmodel_obj$missingness_treated_dataset)[colnames(psmodel_obj$missingness_treated_dataset) == "balanced_data$weights"] <- "weights"
-    return(list(psmodel_obj$missingness_treated_dataset, process = "cc_iptw"))
+    PS_estimation_object$missingness_treated_dataset = cbind(PS_estimation_object$missingness_treated_dataset,balanced_data$weights)
+    colnames(PS_estimation_object$missingness_treated_dataset)[colnames(PS_estimation_object$missingness_treated_dataset) == "balanced_data$weights"] <- "weights"
+    return(list(PS_estimation_object$missingness_treated_dataset, process = "cc_iptw"))
     
     
   } else if(missing_method=="weighting" & "weightit" %in% class(balanced_data)){
-    survey_data = psmodel_obj$estimated_propensity_model$survey.design$variables
+    survey_data = PS_estimation_object$estimated_propensity_model$survey.design$variables
     survey_data = cbind(survey_data,balanced_data$weights)
     colnames(survey_data)[colnames(survey_data) == "balanced_data$weights"] <- "weights"
     
@@ -104,7 +104,7 @@ extract_balanced_data <- function(balanced_data, psmodel_obj, missing_method = N
     return(list(extracted_balanced_data, process = "mi_nbp"))
   }
   else if(counterfactual_method == "cbps" & missing_method == "complete"){
-    extracted_balanced_data = cbind(psmodel_obj$missingness_treated_dataset,balanced_data$weights)
+    extracted_balanced_data = cbind(PS_estimation_object$missingness_treated_dataset,balanced_data$weights)
     colnames(extracted_balanced_data)[colnames(extracted_balanced_data) == "balanced_data$weights"] <- "weights"
    return(list(extracted_balanced_data, process = "cc_cbps")) 
   }
