@@ -2,7 +2,7 @@
 fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                               outcome_variable, outcome_type, treatment_variable, matching_variable,
                               covariates = NULL, outcome_formula, missing_method,
-                              psmodel_obj, cluster_variable = NULL, weighting_variable = NULL,
+                              PS_estimation_object, cluster_variable = NULL, weighting_variable = NULL,
                               strata_variable = NULL,
                               ...){
    switch(outcome_formula,
@@ -15,7 +15,7 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                                           treatment_variable,
                                           matching_variable, covariates,
                                           missing_method,
-                                          psmodel_obj, cluster_variable,
+                                          PS_estimation_object, cluster_variable,
                                           weighting_variable,
                                           strata_variable,...)
          },
@@ -27,7 +27,7 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                                                   treatment_variable,
                                                   matching_variable, covariates,
                                                   missing_method,
-                                                  psmodel_obj, cluster_variable,
+                                                  PS_estimation_object, cluster_variable,
                                                   weighting_variable,
                                                   strata_variable,...)
          },
@@ -39,7 +39,7 @@ fit_outcome_model <- function(balanced_data,extracted_balanced_data,
                                                 treatment_variable,
                                                 matching_variable, covariates,
                                                 missing_method,
-                                                psmodel_obj, cluster_variable,
+                                                PS_estimation_object, cluster_variable,
                                                 weighting_variable,
                                                 strata_variable,...)
          },
@@ -55,7 +55,7 @@ outcome_unadjusted <- function(balanced_data,
                                treatment_variable,
                                matching_variable, covariates = NULL,
                                missing_method,
-                               psmodel_obj, cluster_variable = NULL,
+                               PS_estimation_object, cluster_variable = NULL,
                                weighting_variable = NULL,
                                strata_variable = NULL,...){
 
@@ -432,7 +432,7 @@ outcome_matching_variables <- function(balanced_data,
                                        treatment_variable,
                                        matching_variable, covariates = NULL,
                                        missing_method,
-                                       psmodel_obj, cluster_variable = NULL,
+                                       PS_estimation_object, cluster_variable = NULL,
                                        weighting_variable = NULL,
                                        strata_variable = NULL,...){
   
@@ -815,7 +815,7 @@ outcome_marginal_effects <- function(balanced_data,
                                      treatment_variable,
                                      matching_variable, covariates,
                                      missing_method,
-                                     psmodel_obj, cluster_variable = NULL,
+                                     PS_estimation_object, cluster_variable = NULL,
                                      weighting_variable = NULL,
                                      strata_variable = NULL,...){
   if(!is.null(covariates)){
@@ -874,7 +874,7 @@ outcome_marginal_effects <- function(balanced_data,
     model_fit = mice::pool(model_fit)
     
   } else if(extracted_balanced_data$process == "cc_psm"){ 
-    if(!is.null(psmodel_obj$survey_design_object)){
+    if(!is.null(PS_estimation_object$survey_design_object)){
       data_to_use <- extracted_balanced_data[[1]]
       
       # Check if cluster_variable is provided

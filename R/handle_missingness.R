@@ -18,7 +18,6 @@ handle_missingness <- function(.data,missing_method = NULL,
   switch(missing_method, 
          
          complete = {
-           
            handled_missingness = na.omit(.data)
            
            if (!is.null(cluster_variable)) {
@@ -109,7 +108,7 @@ handle_missingness <- function(.data,missing_method = NULL,
         
          
          weighting = {
-           if (!is.null(cluster_variable)) {
+           if (!is.null(cluster_variable)) { 
              cluster_formula <- as.formula(paste("~as.numeric(as.character(", cluster_variable, "))"))
            } else {
              # Set cluster_formula to ~1 if cluster_variable is not provided

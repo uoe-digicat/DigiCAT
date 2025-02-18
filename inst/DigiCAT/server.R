@@ -35,7 +35,6 @@ server <- function(input, output, session) {
   
   ####
   # TCs page ----
-  
   ####
   
   DigiCAT:::TCs_server("TCs",
@@ -61,7 +60,7 @@ server <- function(input, output, session) {
                                                      analysis_tab = reactive(input$`methods-tabs`),
                                                      i18n = i18n,
                                                      selected_language = reactive(input$selected_language))
-  
+  ####
   # Counterfactual Approach ----
   ####
   
@@ -151,8 +150,18 @@ server <- function(input, output, session) {
   
   sensitivity_analysis_output <- DigiCAT:::sensitivity_analysis_server("sensitivity_analysis",  
                                                                        parent = session,
+                                                                       data_source = reactive(data_upload_output$data_source),
+                                                                       raw_data = reactive(data_upload_output$data),
+                                                                       file_path = reactive(data_upload_output$file_path),
+                                                                       categorical_variables = reactive(data_upload_output$categorical_vars),
                                                                        treatment_variable = reactive(data_upload_output$treatment),
                                                                        outcome_variable = reactive(data_upload_output$outcome),
+                                                                       matching_variables = reactive(data_upload_output$matchvars),
+                                                                       covariates = reactive(data_upload_output$covars),
+                                                                       survey_weight_var = reactive(data_upload_output$survey_weight_var),
+                                                                       cluster_var = reactive(data_upload_output$cluster_var),
+                                                                       stratification_var = reactive(data_upload_output$stratification_var),
+                                                                       validation_log = reactive(data_upload_output$validation_log),
                                                                        approach = reactive(CF_approach_output$CF_radio),
                                                                        missingness = reactive(CF_approach_output$missingness),
                                                                        balancing_model = reactive(CF_approach_output$balancing_model),
@@ -164,16 +173,16 @@ server <- function(input, output, session) {
                                                                        matching_ratio = reactive(balancing_output$ratio_radio),
                                                                        estimation_stage_res = reactive(balancing_output$estimation_stage_res),
                                                                        balancing_stage_res = reactive(balancing_output$balancing_stage_res),
+                                                                       common_support_plot = reactive(balancing_output$common_support_plot),
+                                                                       observation_table = reactive(balancing_output$observation_table),
+                                                                       love_plot = reactive(balancing_output$love_plot),
+                                                                       balance_table = reactive(balancing_output$balance_table),
                                                                        outcome_model = reactive(outcome_model_output$outcome_formula),
                                                                        outcome_model_display = reactive(outcome_model_output$outcome_formula_display),
                                                                        outcome_model_res = reactive(outcome_model_output$outcome_model_output),
                                                                        outcome_variable_type = reactive(outcome_model_output$outcome_variable_type),
                                                                        analysis_tab = reactive(input$`methods-tabs`),
                                                                        i18n = i18n,
-                                                                       selected_language = reactive(input$selected_language)
-  )
-  
-  
-  
+                                                                       selected_language = reactive(input$selected_language))
 }
 

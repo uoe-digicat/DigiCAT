@@ -560,27 +560,12 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            treatment_variable = treatment_variable(),
                            matching_variable = matching_variables(),
                            covariates = covariates(),
-                           psmodel_obj = estimation_stage_res(),
+                           PS_estimation_object = estimation_stage_res(),
                            cluster_variable = cluster_var(),
                            missing_method = missingness(),
                            weighting_variable = survey_weight_var(),
                            outcome_formula = outcome_model_values$outcome_model_choice)
                        }
-                       
-                       # if(approach() == "nbp"){
-                       #   outcome_model_values$outcome_analysis_stage_res <- outcome_analysis_stage(
-                       #     balanced_data = balancing_stage_res(), 
-                       #     counterfactual_method = approach(),
-                       #     outcome_variable = outcome_variable(),
-                       #     treatment_variable = treatment_variable(),
-                       #     matching_variable = matching_variables(), 
-                       #     covariates = covariates(),
-                       #     psmodel_obj = estimation_stage_res(),
-                       #     missing_method = missingness(),
-                       #     outcome_formula = outcome_model_values$outcome_model_choice)
-                       #   
-                       #   
-                       # }
                      },
                      
                      ## If outcome model does not run, return error message and enable run button 
@@ -704,35 +689,38 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          ## Enable 'Run' button
                          shinyjs::enable("run_outcome_model_btn")
                          
-                         ## Generate R script
-                         # outcome_model_values$R_script <- get_R_script(
-                         #   data_source = data_source(),
-                         #   file_path = file_path(),
-                         #   categorical_variables = categorical_variables(),
-                         #   outcome_variable = outcome_variable(),
-                         #   treatment_variable = treatment_variable(),
-                         #   matching_variables = matching_variables(),
-                         #   covariates = covariates(),
-                         #   weighting_variable = survey_weight_var(),
-                         #   cluster_variable = cluster_var(),
-                         #   strata_variable = stratification_var(),
-                         #   CF_approach = approach(),
-                         #   missing_method = missingness(),
-                         #   balancing_model = balancing_model(),
-                         #   matching_method = matching_method(),
-                         #   matching_ratio = matching_ratio(),
-                         #   outcome_formula = input$outcome_model_radio,
-                         #   DigiCAT_balanced_data = balancing_stage_res(),
-                         #   DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
-                         #   DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
-                         #   DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results)
+                         # Generate R script
+                         outcome_model_values$R_script <- get_R_script(
+                           data_source = data_source(),
+                           file_path = file_path(),
+                           df = raw_data(),
+                           categorical_variables = categorical_variables(),
+                           outcome_variable = outcome_variable(),
+                           treatment_variable = treatment_variable(),
+                           matching_variables = matching_variables(),
+                           covariates = covariates(),
+                           weighting_variable = survey_weight_var(),
+                           cluster_variable = cluster_var(),
+                           strata_variable = stratification_var(),
+                           counterfactual_method = approach(),
+                           missing_method = missingness(),
+                           balancing_model = balancing_model(),
+                           matching_method = matching_method(),
+                           matching_ratio = matching_ratio(),
+                           outcome_formula = outcome_model_values$outcome_model_choice,
+                           outcome_type = outcome_model_values$outcome_type,
+                           DigiCAT_balanced_data = balancing_stage_res(),
+                           DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
+                           DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
+                           DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results,
+                           include_sensitivity = FALSE)
                          
                          
                          ### Add download buttons ----
                          output$download_options <- renderUI({
                            div(
-                             #downloadButton(session$ns("download_script"), i18n$t("Outcome Button download script"), class = "default_button"),
-                             downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
+                             downloadButton(session$ns("download_script"), i18n$t("Outcome Button download script"), class = "default_button"))
+                             #downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
                          })
                          
                          ## Add sensitivity analysis option ----
