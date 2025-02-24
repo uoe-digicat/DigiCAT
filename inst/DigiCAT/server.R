@@ -170,7 +170,7 @@ server <- function(input, output, session) {
                                                                        balancing_model_display = reactive(CF_approach_output$balancing_model_display),
                                                                        matching_method = reactive(balancing_output$method_radio),
                                                                        matching_method_display = reactive(balancing_output$method_radio_display),
-                                                                       matching_ratio = reactive(balancing_output$ratio_radio),
+                                                                       matching_ratio = reactive(balancing_output$ratio),
                                                                        estimation_stage_res = reactive(balancing_output$estimation_stage_res),
                                                                        balancing_stage_res = reactive(balancing_output$balancing_stage_res),
                                                                        common_support_plot = reactive(balancing_output$common_support_plot),

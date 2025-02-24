@@ -1,5 +1,6 @@
 #'@import rmarkdown
 #'@import knitr
+#'@import kableExtra
 
 outcome_model_ui <- function(id, i18n) {
   ns <- NS(id)
@@ -309,26 +310,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                        strong(p(paste0(i18n$t("Outcome model output CI")," ", round(x["Lower CI (2.5%)"], 4), " to ", round(x["Upper CI (97.5%)"], 4))))
                                      )
                                    }))
-                           
-                           
-                           
-                           # outcome_model_values$output <- p(
-                           #   h4("Model Output"),
-                           #   i18n$t("Outcome model output odds ratio description"),
-                           #   strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
-                           #   br(),
-                           #   i18n$t("Outcome model output binary estimate description"),
-                           #   strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
-                           #   br(),
-                           #   i18n$t("Outcome model output SE description"),
-                           #   strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
-                           #   br(),
-                           #   i18n$t("Outcome model output P description"),
-                           #   strong(p(paste0(i18n$t("Outcome model output P")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], 4)))),
-                           #   br(),
-                           #   strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4))))
-                           # )
-                           
                          }
                          
                        }
@@ -719,8 +700,8 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          ### Add download buttons ----
                          output$download_options <- renderUI({
                            div(
-                             downloadButton(session$ns("download_script"), i18n$t("Outcome Button download script"), class = "default_button"))
-                             #downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
+                             downloadButton(session$ns("download_script"), i18n$t("Outcome Button download script"), class = "default_button"),
+                             downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
                          })
                          
                          ## Add sensitivity analysis option ----
@@ -812,8 +793,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                          output <- render(
                            input = "report_template.Rmd",
                            output_format = "pdf_document",
-                           params = list(n = 100,
-                                         data_name = outcome_model_values$file_path,
+                           params = list(data_name = outcome_model_values$file_path,
                                          data = raw_data(),
                                          outcome_variable = outcome_variable(),
                                          treatment_variable = treatment_variable(),
@@ -834,7 +814,9 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                          balance_table = balance_table(),
                                          outcome_formula = outcome_model_values$outcome_model_choice,
                                          outcome_variable_type = outcome_model_values$outcome_type,
-                                         outcome_res = outcome_model_values$outcome_analysis_stage_res$standardised_format)
+                                         outcome_res = outcome_model_values$outcome_analysis_stage_res$standardised_format,
+                                         include_sensitivity = FALSE,
+                                         sensitivity_results = NULL)
                          )
                          file.copy(output, file)
                        }

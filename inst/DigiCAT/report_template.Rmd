@@ -2,7 +2,6 @@
 title: "DigiCAT Counterfactual Analysis Report"
 output: pdf_document
 params:
-  n: NA
   data_name: NA
   data: NA
   outcome_variable: NA
@@ -25,6 +24,8 @@ params:
   outcome_formula: NA
   outcome_variable_type : NA
   outcome_res: NA
+  include_sensitivity : NA
+  sensitivity_results : NA
 editor_options: 
   markdown: 
     wrap: 72
@@ -89,61 +90,58 @@ if(params$CF_approach == "psm"){
 
 ## IPTW
 if(params$CF_approach == "iptw"){
-  CF_approach <- c(CF_approach, paste0("Inverse probability of treatment weighting (IPTW) was used to carry out counterfactual analysis."))
+  CF_approach <- paste0(CF_approach, paste0("Inverse probability of treatment weighting (IPTW) was used to carry out counterfactual analysis."))
 }
 
 ## NBP
 if(params$CF_approach == "nbp"){
-   CF_approach <- c(CF_approach, paste0("Non-bipartite propensity matching (NBP) was used to carry out counterfactual analysis."))
+   CF_approach <- paste0(CF_approach, paste0("Non-bipartite propensity matching (NBP) was used to carry out counterfactual analysis."))
 }
 
 ## CBPS
 if(params$CF_approach == "cbps"){
-   CF_approach <- c(CF_approach, paste0("Covariate balancing propensity score (CBPS) was used to carry out counterfactual analysis."))
+   CF_approach <- paste0(CF_approach, paste0("Covariate balancing propensity score (CBPS) was used to carry out counterfactual analysis."))
 }
 
 
 ## Data missingness
 ## If no missing data
 if (nrow(params$data) - nrow(na.omit(params$data)) == 0){
-  CF_approach <- c(CF_approach, paste0("No missing data was detected."))
+  CF_approach <- paste0(CF_approach, paste0(" No missing data was detected."))
 }
 
 ## MI
 if ((nrow(params$data) - nrow(na.omit(params$data)) > 0) & params$missingness == "mi"){
-  CF_approach <- c(CF_approach, paste0("Missing data was handled using multiple imputation (m = 5)."))
+  CF_approach <- paste0(CF_approach, paste0(" Missing data was handled using multiple imputation (m = 5)."))
 }
 
 ## CC
 if ((nrow(params$data) - nrow(na.omit(params$data)) > 0) & params$missingness == "complete"){
-  CF_approach <- c(CF_approach, paste0("Missing data was handled using complete case analysis (CCA)."))
+  CF_approach <- paste0(CF_approach, paste0(" Missing data was handled using complete case analysis (CCA)."))
 }
 
 ## weighting
 if ((nrow(params$data) - nrow(na.omit(params$data)) > 0) & params$missingness == "weighting"){
-  CF_approach <- c(CF_approach, paste0("Missing data was handled using non-response weighting."))
+  CF_approach <- paste0(CF_approach, paste0(" Missing data was handled using non-response weighting."))
 }
 
 ## Balancing model
-## glm
-if (params$balancing_model == "glm"){
-  CF_approach <- c(CF_approach, paste0("A logistic regression model was used to calculate propensity scores in the sample."))
+if (!is.null(params$balancing_model)){  ## Only run if balancing model given
+  if (params$balancing_model == "glm"){
+    CF_approach <- paste0(CF_approach, paste0(" A logistic regression model was used to calculate propensity scores in the sample."))
+  }
+  if (params$balancing_model == "gbm"){
+    CF_approach <- paste0(CF_approach, paste0(" Generalized boosted model (GBM) was used to calculate propensity scores in the sample."))
+  }
+  if (params$balancing_model == "rf"){
+    CF_approach <- paste0(CF_approach, paste0(" Random forest was used to calculate propensity scores in the sample."))
+  }
+  if (params$balancing_model == "orl"){
+    CF_approach <- paste0(CF_approach, paste0(" An ordinal logistic regression was used to calculate propensity scores in the sample."))
+  }
+  CF_approach <- paste(CF_approach, collapse = " ")
 }
 
-if (params$balancing_model == "gbm"){
-  CF_approach <- c(CF_approach, paste0("Generalized boosted model (GBM) was used to calculate propensity scores in the sample."))
-}
-
-if (params$balancing_model == "rf"){
-  CF_approach <- c(CF_approach, paste0("Random forest was used to calculate propensity scores in the sample."))
-}
-
-## glm
-if (params$balancing_model == "orl"){
-  CF_approach <- c(CF_approach, paste0("An ordinal logistic regression was used to calculate propensity scores in the sample."))
-}
-
-CF_approach <- paste(CF_approach, collapse = " ")
 ```
 `r CF_approach`
 
@@ -165,7 +163,11 @@ if(params$CF_approach == "nbp"){
   balancing <- paste0("NBP uses 1:1 optimal matching, minimising the overall propensity score differences between matched cases. The algorithm in DigiCAT also disallows matches of pairs that are too dis-similar to help ensure that there is good balance between the groups after matching.")
 }
 
-balancing <- c(balancing ,paste0("Balancing output can be seen below."))
+if(params$CF_approach == "cbps"){
+  balancing <- paste0("CBPS was applied to optimize balance between treatment groups while simultaneously estimating propensity scores. This method improves covariate balance by incorporating balance constraints directly into the propensity score estimation process.")
+}
+
+balancing <- paste0(balancing, paste0("Balancing output can be seen below."))
 
 balancing <- paste(balancing, collapse = " ")
 ```
@@ -174,35 +176,25 @@ balancing <- paste(balancing, collapse = " ")
 
 \newpage
 
-```{r common support description, echo=FALSE, include=TRUE, comment=NA}
-
+```{r common support plot, echo=FALSE, include=TRUE, results='asis'}
 ## Start plot number counter
 plot_number <- 1
-common_support_description <- "Common support for NBP coming soon."
 
 ## Common support graph
-if(params$CF_approach == "psm" | params$CF_approach == "iptw"){
-  common_support_description <- paste0("Plot 1: Common Support Graph")
+if(!is.null(params$common_support_plot)){
   plot_number <- plot_number + 1
+  ## Print the plot
+  print(params$common_support_plot)
+  ## Output plot caption
+  description <- paste0("Plot ", plot_number, ": Common Support Graph")
+  cat("\n", description, "\n")
+  ## Insert a new page
+  cat("\n\\newpage\n")
 }
 
 ```
 
-\begin{gather*}
-`r common_support_description`
-\end{gather*} 
 
-
-```{r common support plot, echo=FALSE, include=TRUE, comment=NA}
-
-## Common support graph
-if(params$balancing_model == "glm"){
-  params$common_support_plot
-}
-
-```
-
-\newpage
 
 ```{r observation table , echo=FALSE, include=TRUE, comment=NA}
 
@@ -213,23 +205,17 @@ knitr::kable(params$observation_table, caption = "Observation table", format="la
 
 \newpage
 
-```{r love plot description, echo=FALSE, include=TRUE, comment=NA}
+```{r love plot, echo=FALSE, include=TRUE, results='asis'}
 
-love_plot_description <- paste0("Plot ", plot_number, ": Love Plot")
-  plot_number <- plot_number + 1
-  
-
-```
-
-\begin{gather*}
-`r love_plot_description`
-\end{gather*} 
-
-```{r love plot, echo=FALSE, include=TRUE, comment=NA}
-
-## Love Plot
-params$love_plot
-
+## Print the plot
+plot_number <- plot_number + 1
+## Print the plot
+print(params$love_plot)
+## Output plot caption
+description <- paste0("Plot ", plot_number, ": Love Plot")
+cat("\n", description, "\n")
+## Insert a new page
+cat("\n\\newpage\n")
 ```
 
 \newpage
@@ -257,50 +243,82 @@ outcome_model <- NULL
 
 if(params$outcome_formula == "unadjusted"){
   
-  if(params$outcome_variable_type == "Continuous"){
+  if(params$outcome_variable_type == "continuous"){
       outcome_model <- paste0("Linear regression without matching variables as covariates was used as the outcome model in this analysis.")
   }   
-  if(params$outcome_variable_type == "Binary"){
+  if(params$outcome_variable_type == "binary"){
           outcome_model <- paste0("Logisitic regression without matching variables as covariates was used as the outcome model in this analysis.")
   }  
-  if(params$outcome_variable_type == "Categorical"){
+  if(params$outcome_variable_type == "categorical"){
               outcome_model <- paste0("Multinomial logistic regression without matching variables as covariates was used as the outcome model in this analysis.")
   }
 }
 
 if(params$outcome_formula == "with_matching_variables"){
   
-  if(params$outcome_variable_type == "Continuous"){
+  if(params$outcome_variable_type == "continuous"){
       outcome_model <- paste0("Linear regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
   }   
-  if(params$outcome_variable_type == "Binary"){
+  if(params$outcome_variable_type == "binary"){
           outcome_model <- paste0("Logisitic regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
   }  
-  if(params$outcome_variable_type == "Categorical"){
+  if(params$outcome_variable_type == "categorical"){
               outcome_model <- paste0("Multinomial logistic regression adjusted for matching variables as covariates was used as the outcome model in this analysis.")
   }
 }
 
 if(params$outcome_formula == "marginal_effects"){
   
-    if(params$outcome_variable_type == "Continuous"){
+    if(params$outcome_variable_type == "continuous"){
       outcome_model <- paste0("Linear regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
   }   
-  if(params$outcome_variable_type == "Binary"){
+  if(params$outcome_variable_type == "binary"){
           outcome_model <- paste0("Logisitic regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
   }  
-  if(params$outcome_variable_type == "Categorical"){
+  if(params$outcome_variable_type == "categorical"){
               outcome_model <- paste0("Multinomial logistic regression adjusted for matching variables as covariates and their interactions with the treatment variable was used as the outcome model of this analysis.")
   }
 }
 
-outcome_model <- paste0(outcome_model," From this analysis, the estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " is ", round(params$outcome_res[1,"Coefficient Estimate"], 4), "(p-value = ", round(params$outcome_res[1,"P-value"], 4), ", standard error = ", round(params$outcome_res[1,"Standard Error"], 4), ", 95% confidence interval:", round(params$outcome_res[1,"Lower CI (2.5%)"], 4), " to ", round(params$outcome_res[1,"Upper CI (97.5%)"], 4),  ")" )
+outcome_model <- paste0(outcome_model," The estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " was ", round(params$outcome_res[1,"Coefficient Estimate"], 4), "(p-value = ", round(params$outcome_res[1,"P-value"], 4), ", standard error = ", round(params$outcome_res[1,"Standard Error"], 4), ", 95% confidence interval:", round(params$outcome_res[1,"Lower CI (2.5%)"], 4), " to ", round(params$outcome_res[1,"Upper CI (97.5%)"], 4),  ")" )
 
 ```
 
 `r outcome_model`
 
 \newpage
+
+```{r sensitivity analysis, echo=FALSE, include=TRUE, results='asis'}
+sensitivity_analysis <- NULL
+
+if (params$include_sensitivity == TRUE){
+  
+  cat("## Sensitivity Analysis")
+  
+  cat("\nTo assess the robustness of our findings to unmeasured confounding, we conducted sensitivity analysis. Rosenbaum’s bounds assess how hidden bias may affect study results using a sensitivity parameter, Gamma. If p-values stay significant at higher Gamma values, results are robust; otherwise, they may be sensitive to hidden bias. DigiCAT computes Gamma from X to Y.\n\n")
+  
+  
+ print(knitr::kable(params$sensitivity_results$RB$bounds, caption = params$sensitivity_results$RB$msg, format="latex") %>%
+    kable_styling(latex_options = "hold_position"))
+  cat("\n")
+  cat("\n", params$sensitivity_results$RB$note, "\n")
+  
+  if(!is.null(params$sensitivity_results$EV)){
+
+  cat("\nE-values estimate the strength an unmeasured confounder must have to negate an observed association. High E-values suggest robust findings\n")
+     
+  print(knitr::kable(temp$sensitivity_results$EV, caption = "E-Values", format="latex") %>%
+    kable_styling(latex_options = "hold_position"))
+    
+  }
+  
+  ## Insert a new page
+  cat("\n\\newpage\n")
+}
+
+
+```
+
 
 ## R package version information:
 
