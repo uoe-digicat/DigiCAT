@@ -163,6 +163,9 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    ## Only run if validation has been carried out
                    if (!is.null(validation_log())){
                      
+                     ## Remove propensity score model
+                     CF_approach_values$model_choice <- NULL
+                     
                      ## Remove approach choice specific descriptions
                      CF_approach_values$balancing_model_description <- NULL
                      CF_approach_values$missingness_description <- NULL
@@ -621,9 +624,6 @@ CF_approach_server <- function(id, parent, raw_data, outcome_variable, treatment
                    if (input$balancing_model_radio == i18n$t("Approach ORL")){
                      CF_approach_values$model_choice <- "poly"
                    }
-                   # if (input$balancing_model_radio == i18n$t("Approach LR")){
-                   #   CF_approach_values$model_choice <- "lm"
-                   # }
                    if (input$CF_radio == i18n$t("Approach CBPS")){
                      ## Remove PS model if approach is CBPS
                      CF_approach_values$model_choice <- NULL

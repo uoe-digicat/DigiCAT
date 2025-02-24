@@ -12,7 +12,7 @@ outcome_analysis_stage(
   treatment_variable,
   matching_variable,
   covariates = NULL,
-  psmodel_obj,
+  PS_estimation_object,
   cluster_variable = NULL,
   weighting_variable = NULL,
   strata_variable = NULL,
@@ -32,7 +32,7 @@ outcome_analysis_stage(
 
 \item{matching_variable}{Character vector matching column name(s) of your matching variable(s)}
 
-\item{psmodel_obj}{Propensity score estimation object}
+\item{PS_estimation_object}{Propensity score estimation object}
 
 \item{cluster_variable}{Character string matching column name of your clustering variable}
 
@@ -77,6 +77,6 @@ missing_method = "complete",
 outcome_variable = "Anxiety_age17",
 treatment_variable = "Reading_age15",
 matching_variable = names(DigiCAT::zp_eg)[-c(2:4)],
-psmodel_obj = estimates
+PS_estimation_object = estimates
 )
 }

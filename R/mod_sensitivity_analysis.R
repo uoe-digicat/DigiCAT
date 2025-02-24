@@ -235,8 +235,8 @@ sensitivity_analysis_server <- function(id, parent, data_source, raw_data, file_
                          ### Add download buttons ----
                          output$download_options <- renderUI({
                            div(
-                             downloadButton(session$ns("download_script"), i18n$t("Outcome Button download script"), class = "default_button"))
-                             #downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
+                             downloadButton(session$ns("download_script"), i18n$t("Outcome Button download script"), class = "default_button"),
+                             downloadButton(session$ns("download_report"), i18n$t("Outcome Button download report"), class = "default_button"))
                          })
                          
                        })
@@ -276,8 +276,7 @@ sensitivity_analysis_server <- function(id, parent, data_source, raw_data, file_
                          output <- render(
                            input = "report_template.Rmd",
                            output_format = "pdf_document",
-                           params = list(n = 100,
-                                         data_name = file_path(),
+                           params = list(data_name = file_path(),
                                          data = raw_data(),
                                          outcome_variable = outcome_variable(),
                                          treatment_variable = treatment_variable(),
@@ -298,7 +297,10 @@ sensitivity_analysis_server <- function(id, parent, data_source, raw_data, file_
                                          balance_table = balance_table(),
                                          outcome_formula = outcome_model(),
                                          outcome_variable_type = outcome_variable_type(),
-                                         outcome_res = outcome_model_res()$standardised_format)
+                                         outcome_res = outcome_model_res()$standardised_format,
+                                         include_sensitivity = TRUE,
+                                         sensitivity_results = list(EV = sensitivity_analysis_values$output_EV, 
+                                                                    RB = sensitivity_analysis_values$output_RB))
                          )
                          file.copy(output, file)
                        }

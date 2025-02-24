@@ -5,7 +5,7 @@
 \title{Sensitivity Analysis}
 \usage{
 run_sensitivity(
-  PS_object,
+  PS_estimation_object,
   balanced_data,
   missing_method,
   outcome_variable,

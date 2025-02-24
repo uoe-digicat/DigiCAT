@@ -57,7 +57,8 @@ Imports:
     patchwork,
     knitr,
     rbounds,
-    EValue
+    EValue,
+    kableExtra
 Remotes:
     imbs-hl/ranger
 Depends: 

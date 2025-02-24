@@ -427,6 +427,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    ## Remove balancing output
                    balancing_values$estimation_stage_res <- NULL
                    balancing_values$balancing_stage_res <- NULL
+                   balancing_values$common_support_plot <- NULL
                    
                    ## Remove general output message
                    balancing_values$output  <- NULL
