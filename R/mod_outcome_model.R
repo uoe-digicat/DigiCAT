@@ -545,7 +545,22 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            cluster_variable = cluster_var(),
                            missing_method = missingness(),
                            weighting_variable = survey_weight_var(),
+                           strata_variable = stratification_var(),
                            outcome_formula = outcome_model_values$outcome_model_choice)
+                       }
+                       
+                       if((approach() == "psm" | approach() == "iptw") & (outcome_model_values$outcome_type == 'binary' | outcome_model_values$outcome_type == 'continuous')){
+                         outcome_model_values$hedges_g <- hedges_g(treatment_variable = treatment_variable(),
+                                  missing_method = missingness(),
+                                  outcome_variable = outcome_variable(),
+                                  balanced_data = balancing_stage_res(),
+                                  outcome_model = outcome_model_values$outcome_analysis_stage_res,
+                                  weighting_variable = survey_weight_var(),
+                                  cluster_variable = cluster_var(),
+                                  strata_variable = stratification_var()
+                         )
+                       } else{
+                         outcome_model_values$hedges_g <- NULL
                        }
                      },
                      
@@ -563,7 +578,72 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                        try({
                          ## Output estimate
                          
-                         if(approach() == "psm" | approach() == "iptw" | approach() == "cbps"){
+                         if(approach() == "psm" | approach() == "iptw"){
+                           
+                           if (outcome_model_values$outcome_type == 'continuous'){
+                             
+                             outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
+                                                              i18n$t("Outcome model output estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output SE description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output P description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output hedges G description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output hedges G")," ", round( outcome_model_values$hedges_g, 4))))
+                             )
+                             
+                           } else if (outcome_model_values$outcome_type == 'binary'){
+                             outcome_model_values$output <- p(h4(i18n$t("Outcome model output")),
+                                                              i18n$t("Outcome model output odds ratio description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"]), 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output binary estimate description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Coefficient Estimate"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output SE description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output SE")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Standard Error"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output P description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output P")," ", format.pval(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"P-value"], eps=.001, digits=3)))),
+                                                              br(),
+                                                              strong(p(paste0(i18n$t("Outcome model output CI")," ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Lower CI (2.5%)"], 4), " to ", round(outcome_model_values$outcome_analysis_stage_res$standardised_format[1,"Upper CI (97.5%)"], 4)))),
+                                                              br(),
+                                                              i18n$t("Outcome model output hedges G description"),
+                                                              strong(p(paste0(i18n$t("Outcome model output hedges G")," ", round( outcome_model_values$hedges_g, 4))))
+                             )
+                           } else if (outcome_model_values$outcome_type == 'categorical'){
+                             
+                             outcome_model_values$output <- p(
+                               apply(outcome_model_values$outcome_analysis_stage_res$standardised_format, 1,
+                                     function(x){
+                                       p(
+                                         h4("Model Output"),
+                                         h3(x['Term']),
+                                         i18n$t("Outcome model output odds ratio description"),
+                                         strong(p(paste0(i18n$t("Outcome model output odds ratio"), " ", round(exp(as.numeric(x["Coefficient Estimate"])), 4)))),
+                                         br(),
+                                         i18n$t("Outcome model output binary estimate description"),
+                                         strong(p(paste0(i18n$t("Outcome model output binary estimate"), " ", round(as.numeric(x["Coefficient Estimate"]), 4)))),
+                                         br(),
+                                         i18n$t("Outcome model output SE description"),
+                                         strong(p(paste0(i18n$t("Outcome model output SE")," ", round(as.numeric(x["Standard Error"]), 4)))),
+                                         br(),
+                                         i18n$t("Outcome model output P description"),
+                                         strong(p(paste0(i18n$t("Outcome model output P")," ", round(as.numeric(x["P-value"]), 4)))),
+                                         br(),
+                                         strong(p(paste0(i18n$t("Outcome model output CI")," ", round(as.numeric(x["Lower CI (2.5%)"]), 4), " to ", round(as.numeric(x["Upper CI (97.5%)"]), 4))))
+                                       )
+                                     }))
+                           }
+                         }
+                         
+                         if(approach() == "cbps"){
                            
                            if (outcome_model_values$outcome_type == 'continuous'){
                              
@@ -622,8 +702,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                        )
                                      }))
                            }
-                           
-                           
                          }
                          
                          if(approach() == "nbp"){
@@ -694,6 +772,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                            DigiCAT_extracted_balanced_data = outcome_model_values$outcome_analysis_stage_res$extracted_balanced_data,
                            DigiCAT_fitted_model = outcome_model_values$outcome_analysis_stage_res$fitted_model,
                            DigiCAT_extracted_outcome_results = outcome_model_values$outcome_analysis_stage_res$extracted_outcome_results,
+                           DigiCAT_extracted_hedges_g = outcome_model_values$hedges_g,
                            include_sensitivity = FALSE)
                          
                          
@@ -815,6 +894,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                          outcome_formula = outcome_model_values$outcome_model_choice,
                                          outcome_variable_type = outcome_model_values$outcome_type,
                                          outcome_res = outcome_model_values$outcome_analysis_stage_res$standardised_format,
+                                         hedges_g = outcome_model_values$hedges_g,
                                          include_sensitivity = FALSE,
                                          sensitivity_results = NULL)
                          )
@@ -854,6 +934,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                    outcome_model_output$outcome_formula_display  <-  input$outcome_model_radio
                    outcome_model_output$outcome_formula <-  outcome_model_values$outcome_model_choice
                    outcome_model_output$outcome_model_output <- outcome_model_values$outcome_analysis_stage_res
+                   outcome_model_output$outcome_hedges_g <- outcome_model_values$hedges_g
                    outcome_model_output$outcome_variable_type <- outcome_model_values$outcome_type
                  })
                  

@@ -321,6 +321,8 @@ Outcome model output SE,Standard Error:,Temp
 Outcome model output P description,"In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect or relationship in the data.",Temp
 Outcome model output P,P-value:,Temp
 Outcome model output CI,95% Confidence Interval:,Temp
+Outcome model output hedges G,Hedge’s G:,
+Outcome model output hedges G description,"Hedges’ g is an effect size measure that quantifies the difference between a treatment and control group while accounting for sample size differences. It is calculated by dividing the mean difference between groups by a pooled standard deviation, providing a standardized measure that allows comparisons across studies, regardless of measurement scale or treatment type.",
 Outcome model output change,Note: Changing this parameter will require the outcome model to be rerun along with all subsequent steps.,Temp
 Outcome Button Run,Run,Temp
 Outcome Button download report,Download Report,Temp
