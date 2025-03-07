@@ -24,6 +24,7 @@ params:
   outcome_formula: NA
   outcome_variable_type : NA
   outcome_res: NA
+  hedges_g: NA
   include_sensitivity : NA
   sensitivity_results : NA
 editor_options: 
@@ -280,11 +281,19 @@ if(params$outcome_formula == "marginal_effects"){
   }
 }
 
+if (!is.null(params$hedges_g)){
+  hedges_g <- paste0("Effect size measured using Hedge's g was ", round(params$hedges_g, digits = 4), ".")
+} else{
+  hedges_g <- NULL
+}
+
+
 outcome_model <- paste0(outcome_model," The estimated effect of ", params$treatment_variable, " on ", params$outcome_variable, " was ", round(params$outcome_res[1,"Coefficient Estimate"], 4), "(p-value = ", round(params$outcome_res[1,"P-value"], 4), ", standard error = ", round(params$outcome_res[1,"Standard Error"], 4), ", 95% confidence interval:", round(params$outcome_res[1,"Lower CI (2.5%)"], 4), " to ", round(params$outcome_res[1,"Upper CI (97.5%)"], 4),  ")" )
 
 ```
 
 `r outcome_model`
+`r hedges_g`
 
 \newpage
 

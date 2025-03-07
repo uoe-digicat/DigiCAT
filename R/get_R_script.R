@@ -19,6 +19,7 @@
 #' @param DigiCAT_balanced_data Balanced data object from tool
 #' @param DigiCAT_extracted_balanced_data Balanced data object from tool extracted for outcome model run
 #' @param DigiCAT_fitted_model Fitted outcome model from tool
+#' @param DigiCAT_extracted_hedges_g Hedges g from tool
 #' @param DigiCAT_extracted_outcome_results Extracted outcome model results from tool
 #' @param include_sensitivity Include sensitivity analysis in script: `TRUE` or `FALSE`
 
@@ -50,6 +51,7 @@ get_R_script <- function(
   DigiCAT_extracted_balanced_data,
   DigiCAT_fitted_model,
   DigiCAT_extracted_outcome_results,
+  DigiCAT_extracted_hedges_g,
   include_sensitivity){
   
   ## Define function to extract lines from existing code
@@ -839,7 +841,7 @@ library(EValue)"
           function_name = outcome_marginal_effects,
           start_pattern = '} else if(extracted_balanced_data$process == "cc_psm"){ ',
           end_pattern = '} else if (extracted_balanced_data$process == "mi_iptw"){',
-          add_lines = -2,
+          add_lines = -1,
           skip_lines = 1
         )
       )
@@ -1215,6 +1217,48 @@ library(EValue)"
       skip_lines = 0,
       result_variable = "outcome_results")
   )
+  
+  ### hedges_g()----
+  
+  if(!is.null(DigiCAT_extracted_hedges_g)){
+    
+    if(missing_method == "complete"){
+      outcome_model_code <- c(
+        outcome_model_code,
+        paste("### Hedge's g----\n"),
+        extract_lines_between_patterns(
+          function_name = hedges_g,
+          start_pattern = 'if(missing_method == "complete"){',
+          end_pattern = 'g <- mean_diff / sqrt(pooled_variance)',
+          add_lines = 0,
+          skip_lines = 1)
+      )
+    }
+    if(missing_method == "mi"){
+      outcome_model_code <- c(
+        outcome_model_code,
+        paste("### Hedge's g----\n"),
+        extract_lines_between_patterns(
+          function_name = hedges_g,
+          start_pattern = 'if (missing_method == "mi") {',
+          end_pattern = 'g <- mean_diff / pooled_SD',
+          add_lines = 0,
+          skip_lines = 1)
+      )
+    }
+    if(missing_method == "weighting"){
+      outcome_model_code <- c(
+        outcome_model_code,
+        paste("### Hedge's g----\n"),
+        extract_lines_between_patterns(
+          function_name = hedges_g,
+          start_pattern = 'if(missing_method == "weighting"){',
+          end_pattern = 'g <- mean_diff / sqrt(pooled_variance)',
+          add_lines = 0,
+          skip_lines = 1)
+      )
+    }
+  }
   
   ## Sensitivity analysis ----
   ### run_sensitivity() ----

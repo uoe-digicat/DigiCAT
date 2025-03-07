@@ -59,7 +59,7 @@ sensitivity_analysis_ui <- function(id, i18n) {
   )
 }
 
-sensitivity_analysis_server <- function(id, parent, data_source, raw_data, file_path, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, matching_method, matching_method_display, matching_ratio, estimation_stage_res, balancing_stage_res, common_support_plot, observation_table, love_plot, balance_table, outcome_model, outcome_model_display, outcome_model_res, outcome_variable_type, analysis_tab, i18n, selected_language) {
+sensitivity_analysis_server <- function(id, parent, data_source, raw_data, file_path, categorical_variables, outcome_variable, treatment_variable, matching_variables, covariates, survey_weight_var, cluster_var, stratification_var, validation_log, approach, missingness, balancing_model, approach_display, missingness_display, balancing_model_display, matching_method, matching_method_display, matching_ratio, estimation_stage_res, balancing_stage_res, common_support_plot, observation_table, love_plot, balance_table, outcome_model, outcome_model_display, outcome_model_res, outcome_hedges_g, outcome_variable_type, analysis_tab, i18n, selected_language) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -228,6 +228,7 @@ sensitivity_analysis_server <- function(id, parent, data_source, raw_data, file_
                            outcome_type = outcome_variable_type(),
                            DigiCAT_balanced_data = balancing_stage_res(),
                            DigiCAT_extracted_balanced_data = outcome_model_res()$extracted_balanced_data,
+                           DigiCAT_extracted_hedges_g = outcome_hedges_g(),
                            DigiCAT_fitted_model = outcome_model_res()$fitted_model,
                            DigiCAT_extracted_outcome_results = outcome_model_res()$extracted_outcome_results,
                            include_sensitivity = TRUE)
@@ -298,6 +299,7 @@ sensitivity_analysis_server <- function(id, parent, data_source, raw_data, file_
                                          outcome_formula = outcome_model(),
                                          outcome_variable_type = outcome_variable_type(),
                                          outcome_res = outcome_model_res()$standardised_format,
+                                         hedges_g = outcome_hedges_g(),
                                          include_sensitivity = TRUE,
                                          sensitivity_results = list(EV = sensitivity_analysis_values$output_EV, 
                                                                     RB = sensitivity_analysis_values$output_RB))

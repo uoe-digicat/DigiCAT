@@ -65,12 +65,12 @@ hedges_g <- function(treatment_variable,
     
     # Get SD of outcome in treatment group
     treatment_data <- subset(svy_design, get(treatment_variable) == 1)
-    f <- paste0(" ~ ", outcome_variable)
+    f <- paste0(" ~ as.numeric(as.character(", outcome_variable, "))")
     SD_t <- sqrt(svyvar(as.formula(f), design = treatment_data)[1])
     
     # Get SD of outcome in control group
     control_data <- subset(svy_design, get(treatment_variable) == 0)
-    f <- paste0(" ~ ", outcome_variable)
+    f <- paste0(" ~ as.numeric(as.character(", outcome_variable, "))")
     SD_c <- sqrt(svyvar(as.formula(f), design = control_data)[1])
     
     # Get N treat and N control (effective sample sizes)

@@ -913,10 +913,13 @@ outcome_marginal_effects <- function(balanced_data,
         model_fit = svyglm(model_formula, design = updated_design, family = 'binomial')
       }
       
-      model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable,
-                                                   vcov = ~subclass,
+      model_fit = marginaleffects::avg_comparisons(model_fit, 
+                                                   variables = treatment_variable,
+                                                   vcov = ~subclass, 
+                                                   wts = "weights",
                                                    newdata = subset(extracted_balanced_data[[1]], 
-                                                                    extracted_balanced_data[[1]][[treatment_variable]] == 1))
+                                                                    extracted_balanced_data[[1]][[treatment_variable]] == 1)
+                                                   )
       
     }else{
       if (outcome_type == 'continuous'){

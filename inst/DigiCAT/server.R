@@ -180,6 +180,7 @@ server <- function(input, output, session) {
                                                                        outcome_model = reactive(outcome_model_output$outcome_formula),
                                                                        outcome_model_display = reactive(outcome_model_output$outcome_formula_display),
                                                                        outcome_model_res = reactive(outcome_model_output$outcome_model_output),
+                                                                       outcome_hedges_g = reactive(outcome_model_output$outcome_hedges_g),
                                                                        outcome_variable_type = reactive(outcome_model_output$outcome_variable_type),
                                                                        analysis_tab = reactive(input$`methods-tabs`),
                                                                        i18n = i18n,
