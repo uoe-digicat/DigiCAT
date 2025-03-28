@@ -304,21 +304,19 @@ if (params$include_sensitivity == TRUE){
   
   cat("## Sensitivity Analysis")
   
-  cat("\nTo assess the robustness of our findings to unmeasured confounding, we conducted sensitivity analysis. Rosenbaum’s bounds assess how hidden bias may affect study results using a sensitivity parameter, Gamma. If p-values stay significant at higher Gamma values, results are robust; otherwise, they may be sensitive to hidden bias. DigiCAT computes Gamma from X to Y.\n\n")
+  cat("\nTo assess the robustness of our findings to unmeasured confounding, we conducted sensitivity analysis. E-values estimate the strength an unmeasured confounder must have to negate an observed association. High E-values suggest robust findings\n" )
   
-  
- print(knitr::kable(params$sensitivity_results$RB$bounds, caption = params$sensitivity_results$RB$msg, format="latex") %>%
+  print(knitr::kable(params$sensitivity_results$EV, caption = "E-Values", format="latex") %>%
     kable_styling(latex_options = "hold_position"))
-  cat("\n")
-  cat("\n", params$sensitivity_results$RB$note, "\n")
-  
-  if(!is.null(params$sensitivity_results$EV)){
 
-  cat("\nE-values estimate the strength an unmeasured confounder must have to negate an observed association. High E-values suggest robust findings\n")
-     
-  print(knitr::kable(temp$sensitivity_results$EV, caption = "E-Values", format="latex") %>%
-    kable_styling(latex_options = "hold_position"))
+  if(!is.null(params$sensitivity_results$RB)){
+  
+  cat("\nRosenbaum’s bounds assess how hidden bias may affect study results using a sensitivity parameter, Gamma. If p-values stay significant at higher Gamma values, results are robust; otherwise, they may be sensitive to hidden bias. DigiCAT computes Gamma from X to Y.\n")
     
+    print(knitr::kable(params$sensitivity_results$RB$bounds, caption = params$sensitivity_results$RB$msg, format="latex") %>%
+            kable_styling(latex_options = "hold_position"))
+    cat("\n")
+    cat("\n", params$sensitivity_results$RB$note, "\n")
   }
   
   ## Insert a new page
