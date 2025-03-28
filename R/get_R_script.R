@@ -448,7 +448,7 @@ library(EValue)"
       extract_lines_between_patterns(
         function_name = extract_balanced_data,
         start_pattern = '} else if ( "weightit" %in% class(balanced_data) & missing_method == "complete" & counterfactual_method == "iptw"){',
-        end_pattern = 'return(list(psmodel_obj$missingness_treated_dataset, process = "cc_iptw"))',
+        end_pattern = 'return(list(PS_estimation_object$missingness_treated_dataset, process = "cc_iptw"))',
         add_lines = 0,
         skip_lines = 1,
         result_variable = "extracted_balanced_data")
@@ -1267,45 +1267,46 @@ library(EValue)"
   
   if(include_sensitivity){
     
-    sensitivity_analysis_code <- c(sensitivity_analysis_code, "### Rosenbaum’s Bounds ----")
-    if(missing_method == "complete"){
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_rosenbaum_sensitivity,
-          start_pattern = 'if (missing_method == "complete") {',
-          end_pattern = 'sensitivity_result <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2]) # default Gamma and GammaInc = 6 & 1',
-          skip_lines = 1,
-          add_lines = 0,
-          sub_string = c("sensitivity_result", "sensitivity_result_RB"))
-      )
-    }
-    if(missing_method == "mi"){
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_rosenbaum_sensitivity,
-          start_pattern = ' } else if (missing_method == "mi") {',
-          end_pattern = 'sensitivity_result$bounds$`Upper bound` <- avg_upper_bounds',
-          skip_lines = 1,
-          add_lines = 0,
-          sub_string = c("sensitivity_result", "sensitivity_result_RB"))
-      )
-    }
-    if(missing_method == "weighting"){
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_rosenbaum_sensitivity,
-          start_pattern = '} else if (missing_method == "weighting") {',
-          end_pattern = 'return(NULL)',
-          skip_lines = 1,
-          add_lines = 1,
-          sub_string = c("sensitivity_result", "sensitivity_result_RB"))
+    if(counterfactual_method == "psm"){
+    
+      sensitivity_analysis_code <- c(sensitivity_analysis_code, "### Rosenbaum’s Bounds ----")
+      if(missing_method == "complete"){
+        sensitivity_analysis_code <- c(
+          sensitivity_analysis_code,
+          extract_lines_between_patterns(
+            function_name = perform_rosenbaum_sensitivity,
+            start_pattern = 'if (missing_method == "complete") {',
+            end_pattern = 'sensitivity_result <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2]) # default Gamma and GammaInc = 6 & 1',
+            skip_lines = 1,
+            add_lines = 0,
+            sub_string = c("sensitivity_result", "sensitivity_result_RB"))
         )
+      }
+      if(missing_method == "mi"){
+        sensitivity_analysis_code <- c(
+          sensitivity_analysis_code,
+          extract_lines_between_patterns(
+            function_name = perform_rosenbaum_sensitivity,
+            start_pattern = ' } else if (missing_method == "mi") {',
+            end_pattern = 'sensitivity_result$bounds$`Upper bound` <- avg_upper_bounds',
+            skip_lines = 1,
+            add_lines = 0,
+            sub_string = c("sensitivity_result", "sensitivity_result_RB"))
+        )
+      }
+      if(missing_method == "weighting"){
+        sensitivity_analysis_code <- c(
+          sensitivity_analysis_code,
+          extract_lines_between_patterns(
+            function_name = perform_rosenbaum_sensitivity,
+            start_pattern = '} else if (missing_method == "weighting") {',
+            end_pattern = 'return(NULL)',
+            skip_lines = 1,
+            add_lines = 1,
+            sub_string = c("sensitivity_result", "sensitivity_result_RB"))
+          )
+      }
     }
-  
-  if(counterfactual_method == "psm"){
     
     if(missing_method == "complete"){
       sensitivity_analysis_code <- c(sensitivity_analysis_code, "### E-value ----")
@@ -1320,7 +1321,6 @@ library(EValue)"
           sub_string = c("sensitivity_result", "sensitivity_result_EV"))
       )
       }
-    }
   } else{
     sensitivity_analysis_code <- ""
   }
@@ -1330,27 +1330,29 @@ library(EValue)"
   noquote(capture.output(cat(r_script, sep = "\n")))
 }
 
-# get_R_script(data_source = "sample"
-#              file_path = NULL
-#              df = DigiCAT::zp_eg
-#              categorical_variables = c("Gender", "Reading_age15")
-#              outcome_variable = "Anxiety_age17"
-#              treatment_variable = "Reading_age15"
-#              matching_variables = names(DigiCAT::zp_eg)[-c(1:3)]
-#              covariates = NULL
-#              weighting_variable = "Gender"
-#              cluster_variable = NULL
-#              strata_variable = NULL
-#              counterfactual_method = "psm"
-#              balancing_model = "glm"
-#              missing_method = "mi"
-#              matching_method = "NN"
-#              matching_ratio = 1
-#              outcome_formula = "unadjusted"
-#              outcome_type = "continuous"
-#              DigiCAT_balanced_data = ghi
-#              DigiCAT_extracted_balanced_data = mno$extracted_balanced_data
-#              DigiCAT_fitted_model = mno$fitted_model
-#              DigiCAT_extracted_outcome_results  = mno$extracted_outcome_results
-#              DigiCAT_sensitivity_results = xyz
+# get_R_script(data_source = "sample",
+#              file_path = NULL,
+#              df = DigiCAT::zp_eg,
+#              categorical_variables = c("Gender", "Reading_age15"),
+#              outcome_variable = "Anxiety_age17",
+#              treatment_variable = "Reading_age15",
+#              matching_variables = names(DigiCAT::zp_eg)[-c(1:3)],
+#              covariates = NULL,
+#              weighting_variable = NULL,
+#              cluster_variable = NULL,
+#              strata_variable = NULL,
+#              counterfactual_method = "iptw",
+#              balancing_model = "glm",
+#              missing_method = "complete",
+#              # matching_method = "NN",
+#              # matching_ratio = 1,
+#              outcome_formula = "unadjusted",
+#              outcome_type = "continuous",
+#              DigiCAT_balanced_data = ghi,
+#              DigiCAT_extracted_balanced_data = mno$extracted_balanced_data,
+#              DigiCAT_fitted_model = mno$fitted_model,
+#              DigiCAT_extracted_outcome_results  = mno$extracted_outcome_results,
+#              DigiCAT_extracted_hedges_g = rst,
+#              include_sensitivity = T
 #              )
+# 
