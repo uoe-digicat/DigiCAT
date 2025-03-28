@@ -554,7 +554,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                   missing_method = missingness(),
                                   outcome_variable = outcome_variable(),
                                   balanced_data = balancing_stage_res(),
-                                  outcome_model = outcome_model_values$outcome_analysis_stage_res,
+                                  outcome_results = outcome_model_values$outcome_analysis_stage_res,
                                   weighting_variable = survey_weight_var(),
                                   cluster_variable = cluster_var(),
                                   strata_variable = stratification_var()

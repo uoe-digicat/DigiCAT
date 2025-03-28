@@ -1267,45 +1267,46 @@ library(EValue)"
   
   if(include_sensitivity){
     
-    sensitivity_analysis_code <- c(sensitivity_analysis_code, "### Rosenbaum’s Bounds ----")
-    if(missing_method == "complete"){
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_rosenbaum_sensitivity,
-          start_pattern = 'if (missing_method == "complete") {',
-          end_pattern = 'sensitivity_result <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2]) # default Gamma and GammaInc = 6 & 1',
-          skip_lines = 1,
-          add_lines = 0,
-          sub_string = c("sensitivity_result", "sensitivity_result_RB"))
-      )
-    }
-    if(missing_method == "mi"){
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_rosenbaum_sensitivity,
-          start_pattern = ' } else if (missing_method == "mi") {',
-          end_pattern = 'sensitivity_result$bounds$`Upper bound` <- avg_upper_bounds',
-          skip_lines = 1,
-          add_lines = 0,
-          sub_string = c("sensitivity_result", "sensitivity_result_RB"))
-      )
-    }
-    if(missing_method == "weighting"){
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_rosenbaum_sensitivity,
-          start_pattern = '} else if (missing_method == "weighting") {',
-          end_pattern = 'return(NULL)',
-          skip_lines = 1,
-          add_lines = 1,
-          sub_string = c("sensitivity_result", "sensitivity_result_RB"))
+    if(counterfactual_method == "psm"){
+    
+      sensitivity_analysis_code <- c(sensitivity_analysis_code, "### Rosenbaum’s Bounds ----")
+      if(missing_method == "complete"){
+        sensitivity_analysis_code <- c(
+          sensitivity_analysis_code,
+          extract_lines_between_patterns(
+            function_name = perform_rosenbaum_sensitivity,
+            start_pattern = 'if (missing_method == "complete") {',
+            end_pattern = 'sensitivity_result <- rbounds::psens(x = mpairs[, 1], y = mpairs[, 2]) # default Gamma and GammaInc = 6 & 1',
+            skip_lines = 1,
+            add_lines = 0,
+            sub_string = c("sensitivity_result", "sensitivity_result_RB"))
         )
+      }
+      if(missing_method == "mi"){
+        sensitivity_analysis_code <- c(
+          sensitivity_analysis_code,
+          extract_lines_between_patterns(
+            function_name = perform_rosenbaum_sensitivity,
+            start_pattern = ' } else if (missing_method == "mi") {',
+            end_pattern = 'sensitivity_result$bounds$`Upper bound` <- avg_upper_bounds',
+            skip_lines = 1,
+            add_lines = 0,
+            sub_string = c("sensitivity_result", "sensitivity_result_RB"))
+        )
+      }
+      if(missing_method == "weighting"){
+        sensitivity_analysis_code <- c(
+          sensitivity_analysis_code,
+          extract_lines_between_patterns(
+            function_name = perform_rosenbaum_sensitivity,
+            start_pattern = '} else if (missing_method == "weighting") {',
+            end_pattern = 'return(NULL)',
+            skip_lines = 1,
+            add_lines = 1,
+            sub_string = c("sensitivity_result", "sensitivity_result_RB"))
+          )
+      }
     }
-  
-  if(counterfactual_method == "psm"){
     
     if(missing_method == "complete"){
       sensitivity_analysis_code <- c(sensitivity_analysis_code, "### E-value ----")
@@ -1320,7 +1321,6 @@ library(EValue)"
           sub_string = c("sensitivity_result", "sensitivity_result_EV"))
       )
       }
-    }
   } else{
     sensitivity_analysis_code <- ""
   }
@@ -1353,6 +1353,6 @@ library(EValue)"
 #              DigiCAT_fitted_model = mno$fitted_model,
 #              DigiCAT_extracted_outcome_results  = mno$extracted_outcome_results,
 #              DigiCAT_extracted_hedges_g = rst,
-#              include_sensitivity = F
+#              include_sensitivity = T
 #              )
-
+# 
