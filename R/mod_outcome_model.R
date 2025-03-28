@@ -554,7 +554,7 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                                   missing_method = missingness(),
                                   outcome_variable = outcome_variable(),
                                   balanced_data = balancing_stage_res(),
-                                  outcome_model = outcome_model_values$outcome_analysis_stage_res,
+                                  outcome_results = outcome_model_values$outcome_analysis_stage_res,
                                   weighting_variable = survey_weight_var(),
                                   cluster_variable = cluster_var(),
                                   strata_variable = stratification_var()
@@ -820,9 +820,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      
                      ## Remove download button
                      output$download_options <- NULL
-                     
-                     ## Remove sensitivity analysis button
-                     output$sensitivity_analysis_button <- NULL
                      
                      ## Hide sensitivity analysis tab and button
                      hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
