@@ -821,9 +821,6 @@ outcome_model_server <- function(id, parent, data_source, file_path, raw_data, c
                      ## Remove download button
                      output$download_options <- NULL
                      
-                     ## Remove sensitivity analysis button
-                     output$sensitivity_analysis_button <- NULL
-                     
                      ## Hide sensitivity analysis tab and button
                      hideTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "sensitivity_analysis"))
                      showTab(session = parent, inputId = NS(id,"results_panel"), target = NS(id, "outcome_model_results"), select = TRUE)

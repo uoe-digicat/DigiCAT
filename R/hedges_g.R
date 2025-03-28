@@ -4,7 +4,7 @@
 #' @param outcome_variable Name of outcome variable
 #' @param missing_method 
 #' @param balanced_data Balanced data object
-#' @param outcome_model Outcome model object 
+#' @param outcome_results Outcome model object 
 #' @param weighting_variable Character string matching column name of your weighting variable
 #' @param cluster_variable Character string matching column name of your clustering variable
 #' @param strata_variable Character string matching column name of your stratification variable
@@ -19,7 +19,7 @@ hedges_g <- function(treatment_variable,
                      missing_method, 
                      outcome_variable, 
                      balanced_data, 
-                     outcome_model,  
+                     outcome_results,  
                      weighting_variable = NULL, 
                      cluster_variable = NULL, 
                      strata_variable = NULL){
@@ -49,7 +49,7 @@ hedges_g <- function(treatment_variable,
       ids = cluster_formula,
       strata = strata_formula,
       weights = weighting_formula,
-      data = outcome_model$extracted_balanced_data[[1]]
+      data = outcome_results$extracted_balanced_data[[1]]
     )
     
     # ## Get mean difference
@@ -61,7 +61,7 @@ hedges_g <- function(treatment_variable,
     # mean_diff <- coef(svy_mean_diff)[2]
     
     ## Will use coefficient already calculated? Same as above if "unadjusted" outcome model used
-    mean_diff <- outcome_model$standardised_format$`Coefficient Estimate`
+    mean_diff <- outcome_results$standardised_format$`Coefficient Estimate`
     
     # Get SD of outcome in treatment group
     treatment_data <- subset(svy_design, get(treatment_variable) == 1)
@@ -86,10 +86,10 @@ hedges_g <- function(treatment_variable,
   if(missing_method == "weighting"){
     
     # Survey design already defined
-    svy_design <- outcome_model$extracted_balanced_data[[1]]
+    svy_design <- outcome_results$extracted_balanced_data[[1]]
     
     ## Coefficient already defined
-    mean_diff <- outcome_model$standardised_format$`Coefficient Estimate`
+    mean_diff <- outcome_results$standardised_format$`Coefficient Estimate`
     
     # Get SD of outcome in treatment group
     treatment_data <- subset(svy_design, get(treatment_variable) == 1)
@@ -114,7 +114,7 @@ hedges_g <- function(treatment_variable,
   if (missing_method == "mi") {
     
     ## Get imputed dataset
-    imputed_data <- as.list(outcome_model$extracted_balanced_data[[1]])
+    imputed_data <- as.list(outcome_results$extracted_balanced_data[[1]])
     
     # Define survey design
     if (!is.null(cluster_variable)) {
@@ -147,7 +147,7 @@ hedges_g <- function(treatment_variable,
     })
     
     ## Get mean difference
-    mean_diff <- outcome_model$standardised_format$`Coefficient Estimate`
+    mean_diff <- outcome_results$standardised_format$`Coefficient Estimate`
     
     ## Get SD of outcome in treatment group
     results <- lapply(svy_design_list, function(svy_design) {
