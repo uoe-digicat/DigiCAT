@@ -998,7 +998,7 @@ library(EValue)"
         result_variable = "extracted_outcome_results")
     )
   }
-  if("svyglm" %in% class(DigiCAT_fitted_model) & missing_method == "weighting"){
+  if("comparisons" %in% class(DigiCAT_fitted_model[[1]]) & missing_method == "mi"){
     outcome_model_code <- c(
       outcome_model_code,
       extract_lines_between_patterns(
@@ -1307,20 +1307,17 @@ library(EValue)"
           )
       }
     }
-    
-    if(missing_method == "complete"){
-      sensitivity_analysis_code <- c(sensitivity_analysis_code, "### E-value ----")
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_VW_Evalue,
-          start_pattern = '# Calculate E-value using the point estimate',
-          end_pattern = 'names(sensitivity_result) <- "point"',
-          skip_lines = 1,
-          result_variable = "sensitivity_result_EV",
-          sub_string = c("sensitivity_result", "sensitivity_result_EV"))
-      )
-      }
+    sensitivity_analysis_code <- c(sensitivity_analysis_code, "### E-value ----")
+    sensitivity_analysis_code <- c(
+      sensitivity_analysis_code,
+      extract_lines_between_patterns(
+        function_name = perform_VW_Evalue,
+        start_pattern = '# Calculate E-value using the point estimate',
+        end_pattern = 'names(sensitivity_result) <- "point"',
+        skip_lines = 1,
+        result_variable = "sensitivity_result_EV",
+        sub_string = c("sensitivity_result", "sensitivity_result_EV"))
+    )
   } else{
     sensitivity_analysis_code <- ""
   }
