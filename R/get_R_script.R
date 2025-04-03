@@ -327,7 +327,13 @@ library(EValue)"
     )
     
   } else{
-    propensity_score_model_code <- ""
+    propensity_score_model_code <- c("propensity_score <- NULL\nestimated_propensity_model<-NULL\nmodel_type<-NULL\n",
+      extract_lines_between_patterns(
+      function_name = estimation_stage,
+      start_pattern = "return(list(missingness_treated_dataset = handled_missingness,",
+      end_pattern = 'survey_design_object = design_object)) # note if weighting, this is the object containing data, not missingness_treated_dataset',
+      result_variable = "PS_estimation_object")
+    )
   }
   
   ## Balancing ----
