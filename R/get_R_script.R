@@ -177,8 +177,10 @@ library(EValue)"
   
   ## Define counterfactual analysis inputs
   define_CA_input_code <- paste0("\n## Define counterfactual analysis options ----- \n",
-                                 "model_type <- '", balancing_model, "'","\n",
-                                 "missing_method <- '", missing_method, "'")
+                                 "model_type <- '", balancing_model, "'\n",
+                                 "missing_method <- '", missing_method, "'\n",
+                                 "matching_method <- '", matching_method, "'\n",
+                                 "matching_ratio <- ", matching_ratio)
   
   ## Factorise categorical variables
   factorise_categorical_code <- paste0("\n## Factorise categorical variables \n", ".data[categorical_vars] <- lapply(.data[categorical_vars], factor)")
@@ -360,6 +362,24 @@ library(EValue)"
         end_pattern = ' ps = PS_estimation_object$propensity_score, ...)',
         add_lines = 1)
     )
+    
+    # Add matching method and ratio parameters
+    balancing_code <- sapply(balancing_code, function(line) {
+      if (grepl("matchthem\\(", line) && !grepl("method\\s*=|ratio\\s*=", line)) {
+        # Insert before the final closing parenthesis
+        sub("\\)$", ", method = matching_method, ratio = matching_ratio)", line)
+      } else {
+        line
+      }
+    })
+    balancing_code <- sapply(balancing_code, function(line) {
+      if (grepl("matchit\\(", line) && !grepl("method\\s*=|ratio\\s*=", line)) {
+        # Insert before the final closing parenthesis
+        sub("\\)$", ", method = matching_method, ratio = matching_ratio)", line)
+      } else {
+        line
+      }
+    })
   }
   if (counterfactual_method == "nbp"){
     balancing_code <- c(
