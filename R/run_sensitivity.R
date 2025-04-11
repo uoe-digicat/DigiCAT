@@ -109,7 +109,7 @@ perform_VW_Evalue <- function(outcome_results, outcome_type, outcome_variable, m
     if(missing_method == "weighting"){
       sd <- sqrt(svyvar(as.formula(paste0("~", outcome_variable)), outcome_results$extracted_balanced_data[[1]], na.rm = T)[1])
     } else{
-      sd <- sd(outcome_results$extracted_balanced_data[[1]][[outcome_variable]])
+      sd <- sd(outcome_results$extracted_balanced_data[[1]][[1]][[outcome_variable]])
     }
     
     if (outcome_type == "continuous") {
