@@ -780,7 +780,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    Balancing_output$ratio_radio_display <- balancing_values$ratio_radio
                    Balancing_output$ratio <- balancing_values$ratio
                    Balancing_output$ratio_radio <- input$ratio_radio
-                   Balancing_output$method_radio <- input$method_choice
+                   Balancing_output$method_radio <- balancing_values$method_choice
                    Balancing_output$method_radio_display <- input$method_radio
                    Balancing_output$common_support_plot <- balancing_values$common_support_plot
                    Balancing_output$observation_table <- balancing_values$observation_table
