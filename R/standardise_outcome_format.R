@@ -1,8 +1,8 @@
 standardise_outcome_format <- function(extracted_outcome_results, counterfactual_method, outcome_formula, fitted_model,outcome_type,treatment_variable, ...){
   if(extracted_outcome_results[[2]] == "mi" & outcome_formula == "marginal_effects"){ # ME MI with/without covs
     results_dataframe = extracted_outcome_results[[1]]
-    results_dataframe <- results_dataframe[,-c(2, 5, 6)]
-
+    results_dataframe <- results_dataframe[,c("term", "estimate", "std.error", "p.value", "2.5 %", "97.5 %")]
+    
     colnames(results_dataframe) <- c("Term","Coefficient Estimate", "Standard Error", "P-value", "Lower CI (2.5%)", "Upper CI (97.5%)")
     rownames(results_dataframe) <- results_dataframe[,1]  
     return(results_dataframe)

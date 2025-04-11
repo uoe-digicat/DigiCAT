@@ -14,7 +14,7 @@ extract_outcome_results <- function(fitted_model, missing_method, outcome_type, 
     
   } else if("list" %in% class(fitted_model) & missing_method == "mi"){
     
-    if(outcome_type == 'Categorical'){
+    if(outcome_type == 'categorical'){
       df_residuals <- sapply(fitted_model, function(model) {
              if (!is.null(df.residual(model$fit))) {
                    return(df.residual(model$fit))

@@ -177,8 +177,10 @@ library(EValue)"
   
   ## Define counterfactual analysis inputs
   define_CA_input_code <- paste0("\n## Define counterfactual analysis options ----- \n",
-                                 "model_type <- '", balancing_model, "'","\n",
-                                 "missing_method <- '", missing_method, "'")
+                                 "model_type <- '", balancing_model, "'\n",
+                                 "missing_method <- '", missing_method, "'\n",
+                                 "matching_method <- '", matching_method, "'\n",
+                                 "matching_ratio <- ", matching_ratio)
   
   ## Factorise categorical variables
   factorise_categorical_code <- paste0("\n## Factorise categorical variables \n", ".data[categorical_vars] <- lapply(.data[categorical_vars], factor)")
@@ -327,7 +329,13 @@ library(EValue)"
     )
     
   } else{
-    propensity_score_model_code <- ""
+    propensity_score_model_code <- c("propensity_score <- NULL\nestimated_propensity_model<-NULL\nmodel_type<-NULL\n",
+      extract_lines_between_patterns(
+      function_name = estimation_stage,
+      start_pattern = "return(list(missingness_treated_dataset = handled_missingness,",
+      end_pattern = 'survey_design_object = design_object)) # note if weighting, this is the object containing data, not missingness_treated_dataset',
+      result_variable = "PS_estimation_object")
+    )
   }
   
   ## Balancing ----
@@ -354,6 +362,24 @@ library(EValue)"
         end_pattern = ' ps = PS_estimation_object$propensity_score, ...)',
         add_lines = 1)
     )
+    
+    # Add matching method and ratio parameters
+    balancing_code <- sapply(balancing_code, function(line) {
+      if (grepl("matchthem\\(", line) && !grepl("method\\s*=|ratio\\s*=", line)) {
+        # Insert before the final closing parenthesis
+        sub("\\)$", ", method = matching_method, ratio = matching_ratio)", line)
+      } else {
+        line
+      }
+    })
+    balancing_code <- sapply(balancing_code, function(line) {
+      if (grepl("matchit\\(", line) && !grepl("method\\s*=|ratio\\s*=", line)) {
+        # Insert before the final closing parenthesis
+        sub("\\)$", ", method = matching_method, ratio = matching_ratio)", line)
+      } else {
+        line
+      }
+    })
   }
   if (counterfactual_method == "nbp"){
     balancing_code <- c(
@@ -998,7 +1024,7 @@ library(EValue)"
         result_variable = "extracted_outcome_results")
     )
   }
-  if("svyglm" %in% class(DigiCAT_fitted_model) & missing_method == "weighting"){
+  if("comparisons" %in% class(DigiCAT_fitted_model[[1]]) & missing_method == "mi"){
     outcome_model_code <- c(
       outcome_model_code,
       extract_lines_between_patterns(
@@ -1307,20 +1333,17 @@ library(EValue)"
           )
       }
     }
-    
-    if(missing_method == "complete"){
-      sensitivity_analysis_code <- c(sensitivity_analysis_code, "### E-value ----")
-      sensitivity_analysis_code <- c(
-        sensitivity_analysis_code,
-        extract_lines_between_patterns(
-          function_name = perform_VW_Evalue,
-          start_pattern = '# Calculate E-value using the point estimate',
-          end_pattern = 'names(sensitivity_result) <- "point"',
-          skip_lines = 1,
-          result_variable = "sensitivity_result_EV",
-          sub_string = c("sensitivity_result", "sensitivity_result_EV"))
-      )
-      }
+    sensitivity_analysis_code <- c(sensitivity_analysis_code, "### E-value ----")
+    sensitivity_analysis_code <- c(
+      sensitivity_analysis_code,
+      extract_lines_between_patterns(
+        function_name = perform_VW_Evalue,
+        start_pattern = '# Calculate E-value using the point estimate',
+        end_pattern = 'names(sensitivity_result) <- "point"',
+        skip_lines = 1,
+        result_variable = "sensitivity_result_EV",
+        sub_string = c("sensitivity_result", "sensitivity_result_EV"))
+    )
   } else{
     sensitivity_analysis_code <- ""
   }

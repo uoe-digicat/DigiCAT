@@ -105,7 +105,12 @@ perform_VW_Evalue <- function(outcome_results, outcome_type, outcome_variable, m
   } else {
     # Calculate E-value using the point estimate
     estimate <- outcome_results$standardised_format$`Coefficient Estimate`
-    sd <- sd(outcome_results$extracted_balanced_data[[1]][[outcome_variable]])
+    
+    if(missing_method == "weighting"){
+      sd <- sqrt(svyvar(as.formula(paste0("~", outcome_variable)), outcome_results$extracted_balanced_data[[1]], na.rm = T)[1])
+    } else{
+      sd <- sd(outcome_results$extracted_balanced_data[[1]][[1]][[outcome_variable]])
+    }
     
     if (outcome_type == "continuous") {
       sensitivity_result <- evalues.OLS(estimate, sd = sd)  # for continuous outcome
