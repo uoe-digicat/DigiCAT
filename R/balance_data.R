@@ -134,9 +134,7 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
     #performed_matching$halves <- performed_matching$halves[-(n + 1), ]
     matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-    } 
-  
-  else if(missing_method == "mi"){
+    } else if(missing_method == "mi"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method, model_type, ...) 
     created_distance_matrix <- make_matrix_nbp(propensity_data, 
@@ -147,9 +145,7 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
     performed_matching <- lapply(formatted_matrix, function(x) nonbimatch(x))
     matched_data <- lapply(performed_matching, function(x) x$halves[x$halves$Distance != 999999,])
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-  }
-  
-  else if(missing_method == "weighting"){
+  } else if(missing_method == "weighting"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
     created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 

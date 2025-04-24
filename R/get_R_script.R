@@ -385,10 +385,10 @@ library(EValue)"
     balancing_code <- c(
       balancing_code,
       extract_lines_between_patterns(
-        function_name = balancing_psm,
+        function_name = balancing_nbp,
         start_pattern = "## Balance Data: NBP",
-        end_pattern = 'balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)',
-        add_lines = 1)
+        end_pattern = 'return(balanced_data)',
+        add_lines = -2)
     )
   }
   if (counterfactual_method == "cbps"){
