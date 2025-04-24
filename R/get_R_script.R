@@ -141,11 +141,16 @@ library(EValue)"
   
   ## Variable input
   variable_input_code <- paste0("\n## Define input variables----- \n",
-                                "categorical_vars <- c(", paste0("'", categorical_variables, "'", collapse = ","),")\n",
                                 "outcome_variable <- ", "'",  outcome_variable, "'","\n",
                                 "treatment_variable <- ", "'", treatment_variable, "'\n",
                                 "matching_variable <- c(", paste0("'", matching_variables, "'", collapse = ","),")\n"
   )
+  
+  if (is.null(categorical_variables)){
+    variable_input_code <- paste0(variable_input_code, "categorical_vars <- NULL \n")
+  } else{
+    variable_input_code <- paste0(variable_input_code, "categorical_vars <- c(", paste0("'",categorical_variables, "'", collapse = ","),")\n")
+  }
   
   if (is.null(covariates)){
     variable_input_code <- paste0(variable_input_code, "covariates <- NULL \n")
@@ -180,7 +185,8 @@ library(EValue)"
                                  "model_type <- '", balancing_model, "'\n",
                                  "missing_method <- '", missing_method, "'\n",
                                  "matching_method <- '", matching_method, "'\n",
-                                 "matching_ratio <- ", matching_ratio)
+                                 "matching_ratio <- '", matching_ratio,"'\n",
+                                 "counterfactual_method <- '", counterfactual_method, "'")
   
   ## Factorise categorical variables
   factorise_categorical_code <- paste0("\n## Factorise categorical variables \n", ".data[categorical_vars] <- lapply(.data[categorical_vars], factor)")
