@@ -108,8 +108,11 @@ perform_VW_Evalue <- function(outcome_results, outcome_type, outcome_variable, m
     
     if(missing_method == "weighting"){
       sd <- sqrt(svyvar(as.formula(paste0("~", outcome_variable)), outcome_results$extracted_balanced_data[[1]], na.rm = T)[1])
-    } else{
-      sd <- sd(outcome_results$extracted_balanced_data[[1]][[1]][[outcome_variable]])
+    } else if(missing_method == "complete"){
+      sd <- sd(outcome_results$extracted_balanced_data[[1]][[outcome_variable]], na.rm = TRUE)
+    } else if(missing_method == "mi"){
+      sds <- sapply(outcome_results$extracted_balanced_data[[1]], function(data) sd(data[[outcome_variable]], na.rm = TRUE))
+      sd <- mean(sds)
     }
     
     if (outcome_type == "continuous") {

@@ -128,7 +128,8 @@ library(rmarkdown)
 library(survey)
 library(gbm)
 library(randomForest)
-library(EValue)"
+library(EValue)
+library(mitools)"
 )
   
   ## Data upload ----
@@ -173,7 +174,7 @@ library(EValue)"
   if (is.null(strata_variable)){
     variable_input_code <- paste0(variable_input_code, "strata_variable <- NULL \n")
   } else{
-    variable_input_code <- paste0(variable_input_code, "strata_variable <- ", "'", strata_variable)
+    variable_input_code <- paste0(variable_input_code, "strata_variable <- ", "'", strata_variable, "'")
   }
   
   ## Specify outcome variable type
@@ -185,7 +186,7 @@ library(EValue)"
                                  "model_type <- '", balancing_model, "'\n",
                                  "missing_method <- '", missing_method, "'\n",
                                  "matching_method <- '", matching_method, "'\n",
-                                 "matching_ratio <- '", matching_ratio,"'\n",
+                                 "matching_ratio <- ", matching_ratio,"\n",
                                  "counterfactual_method <- '", counterfactual_method, "'")
   
   ## Factorise categorical variables
