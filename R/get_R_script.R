@@ -583,7 +583,8 @@ library(mitools)"
           start_pattern = 'else if(extracted_balanced_data$process == "mi_nbp"){',
           end_pattern = "model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step",
           add_lines = 1,
-          skip_lines = 1
+          skip_lines = 1,
+          result_variable = "data_to_use"
         )
       )
     }
@@ -709,18 +710,6 @@ library(mitools)"
         )
       )
     }
-    if(DigiCAT_extracted_balanced_data$process == "mi_psm"){
-      outcome_model_code <- c(
-        outcome_model_code,
-        extract_lines_between_patterns(
-          function_name = outcome_matching_variables,
-          start_pattern = '} else if(extracted_balanced_data$process == "mi_nbp"){',
-          end_pattern = 'model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))',
-          add_lines = 1,
-          skip_lines = 1
-        )
-      )
-    }
     if(DigiCAT_extracted_balanced_data$process == "mi_nbp"){
       outcome_model_code <- c(
         outcome_model_code,
@@ -729,7 +718,8 @@ library(mitools)"
           start_pattern = '} else if(extracted_balanced_data$process == "mi_nbp"){',
           end_pattern = 'model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))',
           add_lines = 1,
-          skip_lines = 1
+          skip_lines = 1,
+          result_variable = "data_to_use"
         )
       )
     }
@@ -812,18 +802,6 @@ library(mitools)"
           function_name = outcome_matching_variables,
           start_pattern = 'else if(extracted_balanced_data$process == "cc_cbps"){',
           end_pattern = "model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design,  family = multinomial)",
-          add_lines = 1,
-          skip_lines = 1
-        )
-      )
-    }
-    if(DigiCAT_extracted_balanced_data$process == "mi_cbps"){
-      outcome_model_code <- c(
-        outcome_model_code,
-        extract_lines_between_patterns(
-          function_name = outcome_matching_variables,
-          start_pattern = 'else if(extracted_balanced_data$process == "mi_cbps"){',
-          end_pattern = "model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))",
           add_lines = 1,
           skip_lines = 1
         )
