@@ -24,7 +24,7 @@
 #' @param include_sensitivity Include sensitivity analysis in script: `TRUE` or `FALSE`
 
 get_R_script <- function(
-  ## Data upload
+    ## Data upload
   data_source, 
   file_path = NULL,
   df = NULL,
@@ -56,7 +56,7 @@ get_R_script <- function(
   
   ## Define function to extract lines from existing code
   extract_lines_between_patterns <- function(function_name, start_pattern, end_pattern, add_lines = 0, skip_lines = 0, result_variable = NULL, sub_string = c("", "")) {
-
+    
     ## Read file into a character vector (each line is an element)
     lines <- capture.output(function_name)
     
@@ -91,7 +91,7 @@ get_R_script <- function(
     
     ## Remove ", ...)" or ",...)" and replace with ")"
     extracted_lines <- gsub(",\\s*\\.\\.\\.\\)", ")", extracted_lines)
-
+    
     ## Remove comments
     extracted_lines <- gsub("#.*", "", extracted_lines)
     
@@ -105,7 +105,7 @@ get_R_script <- function(
       ## Remove common leading whitespace while preserving relative indentation
       extracted_lines <- sub(paste0("^ {0,", min_indent, "}"), "", extracted_lines)
     }
-
+    
     ## Add a blank line at the end
     extracted_lines <- c(extracted_lines, "")
     
@@ -130,7 +130,7 @@ library(gbm)
 library(randomForest)
 library(EValue)
 library(mitools)"
-)
+  )
   
   ## Data upload ----
   if (data_source == "own"){
@@ -201,12 +201,12 @@ library(mitools)"
   
   if (missing_method == "complete"){
     handled_missingness_code <- c(
-        handled_missingness_code,
-        extract_lines_between_patterns(
-          function_name = handle_missingness,
-          start_pattern = "complete = {",
-          end_pattern = "data = handled_missingness)",
-          skip_lines = 1)
+      handled_missingness_code,
+      extract_lines_between_patterns(
+        function_name = handle_missingness,
+        start_pattern = "complete = {",
+        end_pattern = "data = handled_missingness)",
+        skip_lines = 1)
     )
   }
   if (missing_method == "mi"){
@@ -214,7 +214,7 @@ library(mitools)"
       handled_missingness_code,
       extract_lines_between_patterns(
         function_name = handle_missingness,
-        start_pattern = "## Remove any rows without treatment data - HC",
+        start_pattern = "mi = {",
         end_pattern = "data = imputationList(complete_imps))",
         skip_lines = 1)
     )
@@ -245,47 +245,47 @@ library(mitools)"
         end_pattern = 'f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))',
         add_lines = 1)
     )
-  
+    
     if (balancing_model == "glm"){
-    propensity_score_model_code <- c(
-      propensity_score_model_code,
-      extract_lines_between_patterns(
-        function_name = estimate_model,
-        start_pattern = "glm = {",
-        end_pattern = "estimated_propensity_model = svyglm(f, design = handled_missingness)",
-        add_lines = 1,
-        skip_lines = 1)
-    )
-    propensity_score_model_code <- c(
-      propensity_score_model_code,
-      extract_lines_between_patterns(
-        function_name = get_propensity,
-        start_pattern = "glm = {",
-        end_pattern = "propensity_score = estimated_propensity_model$fitted.values",
-        add_lines = 1,
-        skip_lines = 1)
-    )
-  }
-  if (balancing_model == "gbm"){
-    propensity_score_model_code <- c(
-      propensity_score_model_code,
-      extract_lines_between_patterns(
-        function_name = estimate_model,
-        start_pattern = "gbm = {",
-        end_pattern = "estimated_propensity_model = gbm(as.formula(f), data = handled_missingness,...)",
-        add_lines = 1,
-        skip_lines = 1)
-    )
-    propensity_score_model_code <- c(
-      propensity_score_model_code,
-      extract_lines_between_patterns(
-        function_name = get_propensity,
-        start_pattern = "gbm = {",
-        end_pattern = 'propensity_score = predict(estimated_propensity_model, type = "response")',
-        add_lines = 1,
-        skip_lines = 1)
-    )
-  }
+      propensity_score_model_code <- c(
+        propensity_score_model_code,
+        extract_lines_between_patterns(
+          function_name = estimate_model,
+          start_pattern = "glm = {",
+          end_pattern = "estimated_propensity_model = svyglm(f, design = handled_missingness)",
+          add_lines = 1,
+          skip_lines = 1)
+      )
+      propensity_score_model_code <- c(
+        propensity_score_model_code,
+        extract_lines_between_patterns(
+          function_name = get_propensity,
+          start_pattern = "glm = {",
+          end_pattern = "propensity_score = estimated_propensity_model$fitted.values",
+          add_lines = 1,
+          skip_lines = 1)
+      )
+    }
+    if (balancing_model == "gbm"){
+      propensity_score_model_code <- c(
+        propensity_score_model_code,
+        extract_lines_between_patterns(
+          function_name = estimate_model,
+          start_pattern = "gbm = {",
+          end_pattern = "estimated_propensity_model = gbm(as.formula(f), data = handled_missingness,...)",
+          add_lines = 1,
+          skip_lines = 1)
+      )
+      propensity_score_model_code <- c(
+        propensity_score_model_code,
+        extract_lines_between_patterns(
+          function_name = get_propensity,
+          start_pattern = "gbm = {",
+          end_pattern = 'propensity_score = predict(estimated_propensity_model, type = "response")',
+          add_lines = 1,
+          skip_lines = 1)
+      )
+    }
     if (balancing_model == "randomforest"){
       propensity_score_model_code <- c(
         propensity_score_model_code,
@@ -337,11 +337,11 @@ library(mitools)"
     
   } else{
     propensity_score_model_code <- c("propensity_score <- NULL\nestimated_propensity_model<-NULL\nmodel_type<-NULL\n",
-      extract_lines_between_patterns(
-      function_name = estimation_stage,
-      start_pattern = "return(list(missingness_treated_dataset = handled_missingness,",
-      end_pattern = 'survey_design_object = design_object)) # note if weighting, this is the object containing data, not missingness_treated_dataset',
-      result_variable = "PS_estimation_object")
+                                     extract_lines_between_patterns(
+                                       function_name = estimation_stage,
+                                       start_pattern = "return(list(missingness_treated_dataset = handled_missingness,",
+                                       end_pattern = 'survey_design_object = design_object)) # note if weighting, this is the object containing data, not missingness_treated_dataset',
+                                       result_variable = "PS_estimation_object")
     )
   }
   
@@ -355,9 +355,9 @@ library(mitools)"
       balancing_code,
       extract_lines_between_patterns(
         function_name = balancing_iptw,
-        start_pattern = "## Balance Data: IPTW",
+        start_pattern = 'if (model_type == "gbm"){',
         end_pattern = 'method = "ps", ...)',
-        add_lines = 1)
+        add_lines = 0)
     )
   }
   if (counterfactual_method == "psm"){
@@ -365,9 +365,9 @@ library(mitools)"
       balancing_code,
       extract_lines_between_patterns(
         function_name = balancing_psm,
-        start_pattern = "## Balance Data: PSM",
+        start_pattern = 'if (model_type == "gbm"){',
         end_pattern = ' ps = PS_estimation_object$propensity_score, ...)',
-        add_lines = 1)
+        add_lines = 0)
     )
     
     # Add matching method and ratio parameters
@@ -393,7 +393,7 @@ library(mitools)"
       balancing_code,
       extract_lines_between_patterns(
         function_name = balancing_nbp,
-        start_pattern = "## Balance Data: NBP",
+        start_pattern = 'if(missing_method == "complete"){',
         end_pattern = 'return(balanced_data)',
         add_lines = -2)
     )
@@ -403,7 +403,7 @@ library(mitools)"
       balancing_code,
       extract_lines_between_patterns(
         function_name = balancing_cbps,
-        start_pattern = "## Balance Data: CBPS",
+        start_pattern = 'f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))',
         end_pattern = 'approach = "within", method = "cbps")',
         add_lines = 1)
     )
@@ -425,7 +425,7 @@ library(mitools)"
         skip_lines = 1,
         add_lines = 0,
         result_variable = "extracted_balanced_data")
-      )
+    )
   }
   if("wimids" %in% class(DigiCAT_balanced_data) & counterfactual_method == "iptw") {
     outcome_model_code <- c(
@@ -561,7 +561,7 @@ library(mitools)"
         end_pattern = 'model_formula = as.formula(paste0(outcome_variable,"~",treatment_variable))',
         add_lines = 1,
         skip_lines = -1
-        )
+      )
     )
     if(DigiCAT_extracted_balanced_data$process == "mi_psm"){
       outcome_model_code <- c(
@@ -930,9 +930,9 @@ library(mitools)"
       )
     }
   }
-
+  
   outcome_model_code <- c(outcome_model_code,
-                               "fitted_model <- model_fit\n")
+                          "fitted_model <- model_fit\n")
   
   ### extract_outcome_results() ----
   outcome_model_code <- c(outcome_model_code, "### Extract results of outcome model----")
@@ -1279,7 +1279,7 @@ library(mitools)"
   if(include_sensitivity){
     
     if(counterfactual_method == "psm"){
-    
+      
       sensitivity_analysis_code <- c(sensitivity_analysis_code, "### Rosenbaum’s Bounds ----")
       if(missing_method == "complete"){
         sensitivity_analysis_code <- c(
@@ -1315,7 +1315,7 @@ library(mitools)"
             skip_lines = 1,
             add_lines = 1,
             sub_string = c("sensitivity_result", "sensitivity_result_RB"))
-          )
+        )
       }
     }
     sensitivity_analysis_code <- c(sensitivity_analysis_code, "### E-value ----")
