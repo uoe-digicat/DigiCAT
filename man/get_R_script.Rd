@@ -27,6 +27,7 @@ get_R_script(
   DigiCAT_extracted_balanced_data,
   DigiCAT_fitted_model,
   DigiCAT_extracted_outcome_results,
+  DigiCAT_extracted_hedges_g,
   include_sensitivity
 )
 }
@@ -68,6 +69,8 @@ get_R_script(
 \item{DigiCAT_fitted_model}{Fitted outcome model from tool}
 
 \item{DigiCAT_extracted_outcome_results}{Extracted outcome model results from tool}
+
+\item{DigiCAT_extracted_hedges_g}{Hedges g from tool}
 
 \item{include_sensitivity}{Include sensitivity analysis in script: \code{TRUE} or \code{FALSE}}
 

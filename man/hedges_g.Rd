@@ -9,7 +9,7 @@ hedges_g(
   missing_method,
   outcome_variable,
   balanced_data,
-  outcome_model,
+  outcome_results,
   weighting_variable = NULL,
   cluster_variable = NULL,
   strata_variable = NULL
@@ -24,7 +24,7 @@ hedges_g(
 
 \item{balanced_data}{Balanced data object}
 
-\item{outcome_model}{Outcome model object}
+\item{outcome_results}{Outcome model object}
 
 \item{weighting_variable}{Character string matching column name of your weighting variable}
 
