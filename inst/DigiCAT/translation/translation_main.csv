@@ -119,6 +119,14 @@ Upload Validation dimensions correct rows,Your data has an appropriate number of
 Upload Validation dimensions incorrect rows,"It is recommended that data has between 10 and 10,000 rows, please reconsider the data you are using as performing counterfactual analysis on this data may require a large amount of run time.",Temp
 Upload Validation no GBM,"As your data contains fewer than 50 rows, Generalized Boosted Models (GBM) will not be available for generating propensity scores.",Temp
 Upload Validation outcome type,Outcome Variable Type: ,Temp
+Upload Validation outcome type binary,Binary outcome variable selected,
+Upload Validation outcome type continuous,Continuous outcome variable selected,
+Upload Validation outcome type categorical,Categorical outcome variable selected,
+Upload Validation small category check,Upload Validation - Small Categories Check,
+Upload Validation small category warning,Categories have been detected with less than 10 observations,
+Upload Validation small category action,Check the following categories:,
+Upload Validation small category none,No categories with less than 10 observations detected,
+Upload Validation outcome distribution,Upload validation outcome distribution:,
 Upload Validation outcome type incorrect,: Unique observations are in your chosen outcome variable. This seems a bit low for a continuous variable. We recommend you double check this before continuing.,Temp
 Upload Validation outcome type correct,: Unique observations are in your chosen outcome variable.,Temp
 Upload Validation skewness,Outcome Variable Skewness:,Temp
@@ -313,6 +321,8 @@ Outcome model output SE,Standard Error:,Temp
 Outcome model output P description,"In null-hypothesis significance testing, the p-value represents the the probability of obtaining a test statistic as extreme or more extreme than the one observed, assuming that the null hypothesis is true. Typically, if the p-value is below a predetermined significance level (often 0.05), the null hypothesis is rejected in favour of an alternative hypothesis, implying that there is a statistically significant effect or relationship in the data.",Temp
 Outcome model output P,P-value:,Temp
 Outcome model output CI,95% Confidence Interval:,Temp
+Outcome model output hedges G,Hedge’s G:,
+Outcome model output hedges G description,"Hedges’ g is an effect size measure that quantifies the difference between a treatment and control group while accounting for sample size differences. It is calculated by dividing the mean difference between groups by a pooled standard deviation, providing a standardized measure that allows comparisons across studies, regardless of measurement scale or treatment type.",
 Outcome model output change,Note: Changing this parameter will require the outcome model to be rerun along with all subsequent steps.,Temp
 Outcome Button Run,Run,Temp
 Outcome Button download report,Download Report,Temp
@@ -320,7 +330,16 @@ Outcome Button download script,Download R Script,Temp
 Outcome Button sensitivity,Go to Sensitivity Analysis Tab,Temp
 Outcome Warning rerun,Note: Changing this parameter will require outcome model to be rerun,Temp
 Outcome Warning no model,Please select an outcome model before proceeding,Temp
-Tabs DU outcome,Outcome: ,Temp
+Sensitivity Analysis title,Sensitivity Analysis:,
+Sensitivity Analysis description,"After completing a propensity score analysis,  it is important to perform sensitivity analyses afterwards, in order to examine the robustness of their causal claims. Whilst propensity score methods aim to balance observed covariates between groups, accounting for measured confounding, it cannot address unmeasured confounding variables that may continue to have an impact on the results.  
+There are several means of conducting sensitivity analyses, a selection of which are available in DigiCAT at present, for continuous and binary outcomes.",
+Sensitivity Analysis RR title,Rosenbaum’s Bounds: ,
+Sensitivity Analysis RR description,"Rosenbaum’s bounds assess how hidden bias may affect study results using a sensitivity parameter, Gamma (Γ). If p-values stay significant at higher Γ values, results are robust; otherwise, they may be sensitive to hidden bias. DigiCAT computes Γ from X to Y. ",
+Sensitivity Analysis EV title,E-Values: ,
+Sensitivity Analysis EV description,E-values estimate the strength an unmeasured confounder must have to negate an observed association. High E-values suggest robust findings, whilst low E-values suggest sensitivity to confounding. 
+Sensitivity Analysis Button Run,Run Sensitivity Analysis,
+Sensitivity Analysis rerun,"It looks like sensitivity analysis will have to be rerun, this is because some of the required inputs have been changed since the previous run.",
+Tabs DU outcome,Outcome: ,
 Tabs DU treatment,Treatment: ,Temp
 Tabs Approach approach,Approach: ,Temp
 Tabs Approach missingness,Missingness: ,Temp

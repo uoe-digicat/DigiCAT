@@ -1,11 +1,13 @@
 estimate_model <- function(handled_missingness, model_type = NULL, treatment_variable, matching_variable, 
                            missing_method,...){
   
-  if (model_type == "gbm" | model_type == "glm" | model_type == "lm"){
-    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
-  } else if (model_type == "poly" | model_type == "randomforest"){
-    f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
-  }
+  if (!is.null(model_type)){ ## Only run if model type given
+    if (model_type == "gbm" | model_type == "glm" | model_type == "lm"){
+      f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
+    } else if (model_type == "poly" | model_type == "randomforest"){
+      f = as.formula(paste0("as.factor(", treatment_variable,") ~",paste0(matching_variable, collapse="+")))
+    }
+    ## Formula Defined
   
   switch(model_type, 
          
@@ -43,10 +45,7 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
          
          poly = {
            if(missing_method == "mi"){
-             
-             # estimated_propensity_model = lapply(complete(handled_missingness, "all"),
-             #                                    function(x) MASS::polr(f, data = x, Hess =T,...))
-             
+
              comp <- mice::complete(handled_missingness, "long", include = TRUE)
              comp[[treatment_variable]] <- as.factor(comp[[treatment_variable]])
              handled_missingness <- as.mids(comp)
@@ -76,24 +75,24 @@ estimate_model <- function(handled_missingness, model_type = NULL, treatment_var
            } else if(missing_method == "weighting"){
              handled_missingness[[7]][[treatment_variable]] <- as.factor(handled_missingness[[7]][[treatment_variable]])
              estimated_propensity_model = svyolr(f, design=handled_missingness)
-             
            }
-           
-         },
-         lm = {
-           if(missing_method == "mi"){
-             estimated_propensity_model = lapply(complete(handled_missingness, "all"), 
-                                                 function(x) glm(f, data = x, family = gaussian(link = "identity"), ...))
-           } else if(missing_method == "complete"){
-             estimated_propensity_model = glm(f, data = handled_missingness,
-                                              family = gaussian(link = "identity"),...)
-           } else if(missing_method == "weighting"){
-             estimated_propensity_model = svyglm(f, design = handled_missingness) 
-           }
-         },
+         }
+         # lm = {
+         #   if(missing_method == "mi"){
+         #     estimated_propensity_model = lapply(complete(handled_missingness, "all"), 
+         #                                         function(x) glm(f, data = x, family = gaussian(link = "identity"), ...))
+         #   } else if(missing_method == "complete"){
+         #     estimated_propensity_model = glm(f, data = handled_missingness,
+         #                                      family = gaussian(link = "identity"),...)
+         #   } else if(missing_method == "weighting"){
+         #     estimated_propensity_model = svyglm(f, design = handled_missingness) 
+         #   }
+         # }
          
-         stop("I need a valid model! (glm, gbm, randomforest, poly, lm)")
-  )
+  )} else{ ## If no model given, return empty `estimated_propensity_model` object
+    estimated_propensity_model <- NULL
+    }
+    
   return(estimated_propensity_model)
 }
 

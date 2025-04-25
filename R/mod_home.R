@@ -100,7 +100,7 @@ home_ui <- function(id, i18n) {
   
 }
 
-home_server <- function(id, parent, enableLocal, i18n) {
+home_server <- function(id, parent, i18n) {
   
   moduleServer(id,
                function(input, output, session) {
@@ -109,13 +109,6 @@ home_server <- function(id, parent, enableLocal, i18n) {
                  home_values <- reactiveValues(
                    select_language = NULL
                  )
-                 
-                 ## If data upload is enabled, give warning about current developemnt
-                 if(enableLocal==TRUE){
-                   output$warning = renderUI({
-                     h3("Caution: This tool is under development; outputs may be incomplete or inaccurate. Non-bipartite matching (NBP) coming soon.", style = "color:red")
-                   })
-                 }
                  
                  ## State and terms of use ----
                  ## When "Get Started!" selected on home page check if user has agreed to T&Cs, if so, proceed, if not, ask again 

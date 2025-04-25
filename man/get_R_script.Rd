@@ -7,6 +7,7 @@
 get_R_script(
   data_source,
   file_path = NULL,
+  df = NULL,
   categorical_variables = NULL,
   outcome_variable,
   treatment_variable,
@@ -15,22 +16,27 @@ get_R_script(
   weighting_variable = NULL,
   cluster_variable = NULL,
   strata_variable = NULL,
-  CF_approach,
+  counterfactual_method,
   missing_method,
   balancing_model,
   matching_method = NULL,
   matching_ratio = NULL,
   outcome_formula,
+  outcome_type,
   DigiCAT_balanced_data,
   DigiCAT_extracted_balanced_data,
   DigiCAT_fitted_model,
-  DigiCAT_extracted_outcome_results
+  DigiCAT_extracted_outcome_results,
+  DigiCAT_extracted_hedges_g,
+  include_sensitivity
 )
 }
 \arguments{
 \item{data_source}{Source of data: \code{"own"}, or \code{"sample"}}
 
 \item{file_path}{File path to data}
+
+\item{df}{Uploaded dataset/DigiCAT example data}
 
 \item{categorical_variables}{Vector of categorical variable names in dataset}
 
@@ -42,7 +48,7 @@ get_R_script(
 
 \item{covariates}{Vector of covariate names in dataset}
 
-\item{CF_approach}{Name of counterfactual appraoch being taken (character string)}
+\item{counterfactual_method}{Name of counterfactual appraoch being taken (character string)}
 
 \item{missing_method}{Name of method of dealing with missingness being used (character string): \code{"mi"}, or \code{"complete"}}
 
@@ -54,6 +60,8 @@ get_R_script(
 
 \item{outcome_formula}{Name of outcome model being used (character string)}
 
+\item{outcome_type}{Data tyupe of outcome variable: \code{"continuous"}, \code{"binary"} or \code{"categorical"}}
+
 \item{DigiCAT_balanced_data}{Balanced data object from tool}
 
 \item{DigiCAT_extracted_balanced_data}{Balanced data object from tool extracted for outcome model run}
@@ -61,6 +69,10 @@ get_R_script(
 \item{DigiCAT_fitted_model}{Fitted outcome model from tool}
 
 \item{DigiCAT_extracted_outcome_results}{Extracted outcome model results from tool}
+
+\item{DigiCAT_extracted_hedges_g}{Hedges g from tool}
+
+\item{include_sensitivity}{Include sensitivity analysis in script: \code{TRUE} or \code{FALSE}}
 
 \item{data}{Dataframe}
 }

@@ -14,7 +14,7 @@ extract_outcome_results <- function(fitted_model, missing_method, outcome_type, 
     
   } else if("list" %in% class(fitted_model) & missing_method == "mi"){
     
-    if(outcome_type == 'Categorical'){
+    if(outcome_type == 'categorical'){
       df_residuals <- sapply(fitted_model, function(model) {
              if (!is.null(df.residual(model$fit))) {
                    return(df.residual(model$fit))
@@ -76,7 +76,7 @@ extract_outcome_results <- function(fitted_model, missing_method, outcome_type, 
     return(list(extracted_outcome_results, process = "weighting"))
     
   } else if("comparisons" %in% class(fitted_model[[1]]) & missing_method == "mi"){
-    summary(fitted_model, conf.int = T)
+    return(summary(fitted_model, conf.int = T))
   }
 } 
 

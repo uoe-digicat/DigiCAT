@@ -427,6 +427,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    ## Remove balancing output
                    balancing_values$estimation_stage_res <- NULL
                    balancing_values$balancing_stage_res <- NULL
+                   balancing_values$common_support_plot <- NULL
                    
                    ## Remove general output message
                    balancing_values$output  <- NULL
@@ -496,8 +497,8 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        
                        if(approach() == "psm" | approach() == "iptw"){
                          
-                         if((balancing_model() == "glm" & missingness() == "complete") | (balancing_model() == "glm" & missingness() == "mi")){
-                           # Get common support graph - only works with GLM currently (MI and CC)
+                         if((balancing_model() == "glm" & missingness() == "complete") | (balancing_model() == "glm" & missingness() == "mi") | (balancing_model() == "glm" & missingness() == "weighting")){
+                           # Get common support graph - only works with GLM currently (MI,CC, weighting)
                            balancing_values$common_support_plot <- evaluate_propensity_stage(balancing_values$estimation_stage_res, evaluation_method = "support", missing_method = missingness())
                            output$common_support <- renderUI(p(
                              h4("Common Support Graph:"),
@@ -565,13 +566,15 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                        ## Add tabs to display output
                        balancing_values$output <- renderUI(
                          tabsetPanel(id = "well_panel",
-                                     ## Don't include common support graph if propensity model other than GLM used or CBPS approach had been taken
-                                     if(balancing_model() == "glm" & !approach() == "cbps"){
-                                       tabPanel(title = i18n$t("Balancing Common support graph"),
-                                                value = NS(id, 'common_support_graph_tab'),
-                                                br(),
-                                                withSpinner(uiOutput(session$ns("common_support"))))
-                                     },
+                                     ## Don't include common support graph if propensity model other than GLM used
+                                     if(!is.null(balancing_model())){
+                                       if(balancing_model() == "glm"){
+                                         tabPanel(title = i18n$t("Balancing Common support graph"),
+                                                  value = NS(id, 'common_support_graph_tab'),
+                                                  br(),
+                                                  withSpinner(uiOutput(session$ns("common_support"))))
+                                         }
+                                       },
                                      tabPanel(title = i18n$t("Balancing Observation table"),
                                               value = NS(id, 'observation_table_tab'),
                                               br(),
@@ -777,7 +780,7 @@ balancing_server <- function(id, parent, raw_data, categorical_variables, outcom
                    Balancing_output$ratio_radio_display <- balancing_values$ratio_radio
                    Balancing_output$ratio <- balancing_values$ratio
                    Balancing_output$ratio_radio <- input$ratio_radio
-                   Balancing_output$method_radio <- input$method_choice
+                   Balancing_output$method_radio <- balancing_values$method_choice
                    Balancing_output$method_radio_display <- input$method_radio
                    Balancing_output$common_support_plot <- balancing_values$common_support_plot
                    Balancing_output$observation_table <- balancing_values$observation_table

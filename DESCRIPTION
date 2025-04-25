@@ -1,6 +1,6 @@
 Package: DigiCAT
 Title: DigiCAT: Digital Counterfactual Analysis Tool
-Version: 1.0.1
+Version: 1.1.0
 Authors@R:
   c(person(given = "Aja",
            family = "Murray",
@@ -55,7 +55,10 @@ Imports:
     CBPS,
     svyVGAM,
     patchwork,
-    knitr
+    knitr,
+    rbounds,
+    EValue,
+    kableExtra
 Remotes:
     imbs-hl/ranger
 Depends: 

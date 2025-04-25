@@ -62,6 +62,7 @@ balance_data <- function(counterfactual_method, treatment_variable, matching_var
 
 balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method, model_type,...){
   
+  ## Balance Data: IPTW
   if (model_type == "gbm"){
     f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
   } else{
@@ -89,6 +90,7 @@ balancing_iptw <- function(treatment_variable, matching_variable, PS_estimation_
 
 balancing_psm <- function(treatment_variable, matching_variable, PS_estimation_object, missing_method, model_type, ...){
   
+  ## Balance Data: PSM
   if (model_type == "gbm"){
     f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
   } else{
@@ -120,6 +122,7 @@ balancing_cem <- function(treatment_variable, matching_variable, PS_estimation_o
 
 
 balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_method, model_type,...){ 
+  ## Balance Data: NBP
   if(missing_method == "complete"){
     
     propensity_scores <- PS_estimation_object[[2]]
@@ -131,10 +134,7 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
     #performed_matching$halves <- performed_matching$halves[-(n + 1), ]
     matched_data<-performed_matching$halves[performed_matching$halves$Distance!=999999, ] 
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-    
-      } 
-  
-  else if(missing_method == "mi"){
+    } else if(missing_method == "mi"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method, model_type, ...) 
     created_distance_matrix <- make_matrix_nbp(propensity_data, 
@@ -145,9 +145,7 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
     performed_matching <- lapply(formatted_matrix, function(x) nonbimatch(x))
     matched_data <- lapply(performed_matching, function(x) x$halves[x$halves$Distance != 999999,])
     balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)
-  }
-  
-  else if(missing_method == "weighting"){
+  } else if(missing_method == "weighting"){
     propensity_scores <- PS_estimation_object[[2]]
     propensity_data <- prepare_dataset_nbp(propensity_scores,treatment_variable, missing_method,...) 
     created_distance_matrix <- make_matrix_nbp(propensity_data, estimated_propensity_model = PS_estimation_object$estimated_propensity_model, 
@@ -164,24 +162,19 @@ balancing_nbp <- function(treatment_variable, PS_estimation_object, missing_meth
 
 balancing_cbps <- function(treatment_variable, matching_variable, PS_estimation_object, model_type,
                            missing_method,...){
-  
-  if (model_type == "gbm"){
-    f = paste0("as.numeric(as.character(", treatment_variable,")) ~",paste0(matching_variable, collapse="+"))
-  } else{
-    f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
-  }
+  ## Balance Data: CBPS
+  f = paste0(treatment_variable,"~",paste0(matching_variable,collapse="+"))
   
   if(missing_method == "complete"){
-    data_to_use = cbind(PS_estimation_object$missingness_treated_dataset, PS_estimation_object$propensity_scores)
-    balanced_data = weightit(as.formula(f), data = data_to_use, method = "cbps",
-                             cbps.args = list(model = PS_estimation_object$estimated_propensity_model))
+    
+    data_to_use = PS_estimation_object$missingness_treated_dataset
+    balanced_data = weightit(as.formula(f), data = data_to_use, method = "cbps")
+
   } else if(missing_method == "mi"){
+    
     balanced_data = weightthem(as.formula(f), datasets = PS_estimation_object$missingness_treated_dataset,
                                approach = "within", method = "cbps")
-  } else if(missing_method == "weighting"){
-    balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, 
-                             method = "cbps", ...)
-  }
+  } 
   return(balanced_data)
 }
 
