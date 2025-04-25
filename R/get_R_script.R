@@ -128,7 +128,8 @@ library(rmarkdown)
 library(survey)
 library(gbm)
 library(randomForest)
-library(EValue)"
+library(EValue)
+library(mitools)"
 )
   
   ## Data upload ----
@@ -141,11 +142,16 @@ library(EValue)"
   
   ## Variable input
   variable_input_code <- paste0("\n## Define input variables----- \n",
-                                "categorical_vars <- c(", paste0("'", categorical_variables, "'", collapse = ","),")\n",
                                 "outcome_variable <- ", "'",  outcome_variable, "'","\n",
                                 "treatment_variable <- ", "'", treatment_variable, "'\n",
                                 "matching_variable <- c(", paste0("'", matching_variables, "'", collapse = ","),")\n"
   )
+  
+  if (is.null(categorical_variables)){
+    variable_input_code <- paste0(variable_input_code, "categorical_vars <- NULL \n")
+  } else{
+    variable_input_code <- paste0(variable_input_code, "categorical_vars <- c(", paste0("'",categorical_variables, "'", collapse = ","),")\n")
+  }
   
   if (is.null(covariates)){
     variable_input_code <- paste0(variable_input_code, "covariates <- NULL \n")
@@ -168,7 +174,7 @@ library(EValue)"
   if (is.null(strata_variable)){
     variable_input_code <- paste0(variable_input_code, "strata_variable <- NULL \n")
   } else{
-    variable_input_code <- paste0(variable_input_code, "strata_variable <- ", "'", strata_variable)
+    variable_input_code <- paste0(variable_input_code, "strata_variable <- ", "'", strata_variable, "'")
   }
   
   ## Specify outcome variable type
@@ -180,7 +186,8 @@ library(EValue)"
                                  "model_type <- '", balancing_model, "'\n",
                                  "missing_method <- '", missing_method, "'\n",
                                  "matching_method <- '", matching_method, "'\n",
-                                 "matching_ratio <- ", matching_ratio)
+                                 "matching_ratio <- ", matching_ratio,"\n",
+                                 "counterfactual_method <- '", counterfactual_method, "'")
   
   ## Factorise categorical variables
   factorise_categorical_code <- paste0("\n## Factorise categorical variables \n", ".data[categorical_vars] <- lapply(.data[categorical_vars], factor)")
@@ -385,10 +392,10 @@ library(EValue)"
     balancing_code <- c(
       balancing_code,
       extract_lines_between_patterns(
-        function_name = balancing_psm,
+        function_name = balancing_nbp,
         start_pattern = "## Balance Data: NBP",
-        end_pattern = 'balanced_data <- restructure_rejoin_nbp(matched_data, propensity_data, treatment_variable, missing_method,...)',
-        add_lines = 1)
+        end_pattern = 'return(balanced_data)',
+        add_lines = -2)
     )
   }
   if (counterfactual_method == "cbps"){
@@ -576,7 +583,8 @@ library(EValue)"
           start_pattern = 'else if(extracted_balanced_data$process == "mi_nbp"){',
           end_pattern = "model_fit = with(mi_matched_design, svyglm(model_formula, family = 'binomial')) # leave unpooled until next step",
           add_lines = 1,
-          skip_lines = 1
+          skip_lines = 1,
+          result_variable = "data_to_use"
         )
       )
     }
@@ -702,18 +710,6 @@ library(EValue)"
         )
       )
     }
-    if(DigiCAT_extracted_balanced_data$process == "mi_psm"){
-      outcome_model_code <- c(
-        outcome_model_code,
-        extract_lines_between_patterns(
-          function_name = outcome_matching_variables,
-          start_pattern = '} else if(extracted_balanced_data$process == "mi_nbp"){',
-          end_pattern = 'model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))',
-          add_lines = 1,
-          skip_lines = 1
-        )
-      )
-    }
     if(DigiCAT_extracted_balanced_data$process == "mi_nbp"){
       outcome_model_code <- c(
         outcome_model_code,
@@ -722,7 +718,8 @@ library(EValue)"
           start_pattern = '} else if(extracted_balanced_data$process == "mi_nbp"){',
           end_pattern = 'model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))',
           add_lines = 1,
-          skip_lines = 1
+          skip_lines = 1,
+          result_variable = "data_to_use"
         )
       )
     }
@@ -805,18 +802,6 @@ library(EValue)"
           function_name = outcome_matching_variables,
           start_pattern = 'else if(extracted_balanced_data$process == "cc_cbps"){',
           end_pattern = "model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design,  family = multinomial)",
-          add_lines = 1,
-          skip_lines = 1
-        )
-      )
-    }
-    if(DigiCAT_extracted_balanced_data$process == "mi_cbps"){
-      outcome_model_code <- c(
-        outcome_model_code,
-        extract_lines_between_patterns(
-          function_name = outcome_matching_variables,
-          start_pattern = 'else if(extracted_balanced_data$process == "mi_cbps"){',
-          end_pattern = "model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))",
           add_lines = 1,
           skip_lines = 1
         )

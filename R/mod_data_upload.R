@@ -628,7 +628,7 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                                                       validation_log = NULL)
                  
                  observe({
-                   data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(data_upload_values$treatment_name, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, data_upload_values$stratification_var))]
+                   data_upload_output$data <- data_upload_values$rawdata[,names(data_upload_values$rawdata)  %in% unique(c(data_upload_values$treatment_name, input$outcome, input$matchvars, input$covars, data_upload_values$survey_weight_var, data_upload_values$clustering_var, input$stratification_var))]
                    data_upload_output$data_source <- data_upload_values$data_source
                    data_upload_output$file_path <- data_upload_values$file_path
                    data_upload_output$categorical_vars <- data_upload_values$categorical_vars
@@ -639,7 +639,7 @@ data_upload_server <- function(id, parent, enableLocal, docker_version, filePath
                    
                    data_upload_output$survey_weight_var <- data_upload_values$survey_weight_var
                    data_upload_output$cluster_var <- data_upload_values$clustering_var
-                   data_upload_output$stratification_var <- data_upload_values$stratification_var
+                   data_upload_output$stratification_var <- input$stratification_var
                    data_upload_output$validation_log <- data_upload_values$validation$log
                  })
                  
