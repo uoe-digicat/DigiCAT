@@ -68,8 +68,6 @@ get_R_script <- function(
     
     ## Read file into a character vector (each line is an element)
     lines <- capture.output(function_name)
-    ## Remove comments
-    extracted_lines <- remove_comment(lines)
     ## Remove empty lines that may have resulted from removing comments
     extracted_lines <- extracted_lines[nchar(trimws(extracted_lines)) > 0]
     
