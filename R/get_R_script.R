@@ -1398,7 +1398,7 @@ library(mitools)"
       
       current <- trimws(lines[i])
       
-      if (i > 1 && grepl("^else(\\s+if)?\\s*\\{", current)) {
+      if (i > 1 && grepl("^else(\\s+if\\s*\\(.*\\))?\\s*\\{", current)) {
         # Append to previous line
         result[length(result)] <- paste0(trimws(result[length(result)]), " ", current)
       } else {
