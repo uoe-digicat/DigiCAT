@@ -1374,7 +1374,7 @@ library(mitools)"
         function_name = DigiCAT:::perform_VW_Evalue,
         start_pattern = 'sensitivity_result <- evalues.OR(estimate, lo = lower_bound, hi = upper_bound)',
         end_pattern = 'names(sensitivity_result) <- "point"',
-        skip_lines = 1,
+        skip_lines = 4,
         result_variable = "sensitivity_result_EV",
         sub_string = c("sensitivity_result", "sensitivity_result_EV"))
     )
@@ -1384,6 +1384,32 @@ library(mitools)"
   
   ## Create R script ----
   r_script <- c(library_code, data_source_code, variable_input_code, define_CA_input_code, factorise_categorical_code, reduce_data_code, handled_missingness_code, propensity_score_model_code, balancing_code, outcome_model_code, sensitivity_analysis_code)
+  
+  ## Ensure no floating "else {" lines in code
+  combine_else_lines <- function(lines) {
+    result <- character()
+    skip_next <- FALSE
+    
+    for (i in seq_along(lines)) {
+      if (skip_next) {
+        skip_next <- FALSE
+        next
+      }
+      
+      current <- trimws(lines[i])
+      
+      if (i > 1 && grepl("^else(\\s+if)?\\s*\\{", current)) {
+        # Append to previous line
+        result[length(result)] <- paste0(trimws(result[length(result)]), " ", current)
+      } else {
+        result <- c(result, lines[i])
+      }
+    }
+    
+    return(result)
+  }
+  
+  r_script <- combine_else_lines(r_script)
   noquote(capture.output(cat(r_script, sep = "\n")))
 }
 
