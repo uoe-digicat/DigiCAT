@@ -118,6 +118,8 @@ get_R_script <- function(
     ## Ensure brackets are closed in extracted code
     has_unclosed_brackets <- function(text) {
       all_text <- paste(text, collapse = "\n")
+      all_text <- gsub('(["\'])(?:\\\\\\1|.)*?\\1', "", all_text)  # Remove quoted strings
+      
       open_paren  <- stringr::str_count(all_text, "\\(")
       close_paren <- stringr::str_count(all_text, "\\)")
       open_curly  <- stringr::str_count(all_text, "\\{")
@@ -125,13 +127,16 @@ get_R_script <- function(
       open_sq     <- stringr::str_count(all_text, "\\[")
       close_sq    <- stringr::str_count(all_text, "\\]")
       
-      return(open_paren  > close_paren  ||
-               open_curly  > close_curly  ||
-               open_sq     > close_sq)
+      return(open_paren > close_paren ||
+               open_curly > close_curly ||
+               open_sq > close_sq)
     }
     
     # Extend lines if brackets are unclosed
-    while (has_unclosed_brackets(extracted_lines) && end_index < length(combined_lines)) {
+    while (has_unclosed_brackets(extracted_lines) &&
+           end_index < length(combined_lines) &&
+           !grepl("^\\s*\\}\\s*$", combined_lines[end_index + 1])) {
+      
       end_index <- end_index + 1
       extracted_lines <- combined_lines[start_index:end_index]
     }
@@ -1307,7 +1312,7 @@ library(mitools)"
         extract_lines_between_patterns(
           function_name = DigiCAT:::hedges_g,
           start_pattern = 'if (missing_method == "mi") {',
-          end_pattern = 'g <- mean_diff/pooled_SD',
+          end_pattern = "g <- mean_diff/pooled_SD",
           add_lines = 0,
           skip_lines = 1)
       )
