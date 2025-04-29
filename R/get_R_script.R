@@ -58,67 +58,62 @@ get_R_script <- function(
   extract_lines_between_patterns <- function(function_name, start_pattern, end_pattern, add_lines = 0, skip_lines = 0, result_variable = NULL, sub_string = c("", "")) {
     
     ## Clean comment and whitespace from patterns
-    clean_pattern <- function(p) {
+    clean_text <- function(p) {
       p <- gsub("#.*", "", p)         # Remove comment
-      trimws(p)                       # Trim whitespace
+      p <- trimws(p)                       # Trim whitespace
     }
     
-    start_pattern <- clean_pattern(start_pattern)
-    end_pattern   <- clean_pattern(end_pattern)
+    start_pattern <- clean_text(start_pattern)
+    end_pattern   <- clean_text(end_pattern)
     
     ## Read file into a character vector (each line is an element)
-    lines <- capture.output(function_name)
-    ## Remove empty lines that may have resulted from removing comments
-    extracted_lines <- extracted_lines[nchar(trimws(extracted_lines)) > 0]
-    
-    find_all_multiline_matches <- function(lines, pattern, max_window = 5, ignore_case = TRUE) {
-      normalize <- function(x) {
-        x <- gsub("\\s+", " ", trimws(x))  # normalize to single-space
-        if (ignore_case) x <- tolower(x)
-        return(x)
-      }
-      
-      pattern_clean <- normalize(pattern)
-      matches <- integer(0)
+    lines <- clean_text(capture.output(function_name))
+    ## Remove empty lines
+    extracted_lines <- lines[nchar(trimws(lines)) > 0]
+    ## Combine lines with trailing ",' or "=" or "%in%" or & - otherwise lines of code too short to be unique
+    combine_lines_with_trailing_comma <- function(lines) {
+      result <- character()
+      temp_line <- ""
       
       for (i in seq_along(lines)) {
-        for (w in 1:max_window) {
-          end <- i + w - 1
-          if (end > length(lines)) break
-          
-          # Collapse and normalize the segment of lines
-          segment <- paste(lines[i:end], collapse = " ")
-          segment_clean <- normalize(segment)
-          
-          # Match only if the normalized segment starts *exactly* with the pattern
-          if (startsWith(segment_clean, pattern_clean)) {
-            matches <- c(matches, i)
-            break
-          }
+        line <- lines[i]
+        clean_line <- trimws(line)
+        
+        temp_line <- paste0(temp_line, " ", clean_line)
+        
+        if (!grepl("[,=%in%&]\\s*[\\)\\}]?$", clean_line)) {
+          result <- c(result, trimws(temp_line))
+          temp_line <- ""
         }
       }
       
-      if (length(matches) == 0) return(NA_integer_)
-      return(matches)
+      # If anything left unprocessed
+      if (nzchar(temp_line)) {
+        result <- c(result, trimws(temp_line))
+      }
+      
+      return(result)
     }
+    
+    combined_lines <- combine_lines_with_trailing_comma(extracted_lines)
     
     ## Find the indices of the lines that match the start and end patterns
-    start_index <- find_all_multiline_matches(extracted_lines, start_pattern)[1]
-    end_indices <- find_all_multiline_matches(extracted_lines, end_pattern)
+    start_index <- which(grepl(start_pattern, combined_lines, fixed = T))[1]
+    end_indices <- which(grepl(end_pattern, combined_lines, fixed = T))
     ## Find the first end index that occurs after the start index
     end_index <- end_indices[end_indices >= start_index][1]
-    
-    ## Ensure valid indices
-    if (length(start_index) == 0 | length(end_index) == 0) {
-      stop("Start or end pattern not found.")
-    }
     
     ## Add number of lines specified (default = 0)
     end_index <- end_index + add_lines
     start_index <- start_index + skip_lines
     
     ## Extract the lines between the first occurrence of start and end pattern
-    extracted_lines <- lines[start_index[1]:end_index[1]]
+    if(is.na(end_index) | is.na(start_index)){
+      print(start_pattern)
+      print(combined_lines)
+    }
+    
+    extracted_lines <- combined_lines[start_index:end_index]
     
     ## Ensure brackets are closed in extracted code
     has_unclosed_brackets <- function(text) {
@@ -136,9 +131,9 @@ get_R_script <- function(
     }
     
     # Extend lines if brackets are unclosed
-    while (has_unclosed_brackets(extracted_lines) && end_index < length(lines)) {
+    while (has_unclosed_brackets(extracted_lines) && end_index < length(combined_lines)) {
       end_index <- end_index + 1
-      extracted_lines <- lines[start_index:end_index]
+      extracted_lines <- combined_lines[start_index:end_index]
     }
     
     ## Replace string if specified
@@ -295,8 +290,8 @@ library(mitools)"
       propensity_score_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::estimate_model,
-        start_pattern = 'if (model_type == "gbm" | model_type == "glm" | model_type ==',
-        end_pattern = '") ~", paste0(matching_variable, collapse = "+")))',
+        start_pattern = "if (model_type == \"gbm\" | model_type == \"glm\" | model_type == \"lm\") {",
+        end_pattern = "f = as.formula(paste0(\"as.factor(\", treatment_variable, \") ~\", paste0(matching_variable, collapse = \"+\")))",
         add_lines = 1)
     )
     
@@ -336,8 +331,8 @@ library(mitools)"
           function_name = DigiCAT:::get_propensity,
           start_pattern = "}, gbm = {",
           end_pattern = 'type = "response")',
-          add_lines = 1,
-          skip_lines = 1)
+          add_lines = 0,
+          skip_lines = 0)
       )
     }
     if (balancing_model == "randomforest"){
@@ -355,8 +350,8 @@ library(mitools)"
         extract_lines_between_patterns(
           function_name = DigiCAT:::get_propensity,
           start_pattern = "}, randomforest = {",
-          end_pattern = 'type = "prob")[, 2]',
-          add_lines = 1,
+          end_pattern = "propensity_score = predict(estimated_propensity_model, type = \"prob\")[, 2]",
+          add_lines = 0,
           skip_lines = 1)
       )
     }
@@ -409,9 +404,9 @@ library(mitools)"
       balancing_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::balancing_iptw,
-        start_pattern = 'if (model_type == "gbm") {',
-        end_pattern = 'method = "ps", ...)',
-        add_lines = 0)
+        start_pattern = "if (model_type == \"gbm\") {",
+        end_pattern = "balanced_data = weightit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, method = \"ps\", ...)",
+        add_lines = 1)
     )
   }
   if (counterfactual_method == "psm"){
@@ -419,8 +414,8 @@ library(mitools)"
       balancing_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::balancing_psm,
-        start_pattern = 'if (model_type == "gbm") {',
-        end_pattern = ' ps = PS_estimation_object$propensity_score, ...)',
+        start_pattern = "if (model_type == \"gbm\") {",
+        end_pattern = "balanced_data = matchit(as.formula(f), data = PS_estimation_object$estimated_propensity_model$survey.design$variables, ps = PS_estimation_object$propensity_score, ...)",
         add_lines = 0)
     )
     
@@ -489,7 +484,7 @@ library(mitools)"
         start_pattern = 'else if ("wimids" %in% class(balanced_data) & counterfactual_method == "iptw") {',
         end_pattern = 'return(list(extracted_balanced_data, process = "mi_iptw"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -501,7 +496,7 @@ library(mitools)"
         start_pattern = 'else if ("wimids" %in% class(balanced_data) & counterfactual_method == "cbps") {',
         end_pattern = 'return(list(extracted_balanced_data, process = "mi_cbps"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -510,10 +505,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::extract_balanced_data,
-        start_pattern = 'else if ("matchit" %in% class(balanced_data) & missing_method == "complete") {',
-        end_pattern = 'return(list(extracted_balanced_data, process = "cc_psm"))',
+        start_pattern = "else if (\"matchit\" %in% class(balanced_data) & missing_method == \"complete\") {" ,
+        end_pattern = "return(list(extracted_balanced_data, process = \"cc_psm\"))" ,
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -537,7 +532,7 @@ library(mitools)"
         start_pattern = 'else if ("weightit" %in% class(balanced_data) & missing_method == "complete" & counterfactual_method == "iptw") {',
         end_pattern = 'return(list(PS_estimation_object$missingness_treated_dataset, process = "cc_iptw"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -549,7 +544,7 @@ library(mitools)"
         start_pattern = 'else if (missing_method == "weighting" & "weightit" %in% class(balanced_data)) {',
         end_pattern = 'return(list(extracted_balanced_data, process = "weighting_iptw")',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -561,7 +556,7 @@ library(mitools)"
         start_pattern = 'else if (counterfactual_method == "nbp" & missing_method == "complete") {',
         end_pattern = 'return(list(extracted_balanced_data, process = "cc_nbp"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -573,7 +568,7 @@ library(mitools)"
         start_pattern = 'else if (counterfactual_method == "nbp" & missing_method == "weighting") {',
         end_pattern = 'return(list(extracted_balanced_data, process = "weighting_nbp"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -585,7 +580,7 @@ library(mitools)"
         start_pattern = 'else if (counterfactual_method == "nbp" & missing_method == "mi") {',
         end_pattern = 'return(list(extracted_balanced_data, process = "mi_nbp"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -597,7 +592,7 @@ library(mitools)"
         start_pattern = 'else if (counterfactual_method == "cbps" & missing_method == "complete") {',
         end_pattern = 'return(list(extracted_balanced_data, process = "cc_cbps"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_balanced_data")
     )
   }
@@ -611,8 +606,8 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::outcome_unadjusted,
-        start_pattern = 'model_formula = paste0(outcome_variable, "~", paste0(c(treatment_variable, covariates), collapse = "+"))',
-        end_pattern = 'model_formula = as.formula(paste0(outcome_variable, "~", treatment_variable))',
+        start_pattern = "model_formula = paste0(outcome_variable, \"~\", paste0(c(treatment_variable, covariates), collapse = \"+\"))",
+        end_pattern = "model_formula = as.formula(paste0(outcome_variable, \"~\", treatment_variable))",
         add_lines = 1,
         skip_lines = -1
       )
@@ -622,8 +617,8 @@ library(mitools)"
         outcome_model_code,
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_unadjusted,
-          start_pattern = 'if (extracted_balanced_data$process == "mi_psm") {',
-          end_pattern = 'model_fit = with(mi_matched_design, svyVGAM::svy_vglm(model_formula, family = multinomial))',
+          start_pattern = "if(extracted_balanced_data$process == \"mi_psm\"){" ,
+          end_pattern = "model_fit = with(mi_matched_design, svyVGAM::svy_vglm(model_formula, family = multinomial))",
           add_lines = 1,
           skip_lines = 1
         )
@@ -647,8 +642,8 @@ library(mitools)"
         outcome_model_code,
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_unadjusted,
-          start_pattern = 'else if (extracted_balanced_data$process == "cc_psm") {',
-          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)",
+          start_pattern = "else if (extracted_balanced_data$process == \"cc_psm\") {",
+          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design, family = multinomial)" ,
           add_lines = 1,
           skip_lines = 1
         )
@@ -672,7 +667,7 @@ library(mitools)"
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_unadjusted,
           start_pattern = 'else if (extracted_balanced_data$process == "cc_iptw") {',
-          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)",
+          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design, family = multinomial)",
           add_lines = 1,
           skip_lines = 1
         )
@@ -720,7 +715,7 @@ library(mitools)"
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_unadjusted,
           start_pattern = 'else if (extracted_balanced_data$process == "cc_cbps") {',
-          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)",
+          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design, family = multinomial)",
           add_lines = 1,
           skip_lines = 1
         )
@@ -769,7 +764,7 @@ library(mitools)"
         outcome_model_code,
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_matching_variables,
-          start_pattern = '} else if (extracted_balanced_data$process == "mi_nbp") {',
+          start_pattern = 'else if (extracted_balanced_data$process == "mi_nbp") {',
           end_pattern = 'model_fit = with(mi_matched_design, svyVGAM::svy_vglm(formula(model_formula), family = multinomial))',
           add_lines = 1,
           skip_lines = 1,
@@ -782,8 +777,8 @@ library(mitools)"
         outcome_model_code,
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_matching_variables,
-          start_pattern = '} else if (extracted_balanced_data$process == "cc_psm") { ',
-          end_pattern = 'model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design,  family = multinomial)',
+          start_pattern = 'else if (extracted_balanced_data$process == "cc_psm") { ',
+          end_pattern = 'model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design, family = multinomial)',
           add_lines = 1,
           skip_lines = 1
         )
@@ -807,7 +802,7 @@ library(mitools)"
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_matching_variables,
           start_pattern = 'else if (extracted_balanced_data$process == "cc_iptw") {',
-          end_pattern = 'model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design,  family = multinomial)',
+          end_pattern = 'model_fit = svyVGAM::svy_vglm(formula(model_formula), design = updated_design, family = multinomial)',
           add_lines = 1,
           skip_lines = 1
         )
@@ -843,7 +838,7 @@ library(mitools)"
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_matching_variables,
           start_pattern = 'else if (extracted_balanced_data$process == "cc_nbp" | extracted_balanced_data$process == "weighting_nbp") {',
-          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design,  family = multinomial)",
+          end_pattern = "model_fit = svyVGAM::svy_vglm(model_formula, design = updated_design, family = multinomial)",
           add_lines = 1,
           skip_lines = 1
         )
@@ -904,7 +899,7 @@ library(mitools)"
         outcome_model_code,
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_marginal_effects,
-          start_pattern = '} else if (extracted_balanced_data$process == "cc_psm") { ',
+          start_pattern = 'else if (extracted_balanced_data$process == "cc_psm") { ',
           end_pattern = 'else if (extracted_balanced_data$process == "mi_iptw") {',
           add_lines = -1,
           skip_lines = 1
@@ -964,7 +959,7 @@ library(mitools)"
         outcome_model_code,
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_marginal_effects,
-          start_pattern = '} else if (extracted_balanced_data$process == "cc_cbps") {',
+          start_pattern = 'else if (extracted_balanced_data$process == "cc_cbps") {',
           end_pattern = 'model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable, wts = model_fit$weights)',
           add_lines = 0,
           skip_lines = 2
@@ -999,7 +994,7 @@ library(mitools)"
         start_pattern = 'if ("comparisons" %in% class(fitted_model) & missing_method == "weighting") {',
         end_pattern = 'return(list(extracted_outcome_results = fitted_model, process = "weighting"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_outcome_results")
     )
   }
@@ -1011,7 +1006,7 @@ library(mitools)"
         start_pattern = 'else if ("comparisons" %in% class(fitted_model) & missing_method == "complete") {',
         end_pattern = 'return(list(extracted_outcome_results = fitted_model, process = "cc"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_outcome_results")
     )
   }
@@ -1023,7 +1018,7 @@ library(mitools)"
         start_pattern = 'else if ("mipo" %in% class(fitted_model) & missing_method == "mi") {',
         end_pattern = 'return(list(extracted_outcome_results, process = "mi"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_outcome_results")
     )
   }
@@ -1032,10 +1027,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::extract_outcome_results,
-        start_pattern = '} else if ("list" %in% class(fitted_model) & missing_method == "mi") {',
+        start_pattern = 'else if ("list" %in% class(fitted_model) & missing_method == "mi") {',
         end_pattern = 'return(list(extracted_outcome_results, process = "mi"))',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "extracted_outcome_results")
     )
   }
@@ -1044,10 +1039,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::extract_outcome_results,
-        start_pattern = 'else if (("lm" %in% class(fitted_model) | "svy_vglm" %in% class(fitted_model)) & missing_method == "complete") {',
-        end_pattern = 'return(list(extracted_outcome_results, process = "cc"))',
+        start_pattern = "else if ((\"lm\" %in% class(fitted_model) | \"svy_vglm\" %in% class(fitted_model)) & missing_method == \"complete\") {",
+        end_pattern = "return(list(extracted_outcome_results, process = \"cc\"))",
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_outcome_results")
     )
   }
@@ -1059,7 +1054,7 @@ library(mitools)"
         start_pattern = 'else if ("svyglm" %in% class(fitted_model) & missing_method == "weighting") {',
         end_pattern = 'return(list(extracted_outcome_results, process = "weighting"))',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "extracted_outcome_results")
     )
   }
@@ -1068,10 +1063,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::extract_outcome_results,
-        start_pattern = '} else if ("comparisons" %in% class(fitted_model[[1]]) & missing_method == "mi") {',
+        start_pattern = 'else if ("comparisons" %in% class(fitted_model[[1]]) & missing_method == "mi") {',
         end_pattern = 'return(summary(fitted_model, conf.int = T))',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "extracted_outcome_results")
     )
   }
@@ -1086,7 +1081,7 @@ library(mitools)"
         start_pattern = 'if (extracted_outcome_results[[2]] == "mi" & outcome_formula == "marginal_effects") {',
         end_pattern = 'return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1095,10 +1090,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "mi" & outcome_formula == "unadjusted") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "mi" & outcome_formula == "unadjusted") {',
         end_pattern = 'return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1107,10 +1102,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "mi" & outcome_formula == "with_matching_variables") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "mi" & outcome_formula == "with_matching_variables") {',
         end_pattern = 'return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1119,10 +1114,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "marginal_effects") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "marginal_effects") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1131,10 +1126,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "unadjusted") {',
-        end_pattern = ' return(results_dataframe)',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == \"cc\" & counterfactual_method != \"nbp\" & outcome_formula == \"unadjusted\") {',
+        end_pattern = "return(results_dataframe)" ,
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1143,10 +1138,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "with_matching_variables") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method != "nbp" & outcome_formula == "with_matching_variables") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1155,10 +1150,10 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "marginal_effects") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "marginal_effects") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1239,7 +1234,7 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = ' } else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method == "nbp" & outcome_formula == "with_matching_variables") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method == "nbp" & outcome_formula == "with_matching_variables") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
         skip_lines = 3,
@@ -1251,7 +1246,7 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "nbp" & outcome_formula == "unadjusted") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "nbp" & outcome_formula == "unadjusted") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
         skip_lines = 3,
@@ -1263,7 +1258,7 @@ library(mitools)"
       outcome_model_code,
       extract_lines_between_patterns(
         function_name = DigiCAT:::standardise_outcome_format,
-        start_pattern = '} else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "nbp" & outcome_formula == "with_matching_variables") {',
+        start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "nbp" & outcome_formula == "with_matching_variables") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
         skip_lines = 3,
@@ -1293,8 +1288,8 @@ library(mitools)"
         paste("### Hedge's g----\n"),
         extract_lines_between_patterns(
           function_name = DigiCAT:::hedges_g,
-          start_pattern = 'if (missing_method == "complete") {',
-          end_pattern = 'g <- mean_diff/sqrt(pooled_variance)',
+          start_pattern = "if (missing_method == \"complete\") {" ,
+          end_pattern = "g <- mean_diff/sqrt(pooled_variance)",
           add_lines = 0,
           skip_lines = 1)
       )
@@ -1352,7 +1347,7 @@ library(mitools)"
           sensitivity_analysis_code,
           extract_lines_between_patterns(
             function_name = DigiCAT:::perform_rosenbaum_sensitivity,
-            start_pattern = ' } else if (missing_method == "mi") {',
+            start_pattern = 'else if (missing_method == "mi") {',
             end_pattern = 'sensitivity_result$bounds$`Upper bound` <- avg_upper_bounds',
             skip_lines = 1,
             add_lines = 0,
@@ -1403,11 +1398,11 @@ library(mitools)"
 #              weighting_variable = NULL,
 #              cluster_variable = NULL,
 #              strata_variable = NULL,
-#              counterfactual_method = "iptw",
+#              counterfactual_method = "psm",
 #              balancing_model = "glm",
 #              missing_method = "complete",
-#              # matching_method = "NN",
-#              # matching_ratio = 1,
+#              matching_method = "NN",
+#              matching_ratio = 1,
 #              outcome_formula = "unadjusted",
 #              outcome_type = "continuous",
 #              DigiCAT_balanced_data = ghi,
@@ -1415,6 +1410,6 @@ library(mitools)"
 #              DigiCAT_fitted_model = mno$fitted_model,
 #              DigiCAT_extracted_outcome_results  = mno$extracted_outcome_results,
 #              DigiCAT_extracted_hedges_g = rst,
-#              include_sensitivity = T
+#              include_sensitivity = F
 #              )
 
