@@ -118,14 +118,16 @@ get_R_script <- function(
     ## Ensure brackets are closed in extracted code
     has_unclosed_brackets <- function(text) {
       all_text <- paste(text, collapse = "\n")
-      all_text <- gsub('(["\'])(?:\\\\\\1|.)*?\\1', "", all_text)  # Remove quoted strings
       
-      open_paren  <- stringr::str_count(all_text, "\\(")
-      close_paren <- stringr::str_count(all_text, "\\)")
-      open_curly  <- stringr::str_count(all_text, "\\{")
-      close_curly <- stringr::str_count(all_text, "\\}")
-      open_sq     <- stringr::str_count(all_text, "\\[")
-      close_sq    <- stringr::str_count(all_text, "\\]")
+      # Remove string literals to avoid false bracket counts
+      all_text_clean <- gsub('(["\'])(?:\\\\\\1|.)*?\\1', "", all_text)
+      
+      open_paren  <- stringr::str_count(all_text_clean, "\\(")
+      close_paren <- stringr::str_count(all_text_clean, "\\)")
+      open_curly  <- stringr::str_count(all_text_clean, "\\{")
+      close_curly <- stringr::str_count(all_text_clean, "\\}")
+      open_sq     <- stringr::str_count(all_text_clean, "\\[")
+      close_sq    <- stringr::str_count(all_text_clean, "\\]")
       
       return(open_paren > close_paren ||
                open_curly > close_curly ||
@@ -133,10 +135,7 @@ get_R_script <- function(
     }
     
     # Extend lines if brackets are unclosed
-    while (has_unclosed_brackets(extracted_lines) &&
-           end_index < length(combined_lines) &&
-           !grepl("^\\s*\\}\\s*$", combined_lines[end_index + 1])) {
-      
+    while (has_unclosed_brackets(extracted_lines) && end_index < length(combined_lines)) {
       end_index <- end_index + 1
       extracted_lines <- combined_lines[start_index:end_index]
     }
