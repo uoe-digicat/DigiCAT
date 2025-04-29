@@ -81,7 +81,7 @@ get_R_script <- function(
         
         temp_line <- paste0(temp_line, " ", clean_line)
         
-        if (!grepl("[,=%in%&]\\s*[\\)\\}]?$", clean_line)) {
+        if (!grepl("(,|=|%in%|&)\\s*[\\)\\}]?$", clean_line)) {
           result <- c(result, trimws(temp_line))
           temp_line <- ""
         }
@@ -356,6 +356,12 @@ library(mitools)"
       )
     }
     if (balancing_model == "poly"){
+      propensity_score_model_code <- c(
+        propensity_score_model_code,
+        "prepare_dataset_nbp <- ", capture.output(DigiCAT:::prepare_dataset_nbp),
+        "make_matrix_nbp <- ", capture.output(DigiCAT:::make_matrix_nbp),
+        "restructure_rejoin_nbp <-", capture.output(DigiCAT:::restructure_rejoin_nbp)
+      )
       propensity_score_model_code <- c(
         propensity_score_model_code,
         extract_lines_between_patterns(
