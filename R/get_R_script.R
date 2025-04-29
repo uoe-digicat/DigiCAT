@@ -358,9 +358,9 @@ library(mitools)"
     if (balancing_model == "poly"){
       propensity_score_model_code <- c(
         propensity_score_model_code,
-        "prepare_dataset_nbp <- ", capture.output(DigiCAT:::prepare_dataset_nbp),
-        "make_matrix_nbp <- ", capture.output(DigiCAT:::make_matrix_nbp),
-        "restructure_rejoin_nbp <-", capture.output(DigiCAT:::restructure_rejoin_nbp)
+        "prepare_dataset_nbp <- ", head(capture.output(DigiCAT:::prepare_dataset_nbp), n = -2),
+        "make_matrix_nbp <- ", head(capture.output(DigiCAT:::make_matrix_nbp), n = -2),
+        "restructure_rejoin_nbp <-", head(capture.output(DigiCAT:::restructure_rejoin_nbp), n = -2)
       )
       propensity_score_model_code <- c(
         propensity_score_model_code,
@@ -1415,7 +1415,34 @@ library(mitools)"
     return(result)
   }
   
+  ## Indent code
+  manual_indent_code <- function(lines, indent_size = 2) {
+    indented <- character()
+    indent_level <- 0
+    indent_string <- strrep(" ", indent_size)
+    
+    for (line in lines) {
+      clean_line <- trimws(line)
+      
+      # Decrease indent BEFORE the line if it starts with "}" (closing block)
+      if (grepl("^\\}", clean_line)) {
+        indent_level <- max(indent_level - 1, 0)
+      }
+      
+      # Add the line with current indentation
+      indented <- c(indented, paste0(strrep(indent_string, indent_level), clean_line))
+      
+      # Increase indent AFTER the line if it ends with "{" (opening block)
+      if (grepl("\\{\\s*$", clean_line)) {
+        indent_level <- indent_level + 1
+      }
+    }
+    
+    return(indented)
+  }
+  
   r_script <- combine_else_lines(r_script)
+  r_script <- manual_indent_code(r_script)
   noquote(capture.output(cat(r_script, sep = "\n")))
 }
 
