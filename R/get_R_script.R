@@ -968,7 +968,7 @@ library(mitools)"
           start_pattern = 'else if (extracted_balanced_data$process == "cc_cbps") {',
           end_pattern = 'model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable, wts = model_fit$weights)',
           add_lines = 0,
-          skip_lines = 2
+          skip_lines = 1
         )
       )
     }
@@ -1171,7 +1171,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "iptw" & outcome_formula == "marginal_effects") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1183,7 +1183,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "unadjusted") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1195,7 +1195,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "iptw" & outcome_formula == "unadjusted") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1207,7 +1207,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "iptw" & outcome_formula == "with_matching_variables") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1219,7 +1219,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "psm" & outcome_formula == "with_matching_variables") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1231,7 +1231,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method == "nbp" & outcome_formula == "unadjusted") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 2,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1243,7 +1243,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "cc" & counterfactual_method == "nbp" & outcome_formula == "with_matching_variables") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1255,7 +1255,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "nbp" & outcome_formula == "unadjusted") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
@@ -1267,7 +1267,7 @@ library(mitools)"
         start_pattern = 'else if (extracted_outcome_results[[2]] == "weighting" & counterfactual_method == "nbp" & outcome_formula == "with_matching_variables") {',
         end_pattern = ' return(results_dataframe)',
         add_lines = 0,
-        skip_lines = 3,
+        skip_lines = 1,
         result_variable = "standardised_format")
     )
   }
