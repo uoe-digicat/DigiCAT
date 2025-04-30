@@ -1384,7 +1384,7 @@ library(mitools)"
         function_name = DigiCAT:::perform_VW_Evalue,
         start_pattern = 'sensitivity_result <- evalues.OR(estimate, lo = lower_bound, hi = upper_bound)',
         end_pattern = 'names(sensitivity_result) <- "point"',
-        skip_lines = 4,
+        skip_lines = 0,
         result_variable = "sensitivity_result_EV",
         sub_string = c("sensitivity_result", "sensitivity_result_EV"))
     )
@@ -1444,6 +1444,9 @@ library(mitools)"
     
     return(indented)
   }
+  
+  ## Remove lines starting with "<bytecode" or "<environment:"
+  r_script <- r_script[!grepl("^<bytecode:|^<environment:", r_script)]
   
   r_script <- combine_else_lines(r_script)
   r_script <- manual_indent_code(r_script)
