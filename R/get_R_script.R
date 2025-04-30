@@ -55,7 +55,7 @@ get_R_script <- function(
   include_sensitivity){
   
   ## Define function to extract lines from existing code
-  extract_lines_between_patterns <- function(function_name, start_pattern, end_pattern, add_lines = 0, skip_lines = 0, result_variable = NULL, sub_string = c("", "")) {
+  extract_lines_between_patterns <- function(function_name, start_pattern, end_pattern, add_lines = 0, skip_lines = 0, result_variable = NULL, sub_string = c("", ""), bracket_fix = TRUE) {
     
     ## Clean comment and whitespace from patterns
     clean_text <- function(p) {
@@ -129,10 +129,13 @@ get_R_script <- function(
                open_curly  > close_curly  ||
                open_sq     > close_sq)
     }
-    # Extend lines if brackets are unclosed
-    while (has_unclosed_brackets(extracted_lines) && end_index < length(combined_lines)) {
-      end_index <- end_index + 1
-      extracted_lines <- combined_lines[start_index:end_index]
+    
+    if (bracket_fix){
+      # Extend lines if brackets are unclosed
+      while (has_unclosed_brackets(extracted_lines) && end_index < length(combined_lines)) {
+        end_index <- end_index + 1
+        extracted_lines <- combined_lines[start_index:end_index]
+      }
     }
     
     ## Replace string if specified
@@ -331,7 +334,7 @@ library(mitools)"
           start_pattern = "}, gbm = {",
           end_pattern = 'type = "response")',
           add_lines = 0,
-          skip_lines = 0)
+          skip_lines = 1)
       )
     }
     if (balancing_model == "randomforest"){
@@ -1308,7 +1311,8 @@ library(mitools)"
           start_pattern = 'if (missing_method == "mi") {',
           end_pattern = "g <- mean_diff/pooled_SD",
           add_lines = 0,
-          skip_lines = 1)
+          skip_lines = 1,
+          bracket_fix = FALSE)
       )
     }
     if(missing_method == "weighting"){
