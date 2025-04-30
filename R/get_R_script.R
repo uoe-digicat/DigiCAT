@@ -909,8 +909,9 @@ library(mitools)"
           function_name = DigiCAT:::outcome_marginal_effects,
           start_pattern = 'else if (extracted_balanced_data$process == "cc_psm") { ',
           end_pattern = 'else if (extracted_balanced_data$process == "mi_iptw") {',
-          add_lines = -1,
-          skip_lines = 1
+          add_lines = -2,
+          skip_lines = 1,
+          bracket_fix = F
         )
       )
     }
@@ -933,7 +934,7 @@ library(mitools)"
           function_name = DigiCAT:::outcome_marginal_effects,
           start_pattern = 'else if (extracted_balanced_data$process == "cc_iptw") {',
           end_pattern = 'else if (extracted_balanced_data$process == "weighting_iptw") {',
-          add_lines = -1,
+          add_lines = -2,
           skip_lines = 1
         )
       )
@@ -956,7 +957,7 @@ library(mitools)"
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_marginal_effects,
           start_pattern = 'else if (extracted_balanced_data$process == "weighting_psm") {',
-          end_pattern = ' model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)',
+          end_pattern = 'model_fit = marginaleffects::avg_comparisons(model_fit, variables = treatment_variable)',
           add_lines = 0,
           skip_lines = 1
         )
