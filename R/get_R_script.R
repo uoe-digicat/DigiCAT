@@ -118,22 +118,17 @@ get_R_script <- function(
     ## Ensure brackets are closed in extracted code
     has_unclosed_brackets <- function(text) {
       all_text <- paste(text, collapse = "\n")
+      open_paren  <- stringr::str_count(all_text, "\\(")
+      close_paren <- stringr::str_count(all_text, "\\)")
+      open_curly  <- stringr::str_count(all_text, "\\{")
+      close_curly <- stringr::str_count(all_text, "\\}")
+      open_sq     <- stringr::str_count(all_text, "\\[")
+      close_sq    <- stringr::str_count(all_text, "\\]")
       
-      # Remove string literals to avoid false bracket counts
-      all_text_clean <- gsub('(["\'])(?:\\\\\\1|.)*?\\1', "", all_text)
-      
-      open_paren  <- stringr::str_count(all_text_clean, "\\(")
-      close_paren <- stringr::str_count(all_text_clean, "\\)")
-      open_curly  <- stringr::str_count(all_text_clean, "\\{")
-      close_curly <- stringr::str_count(all_text_clean, "\\}")
-      open_sq     <- stringr::str_count(all_text_clean, "\\[")
-      close_sq    <- stringr::str_count(all_text_clean, "\\]")
-      
-      return(open_paren > close_paren ||
-               open_curly > close_curly ||
-               open_sq > close_sq)
+      return(open_paren  > close_paren  ||
+               open_curly  > close_curly  ||
+               open_sq     > close_sq)
     }
-    
     # Extend lines if brackets are unclosed
     while (has_unclosed_brackets(extracted_lines) && end_index < length(combined_lines)) {
       end_index <- end_index + 1
@@ -627,7 +622,7 @@ library(mitools)"
         outcome_model_code,
         extract_lines_between_patterns(
           function_name = DigiCAT:::outcome_unadjusted,
-          start_pattern = "if(extracted_balanced_data$process == \"mi_psm\"){" ,
+          start_pattern = "if (extracted_balanced_data$process == \"mi_psm\") {" ,
           end_pattern = "model_fit = with(mi_matched_design, svyVGAM::svy_vglm(model_formula, family = multinomial))",
           add_lines = 1,
           skip_lines = 1
