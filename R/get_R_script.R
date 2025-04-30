@@ -1379,7 +1379,7 @@ library(mitools)"
         function_name = DigiCAT:::perform_VW_Evalue,
         start_pattern = 'sensitivity_result <- evalues.OR(estimate, lo = lower_bound, hi = upper_bound)',
         end_pattern = 'names(sensitivity_result) <- "point"',
-        skip_lines = 0,
+        skip_lines = 4,
         result_variable = "sensitivity_result_EV",
         sub_string = c("sensitivity_result", "sensitivity_result_EV"))
     )
